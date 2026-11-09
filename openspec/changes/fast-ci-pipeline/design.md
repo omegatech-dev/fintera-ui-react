@@ -10,25 +10,26 @@ PRs whose base was `main`. The repository is a JavaScript SPA with `npm` and
 **Goals:**
 
 - Give fast feedback on every PR, including stacked PRs.
+- Isolate lint, test, and build failures so they report independently.
 - Spend runner minutes only where they add signal.
 - Keep the configuration small and dependency-free (no third-party actions
   beyond the official checkout/setup-node).
 
 **Non-Goals:**
 
-- Splitting lint/test/build into parallel jobs (each job would repeat `npm ci`,
-  increasing cost faster than it reduces wall-clock time for a small suite).
 - Adding deployment, release, or audit workflows.
 - Changing application behavior.
 
 ## Decisions
 
-### One job, three steps
+### Three parallel jobs via a matrix
 
-Keeping lint, tests, and build in a single `verify` job means a single
-`npm ci`, a single Node setup, and one runner for the whole run. For this
-codebase the suite finishes in seconds, so parallelism would add cost without
-meaningful speedup.
+A single matrix (`include` of Lint/Test/Build, `fail-fast: false`) expands into
+three independent jobs that run concurrently. This gives per-area feedback and
+lets the fast lint job finish without waiting for the build. Each job repeats
+checkout, Node setup, and `npm ci`, so setup overhead is roughly tripled; the
+npm cache and small suite keep that overhead modest compared with the wall-clock
+gain.
 
 ### Trigger on every base branch
 
@@ -61,11 +62,14 @@ truth.
 
 ## Risks / Trade-offs
 
-- **Skipped docs-only checks** → The job still runs and reports a message, so
-  branch protection sees a result; only the heavy steps are skipped.
+- **Skipped docs-only checks** → Every matrix job still runs and reports a
+  message, so branch protection sees a result per check; only the heavy steps
+  are skipped.
 - **Draft PRs show no checks** → Marking the PR ready for review triggers
   `ready_for_review` and starts the full run.
 - **Shallow checkout cannot diff the base** → The detection step explicitly
   fetches the base SHA with `--depth=1` before diffing.
-- **Timeouts hide slow regressions** → 15 minutes is far above the current
-  runtime; it prevents runaway jobs rather than constraining normal runs.
+- **Three installs per run** → npm caching and `--prefer-offline` keep the
+  repeated setup cheap, and `fail-fast: false` gives complete failure signal.
+- **Timeouts hide slow regressions** → 10 minutes per job is far above the
+  current runtime; it prevents runaway jobs rather than constraining normal runs.

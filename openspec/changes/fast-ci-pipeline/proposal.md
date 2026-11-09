@@ -10,6 +10,8 @@ is slower feedback and unnecessary cost.
 
 - Run CI on pull requests to **any** base branch, plus pushes to `main` and
   `workflow_dispatch`.
+- Run lint, test, and build as three parallel matrix jobs with
+  `fail-fast: false`.
 - Cancel superseded runs for the same pull request.
 - Skip CI for draft pull requests; start when they are marked ready for review.
 - Detect docs-only changes and skip the heavy steps while still reporting a CI
@@ -17,7 +19,7 @@ is slower feedback and unnecessary cost.
 - Cache npm downloads and install with `npm ci --prefer-offline --no-audit
   --no-fund`.
 - Resolve Node from `.nvmrc` instead of a single-entry matrix.
-- Add a 15-minute job timeout and read-only `contents` permission.
+- Add a 10-minute job timeout and read-only `contents` permission.
 
 ## Capabilities
 

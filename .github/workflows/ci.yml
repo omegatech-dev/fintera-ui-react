@@ -17,11 +17,23 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     # Draft PRs skip CI until they are marked ready for review.
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+
+    strategy:
+      # Report every failing check instead of stopping at the first one.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Lint
+            command: npm run lint
+          - name: Test
+            command: npm run test:run
+          - name: Build
+            command: npm run build
 
     steps:
       - name: Checkout
@@ -46,7 +58,7 @@ jobs:
 
       - name: Skip heavy checks for docs-only changes
         if: steps.changes.outputs.code == 'false'
-        run: echo "Docs-only change detected; lint, tests, and build are skipped."
+        run: echo "Docs-only change detected; skipping ${{ matrix.name }}."
 
       - name: Use Node.js from .nvmrc
         if: steps.changes.outputs.code == 'true'
@@ -60,14 +72,6 @@ jobs:
         if: steps.changes.outputs.code == 'true'
         run: npm ci --no-audit --no-fund --prefer-offline
 
-      - name: Lint
+      - name: ${{ matrix.name }}
         if: steps.changes.outputs.code == 'true'
-        run: npm run lint
-
-      - name: Test
-        if: steps.changes.outputs.code == 'true'
-        run: npm run test:run
-
-      - name: Build
-        if: steps.changes.outputs.code == 'true'
-        run: npm run build
+        run: ${{ matrix.command }}

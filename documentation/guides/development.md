@@ -48,16 +48,17 @@ Run `npm run verify` before opening a pull request.
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs lint, tests, and the production build in a
-single job to keep CI fast and cheap:
+`.github/workflows/ci.yml` runs lint, tests, and the production build as three
+parallel jobs (a matrix with `fail-fast: false`) to keep feedback fast and
+failures isolated:
 
 - Runs on pull requests to **any** base branch (including stacked PRs) and on
   pushes to `main`, with `workflow_dispatch` for manual runs.
-- Cancels superseded runs for the same PR and uses a 15-minute timeout.
+- Cancels superseded runs for the same PR and uses a 10-minute timeout per job.
 - Draft PRs skip CI until marked **Ready for review**.
 - PRs that only touch Markdown, `documentation/`, or `openspec/` skip the heavy
-  steps; a docs-only message is still reported.
-- Uses the Node version from `.nvmrc`, npm's download cache, and
+  steps; a docs-only message is still reported by each job.
+- Each job uses the Node version from `.nvmrc`, npm's download cache, and
   `npm ci --prefer-offline --no-audit --no-fund`.
 - Uses read-only `contents` permission.
 

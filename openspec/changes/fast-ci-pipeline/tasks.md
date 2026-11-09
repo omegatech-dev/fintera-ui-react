@@ -5,8 +5,8 @@
 - [x] 1.3 Skip draft PRs with a job-level `if`; verify `ready_for_review` is present so CI starts when the draft becomes reviewable.
 - [x] 1.4 Add a docs-only detection step that diffs against the PR base SHA and sets `code=true|false`; verify the job still runs and reports a skip message for docs-only changes.
 - [x] 1.5 Resolve Node from `.nvmrc`, enable npm caching with `cache-dependency-path: package-lock.json`, and install with `npm ci --no-audit --no-fund --prefer-offline`.
-- [x] 1.6 Add `permissions: contents: read` and `timeout-minutes: 15`; verify the YAML parses with `npx yaml-lint`.
-- [x] 1.7 Confirm lint, tests, and build still run in order via `npm run lint`, `npm run test:run`, and `npm run build`.
+- [x] 1.6 Add `permissions: contents: read` and `timeout-minutes: 10`; verify the YAML parses with `npx yaml-lint`.
+- [x] 1.7 Expand lint, test, and build into three parallel matrix jobs with `fail-fast: false`; verify each job runs its command and reports independently.
 
 ## 2. Documentation and validation
 

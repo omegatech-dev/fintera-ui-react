@@ -103,7 +103,6 @@ export default defineConfig({
             if (id.includes("@fortawesome")) return "vendor";
             if (id.includes("framer-motion")) return "motion";
             if (id.includes("quill")) return "quill";
-            if (id.includes("tailwind-datepicker")) return "datepicker";
             // Medium libs (no React dependency)
             if (id.includes("date-fns")) return "date-fns";
             if (id.includes("@rollbar") || id.includes("rollbar")) return "rollbar";

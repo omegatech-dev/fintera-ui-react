@@ -14,8 +14,9 @@ Constraints that shape the approach:
   changes several utility names and the default ring/border/button styles.
 - Vitest 5 requires Node `^22.12 || ^24 || >=26`, so Node 26 is a hard
   prerequisite for the test tooling.
-- `tailwind-datepicker-react` ships Tailwind 3 class names; it must keep working
-  through Tailwind 4 or be replaced.
+- `tailwind-datepicker-react@1.4.3` does not render under React 19 (its default
+  export resolves to a module object), so `DatePicker` must be reimplemented
+  with a native date input.
 
 ## Goals / Non-Goals
 
@@ -31,7 +32,7 @@ Constraints that shape the approach:
 - Redesigning features, routes, or API contracts.
 - Migrating to TypeScript.
 - Splitting the upgrade across phased releases.
-- Replacing `tailwind-datepicker-react` unless it actually breaks.
+- Reintroducing a third-party datepicker library.
 
 ## Decisions
 
@@ -48,10 +49,9 @@ keeps EOL tooling and browserslist/storage workarounds alive.
 
 `vite.config.js` adds `tailwindcss()` and removes the PostCSS config. The
 `@tailwind` directives become `@import "tailwindcss"` plus `@config` for the
-existing JS theme, `@source` for `tailwind-datepicker-react`, and
-`@custom-variant dark` to keep the class-based dark mode. A compatibility
-`@theme`/`@layer base` block restores v3 defaults (ring width/color, default
-border color, pointer cursor, placeholder color).
+existing JS theme and `@custom-variant dark` to keep the class-based dark mode.
+A compatibility `@theme`/`@layer base` block restores v3 defaults (ring
+width/color, default border color, pointer cursor, placeholder color).
 
 Utility renames are applied mechanically (`shadow-sm` → `shadow-xs`, `blur-sm`
 → `blur-xs`, `outline-none` → `outline-hidden`, `flex-shrink` → `shrink`,
@@ -59,7 +59,17 @@ Utility renames are applied mechanically (`shadow-sm` → `shadow-xs`, `blur-sm`
 notation (`bg-opacity-30` → `bg-black/30`).
 
 The `and` operator in `tailwind.config.js` requires the JS config path;
-`content` no longer needs `node_modules` because `@source` handles that.
+`content` only needs `index.html` and `src`, so it no longer scans
+`node_modules`.
+
+### Native date input
+
+`tailwind-datepicker-react@1.4.3` fails to render under React 19: its default
+import resolves to a module object instead of a component. `DatePicker` is
+reimplemented with a native `<input type="date">`, keeping the existing props
+API, min/max bounds, label/error/disabled states, and the formatted selection
+summary. The dependency, its `@source` scan, and its `manualChunks` branch are
+removed.
 
 ### Vite 8 / Rolldown
 
@@ -96,8 +106,8 @@ fix at current versions.
 - **Tailwind 4 visual drift** → Compatibility `@theme`/base layer, mechanical
   class renames, and a production build check that custom `bgray` colors and
   dark-mode variants are still emitted.
-- **Datepicker incompatibility** → Keep `tailwind-datepicker-react` and scan it
-  with `@source`; replace with a native date input only if it breaks.
+- **Datepicker incompatibility** → Replaced `tailwind-datepicker-react` with a
+  native date input and covered it with component tests.
 - **React 19 runtime changes** (propTypes ignored, stricter effects) → Tests and
   a manual smoke test of dashboard, contracts, payments, users, and settings.
 - **Vitest 5 behavior changes** (`mockReset`/`clearMocks`, benchmark API) →

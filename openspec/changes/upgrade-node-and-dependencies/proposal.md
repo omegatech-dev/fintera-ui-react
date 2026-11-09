@@ -16,7 +16,7 @@ maintenance and security risk.
   `@vite-pwa/assets-generator` 2, Vitest 5, jsdom 31, Testing Library 16/7/10.
 - Migrate Tailwind CSS 3 to 4 using `@tailwindcss/vite`, replacing the PostCSS
   pipeline and `@tailwind` directives with `@import "tailwindcss"`, `@config`,
-  `@source`, and `@custom-variant dark`.
+  and `@custom-variant dark`.
 - Apply Tailwind 4 utility renames across the source tree (`shadow-sm` →
   `shadow-xs` &c.) and replace removed opacity utilities with slash syntax.
 - Upgrade runtime majors: React 19, `react-router-dom` 7, `framer-motion` 14,

@@ -41,8 +41,7 @@
     "react-router-dom": "^7.18.5",
     "react-transition-group": "^4.4.5",
     "rollbar": "^4.2.0",
-    "serve": "^14.2.7",
-    "tailwind-datepicker-react": "^1.4.3"
+    "serve": "^14.2.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

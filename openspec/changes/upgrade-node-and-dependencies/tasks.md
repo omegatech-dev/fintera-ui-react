@@ -16,10 +16,11 @@
 ## 3. Tailwind 4
 
 - [x] 3.1 Add `@tailwindcss/vite` to `vite.config.js` and delete `postcss.config.js`; verify the build runs through the Vite plugin.
-- [x] 3.2 Replace `@tailwind` directives in `src/index.css` with `@import "tailwindcss"`, `@config`, `@source`, `@custom-variant dark`, and a v3-compatibility `@theme`/base layer; verify `npm run build` succeeds.
+- [x] 3.2 Replace `@tailwind` directives in `src/index.css` with `@import "tailwindcss"`, `@config`, `@custom-variant dark`, and a v3-compatibility `@theme`/base layer; verify `npm run build` succeeds.
 - [x] 3.3 Remove `darkMode`/`node_modules` content from `tailwind.config.js` and apply Tailwind 4 utility renames plus slash opacity syntax across `src/**/*.jsx`; verify no removed utility names remain (`shadow-sm`, `blur-sm`, `outline-none`, `flex-shrink`, `*-opacity-*`).
 - [x] 3.4 Fix invalid CSS in `src/assets/css/style.css` (`color: #ffffff !;`); verify lightningcss minification succeeds.
 - [x] 3.5 Confirm custom colors and dark variants are emitted in `dist/assets/*.css`; verify `bgray` and `.dark` selectors are present.
+- [x] 3.6 Replace `tailwind-datepicker-react` (broken under React 19) with a native `<input type="date">` in `src/shared/forms/DatePicker.jsx`, keep the props API, and remove the dependency, `@source`, and `manualChunks` references; verify the new `DatePicker.test.jsx` passes and `grep` finds no `tailwind-datepicker` references.
 
 ## 4. ESLint 10
 

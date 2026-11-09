@@ -68,7 +68,7 @@ function RecentActivity() {
     };
 
     return (
-        <div className="bg-white dark:bg-darkblack-600 rounded-2xl shadow-sm border border-gray-100 dark:border-darkblack-500 overflow-hidden h-full flex flex-col">
+        <div className="bg-white dark:bg-darkblack-600 rounded-2xl shadow-xs border border-gray-100 dark:border-darkblack-500 overflow-hidden h-full flex flex-col">
             <div className="p-6 border-b border-gray-100 dark:border-darkblack-500 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white dark:from-darkblack-600 dark:to-darkblack-600">
                 <div>
                     <h3 className="text-xl font-bold text-bgray-900 dark:text-white">
@@ -86,7 +86,7 @@ function RecentActivity() {
                 </Link>
             </div>
 
-            <div className="flex-grow overflow-auto p-0 custom-scrollbar">
+            <div className="grow overflow-auto p-0 custom-scrollbar">
                 {loading ? (
                     <div className="space-y-4 p-6">
                         {[1, 2, 3].map((i) => (
@@ -124,7 +124,7 @@ function RecentActivity() {
                                         key={activity.id || index}
                                         className="group flex items-start space-x-4"
                                     >
-                                        <div className="flex-shrink-0 bg-white dark:bg-darkblack-600 py-1">
+                                        <div className="shrink-0 bg-white dark:bg-darkblack-600 py-1">
                                             {getActionIcon(activity.action)}
                                         </div>
                                         <div className="flex-1 min-w-0 pt-1.5 pr-4">

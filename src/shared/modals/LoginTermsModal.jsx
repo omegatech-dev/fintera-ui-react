@@ -34,7 +34,7 @@ function LoginTermsModal({ isActive, onClose }) {
       />
       <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700">
         {/* Header */}
-        <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             {t("termsAndConditions.title")}
           </h2>
@@ -57,7 +57,7 @@ function LoginTermsModal({ isActive, onClose }) {
           </p>
 
           <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400">
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             {t("termsAndConditions.lastUpdated")}: {currentDate}
@@ -195,7 +195,7 @@ function LoginTermsModal({ isActive, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
           <button
             type="button"
             onClick={onClose}

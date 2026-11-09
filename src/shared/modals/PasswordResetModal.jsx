@@ -13,7 +13,7 @@ export const CrossBtn = ({ close }) => (
       aria-label="none"
       type="button"
       onClick={close}
-      className="rounded-md bg-white dark:bg-darkblack-500 focus:outline-none"
+      className="rounded-md bg-white dark:bg-darkblack-500 focus:outline-hidden"
     >
       <span className="sr-only">Close</span>
       <svg

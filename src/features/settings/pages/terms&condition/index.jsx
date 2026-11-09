@@ -16,7 +16,6 @@ function TermsAndCondition() {
       month: 'long',
       day: 'numeric'
     });
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentDate(formattedDate);
   }, []);
 
@@ -45,7 +44,7 @@ function TermsAndCondition() {
         {/* Last Updated */}
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-8">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -63,7 +62,7 @@ function TermsAndCondition() {
           {/* Section 1: Acceptance */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-4">
                 <span className="text-blue-600 dark:text-blue-300 font-bold text-lg">1</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">
@@ -78,7 +77,7 @@ function TermsAndCondition() {
           {/* Section 2: Description of Services */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-4">
                 <span className="text-green-600 dark:text-green-300 font-bold text-lg">2</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">
@@ -93,7 +92,7 @@ function TermsAndCondition() {
           {/* Section 3: Account Registration */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mr-4">
                 <span className="text-purple-600 dark:text-purple-300 font-bold text-lg">3</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">
@@ -103,7 +102,7 @@ function TermsAndCondition() {
             <ul className="space-y-3 text-gray-700 dark:text-gray-300">
               {getTranslationArray('termsAndConditions.sections.accountRegistration.points').map((point, index) => (
                 <li key={index} className="flex items-start">
-                  <svg className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-green-500 mt-0.5 mr-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                   <span className="leading-relaxed">{point}</span>
@@ -115,7 +114,7 @@ function TermsAndCondition() {
           {/* Section 4: Use of Platform */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mr-4">
                 <span className="text-orange-600 dark:text-orange-300 font-bold text-lg">4</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">
@@ -130,7 +129,7 @@ function TermsAndCondition() {
           {/* Section 5: Fees and Payments */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mr-4">
                 <span className="text-yellow-600 dark:text-yellow-300 font-bold text-lg">5</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">
@@ -145,7 +144,7 @@ function TermsAndCondition() {
           {/* Section 6: Notifications and Communications */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center mr-4">
                 <span className="text-indigo-600 dark:text-indigo-300 font-bold text-lg">6</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">
@@ -168,7 +167,7 @@ function TermsAndCondition() {
           {/* Section 7: Privacy Policy */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-pink-100 dark:bg-pink-900 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-pink-100 dark:bg-pink-900 rounded-full flex items-center justify-center mr-4">
                 <span className="text-pink-600 dark:text-pink-300 font-bold text-lg">7</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">
@@ -183,7 +182,7 @@ function TermsAndCondition() {
           {/* Section 8: Limitation of Liability */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mr-4">
                 <span className="text-red-600 dark:text-red-300 font-bold text-lg">8</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">
@@ -198,7 +197,7 @@ function TermsAndCondition() {
           {/* Section 9: Account Suspension and Termination */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4">
                 <span className="text-gray-600 dark:text-gray-300 font-bold text-lg">9</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">
@@ -213,7 +212,7 @@ function TermsAndCondition() {
           {/* Section 10: Amendments */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-teal-100 dark:bg-teal-900 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-teal-100 dark:bg-teal-900 rounded-full flex items-center justify-center mr-4">
                 <span className="text-teal-600 dark:text-teal-300 font-bold text-lg">10</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">
@@ -228,7 +227,7 @@ function TermsAndCondition() {
           {/* Section 11: Contact Information */}
           <section className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <div className="flex items-start mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-cyan-100 dark:bg-cyan-900 rounded-full flex items-center justify-center mr-4">
+              <div className="shrink-0 w-10 h-10 bg-cyan-100 dark:bg-cyan-900 rounded-full flex items-center justify-center mr-4">
                 <span className="text-cyan-600 dark:text-cyan-300 font-bold text-lg">11</span>
               </div>
               <h2 className="text-2xl font-bold text-bgray-800 dark:text-white">

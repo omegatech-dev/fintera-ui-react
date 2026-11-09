@@ -76,7 +76,7 @@ const ContractMobileCard = ({
                         onClick={(e) => { e.stopPropagation(); setShowSchedule(true); }}
                         id="contract-schedule-btn"
                         title={t("contracts.paymentSchedule")}
-                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-sm hover:shadow-lg hover:scale-110 active:scale-95"
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-xs hover:shadow-lg hover:scale-110 active:scale-95"
                     >
                         <FontAwesomeIcon icon={faReceipt} className="text-sm" />
                     </button>
@@ -85,7 +85,7 @@ const ContractMobileCard = ({
                     onClick={(e) => { e.stopPropagation(); setShowDetailsModal(true); }}
                     id="contract-view-details-btn"
                     title={t("common.view")}
-                    className="w-10 h-10 flex items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm hover:shadow-lg hover:scale-110 active:scale-95"
+                    className="w-10 h-10 flex items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition-all shadow-xs hover:shadow-lg hover:scale-110 active:scale-95"
                 >
                     <FontAwesomeIcon icon={faEye} className="text-sm" />
                 </button>
@@ -114,7 +114,7 @@ const ContractMobileCard = ({
                                         navigator.clipboard.writeText(contract.guid);
                                         showToast(t("common.copiedToClipboard") || "Copiado al portapapeles", "success");
                                     }}
-                                    className="text-[10px] text-bgray-400 dark:text-bgray-500 font-mono flex items-center gap-1.5 bg-gray-50 dark:bg-darkblack-500 px-2 py-0.5 rounded-md self-start border border-gray-100 dark:border-darkblack-400 cursor-pointer group/guid hover:border-blue-300/30 transition-all hover:bg-white dark:hover:bg-darkblack-400 shadow-sm"
+                                    className="text-[10px] text-bgray-400 dark:text-bgray-500 font-mono flex items-center gap-1.5 bg-gray-50 dark:bg-darkblack-500 px-2 py-0.5 rounded-md self-start border border-gray-100 dark:border-darkblack-400 cursor-pointer group/guid hover:border-blue-300/30 transition-all hover:bg-white dark:hover:bg-darkblack-400 shadow-xs"
                                 >
                                     <span className="font-black text-[12px] tracking-widest opacity-100 uppercase">{t("contracts.id")}:</span>
                                     <span className="truncate max-w-[250px]">{contract.guid}</span>
@@ -125,7 +125,7 @@ const ContractMobileCard = ({
                     </div>
                 </div>
 
-                <div className={`inline-flex self-start px-2.5 py-1 rounded-full ${statusTheme.bg} ${statusTheme.text} text-[9px] font-extrabold uppercase tracking-widest border ${statusTheme.border} items-center mb-5 shadow-sm`}>
+                <div className={`inline-flex self-start px-2.5 py-1 rounded-full ${statusTheme.bg} ${statusTheme.text} text-[9px] font-extrabold uppercase tracking-widest border ${statusTheme.border} items-center mb-5 shadow-xs`}>
                     <FontAwesomeIcon icon={statusTheme.icon} className="mr-1.5" />
                     {formatStatus(contract.status?.toLowerCase(), t)}
                 </div>
@@ -135,7 +135,7 @@ const ContractMobileCard = ({
                     onClick={handleNavigateToClient}
                     className="flex items-center p-3 bg-gray-50 dark:bg-darkblack-500 rounded-xl mb-5 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30 shadow-subtle"
                 >
-                    <div className="w-9 h-9 flex-shrink-0 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold shadow-md uppercase text-sm">
+                    <div className="w-9 h-9 shrink-0 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold shadow-md uppercase text-sm">
                         {contract.applicant_name?.charAt(0) || "?"}
                     </div>
                     <div className="ml-3 overflow-hidden">
@@ -230,7 +230,7 @@ const ContractMobileCard = ({
                         <button
                             onClick={handleApprove}
                             disabled={actionLoading}
-                            className="flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-bold shadow-sm shadow-green-200 dark:shadow-none transition-all flex items-center justify-center disabled:opacity-50"
+                            className="flex-1 py-2.5 rounded-xl bg-green-500 hover:bg-green-600 text-white text-xs font-bold shadow-xs shadow-green-200 dark:shadow-none transition-all flex items-center justify-center disabled:opacity-50"
                         >
                             <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
                             {t("contracts.approve")}
@@ -240,7 +240,7 @@ const ContractMobileCard = ({
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); handleDeleteContract(e); }}
                                 disabled={deleteLoading}
-                                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold shadow-sm shadow-red-200 dark:shadow-none transition-all flex items-center justify-center disabled:opacity-50"
+                                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold shadow-xs shadow-red-200 dark:shadow-none transition-all flex items-center justify-center disabled:opacity-50"
                             >
                                 {deleteLoading ? (
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -255,7 +255,7 @@ const ContractMobileCard = ({
                             <button
                                 onClick={(e) => { e.stopPropagation(); setShowRejectionModal(true); }}
                                 disabled={actionLoading}
-                                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold shadow-sm shadow-red-200 dark:shadow-none transition-all flex items-center justify-center disabled:opacity-50"
+                                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold shadow-xs shadow-red-200 dark:shadow-none transition-all flex items-center justify-center disabled:opacity-50"
                             >
                                 <FontAwesomeIcon icon={faTimesCircle} className="mr-2" />
                                 {t("contracts.reject")}

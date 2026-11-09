@@ -13,7 +13,7 @@ main.jsx
               └─ OnboardingProvider
                   └─ ToastProvider
                       └─ ErrorBoundary
-                          └─ Router (React Router 6)
+                          └─ Router (React Router 7)
                               └─ Layout (sidebar, header)
                                   └─ lazy-loaded feature pages
 ```

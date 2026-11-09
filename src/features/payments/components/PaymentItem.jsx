@@ -178,7 +178,7 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
         animate="visible"
         whileHover={{ y: -4, shadow: "0 10px 25px rgba(0,0,0,0.05)" }}
         onClick={onClick}
-        className="relative group bg-white dark:bg-darkblack-600 rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden cursor-pointer"
+        className="relative group bg-white dark:bg-darkblack-600 rounded-2xl p-6 border border-gray-100 dark:border-white/5 shadow-xs overflow-hidden cursor-pointer"
       >
 
         <div className="space-y-6 relative z-10">
@@ -241,7 +241,7 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={(e) => { e.stopPropagation(); setShowApproveModal(true); }}
-                    className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-sm hover:bg-slate-800 transition-all flex items-center justify-center"
+                    className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-xs hover:bg-slate-800 transition-all flex items-center justify-center"
                   >
                     {t('payments.approve')}
                   </motion.button>
@@ -249,7 +249,7 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={(e) => { e.stopPropagation(); setShowRejectModal(true); }}
-                    className="px-6 py-2.5 bg-rose-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-sm hover:bg-rose-600 transition-all flex items-center justify-center"
+                    className="px-6 py-2.5 bg-rose-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-xs hover:bg-rose-600 transition-all flex items-center justify-center"
                   >
                     {t('payments.reject')}
                   </motion.button>
@@ -298,7 +298,7 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
     >
       <td className="px-6 py-4">
         <div className="flex items-center gap-5">
-          <div className="relative w-10 h-10 rounded-xl bg-white dark:bg-darkblack-500 shadow-sm border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-400 group-hover:text-blue-500 group-hover:border-blue-500/20 transition-all duration-500 overflow-hidden">
+          <div className="relative w-10 h-10 rounded-xl bg-white dark:bg-darkblack-500 shadow-xs border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-400 group-hover:text-blue-500 group-hover:border-blue-500/20 transition-all duration-500 overflow-hidden">
             <svg className="w-5 h-5 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </div>
           <div className="min-w-0">
@@ -343,7 +343,7 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
       </td>
       <td className="px-6 py-4">
         <div className="flex flex-col gap-1.5">
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} shadow-sm shadow-black/5`}>
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} shadow-xs shadow-black/5`}>
             <span className={`w-1.5 h-1.5 rounded-full mr-2 ${statusConfig.dot} animate-pulse`} />
             {statusLabel}
           </div>
@@ -541,7 +541,7 @@ function ApproveModal({
                   </h3>
                   <p className="text-slate-400 font-medium mt-1 uppercase text-[9px] tracking-wider max-w-[260px] truncate">{paymentInfo.description}</p>
                 </div>
-                <button onClick={onClose} className="p-2 sm:p-2.5 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-rose-500 hover:text-white transition-all duration-300 shadow-sm flex-shrink-0" aria-label="Close">
+                <button onClick={onClose} className="p-2 sm:p-2.5 rounded-full bg-slate-100 dark:bg-white/5 hover:bg-rose-500 hover:text-white transition-all duration-300 shadow-xs shrink-0" aria-label="Close">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
@@ -562,7 +562,7 @@ function ApproveModal({
                         if (val !== "" && !isNaN(num) && num < 0) return;
                         setEditAmount(val);
                       }}
-                      className="w-full pl-16 sm:pl-20 pr-6 py-3 bg-slate-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/10 focus:border-emerald-500 rounded-xl outline-none font-bold text-lg dark:text-white transition-all shadow-sm"
+                      className="w-full pl-16 sm:pl-20 pr-6 py-3 bg-slate-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/10 focus:border-emerald-500 rounded-xl outline-hidden font-bold text-lg dark:text-white transition-all shadow-xs"
                     />
                   </div>
                 </div>
@@ -581,7 +581,7 @@ function ApproveModal({
                         if (val !== "" && !isNaN(num) && num < 0) return;
                         setEditInterest(val);
                       }}
-                      className="w-full pl-16 sm:pl-20 pr-6 py-3 bg-slate-50 dark:bg-white/[0.03] border border-transparent focus:border-emerald-500/30 rounded-xl outline-none font-bold text-lg dark:text-white transition-all shadow-inner"
+                      className="w-full pl-16 sm:pl-20 pr-6 py-3 bg-slate-50 dark:bg-white/[0.03] border border-transparent focus:border-emerald-500/30 rounded-xl outline-hidden font-bold text-lg dark:text-white transition-all shadow-inner"
                     />
                   </div>
                 </div>
@@ -602,7 +602,7 @@ function ApproveModal({
 
               <AnimatePresence>
                 {approvalResult && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-3 rounded-xl text-center text-[9px] font-bold uppercase tracking-wider shadow-sm ${approvalResult.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-3 rounded-xl text-center text-[9px] font-bold uppercase tracking-wider shadow-xs ${approvalResult.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
                     {approvalResult.message}
                   </motion.div>
                 )}
@@ -684,7 +684,7 @@ function RejectPaymentModal({ paymentInfo, onClose, handleReject, rejectLoading,
               value={reason}
               onChange={e => setReason(e.target.value)}
               placeholder={t('payments.rejectionReasonPlaceholder')}
-              className="w-full px-5 py-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/10 focus:border-rose-500 outline-none font-medium text-slate-900 dark:text-white min-h-[120px] resize-none text-sm"
+              className="w-full px-5 py-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/10 focus:border-rose-500 outline-hidden font-medium text-slate-900 dark:text-white min-h-[120px] resize-none text-sm"
               disabled={rejectLoading}
             />
           </div>
@@ -948,7 +948,7 @@ export function PaymentDetailModal({ payment, onClose }) {
                       <span className="text-sm font-mono font-bold uppercase truncate pr-4">
                         {payment.contract?.guid}
                       </span>
-                      <svg className="w-4 h-4 text-slate-300 group-hover/guid:text-blue-500 transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4 text-slate-300 group-hover/guid:text-blue-500 transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
                       </svg>
                     </div>

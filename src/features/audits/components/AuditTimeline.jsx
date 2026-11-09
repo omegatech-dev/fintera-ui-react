@@ -66,7 +66,7 @@ function AuditTimeline({ items }) {
                 <motion.div key={dateKey} variants={itemAnim} className="relative">
                     {/* Date Header sticky */}
                     <div className="sticky top-[80px] z-20 mb-6 pl-2">
-                        <span className="inline-block bg-white/90 dark:bg-darkblack-600/90 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-bold text-gray-800 dark:text-white border border-gray-200 dark:border-white/10 shadow-sm">
+                        <span className="inline-block bg-white/90 dark:bg-darkblack-600/90 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-bold text-gray-800 dark:text-white border border-gray-200 dark:border-white/10 shadow-xs">
                             {formatDateHeader(dateKey)}
                         </span>
                     </div>

@@ -156,7 +156,7 @@ function Contract() {
           className="flex flex-col md:flex-row md:items-center justify-end mb-4 gap-4"
         >
           <div className="flex items-center space-x-3">
-            <div id="view-mode-toggles" className="flex bg-white dark:bg-darkblack-600 rounded-xl p-1 shadow-sm border border-gray-100 dark:border-darkblack-500">
+            <div id="view-mode-toggles" className="flex bg-white dark:bg-darkblack-600 rounded-xl p-1 shadow-xs border border-gray-100 dark:border-darkblack-500">
               <button
                 onClick={() => setViewMode("grid")}
                 className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-blue-500 text-white shadow-md" : "text-bgray-400 hover:text-bgray-600 dark:hover:text-bgray-200"}`}
@@ -173,7 +173,7 @@ function Contract() {
 
             <button
               onClick={refreshContracts}
-              className="p-3 bg-white dark:bg-darkblack-600 hover:bg-gray-50 dark:hover:bg-darkblack-500 rounded-xl shadow-sm border border-gray-100 dark:border-darkblack-500 text-bgray-600 dark:text-bgray-300 transition-all"
+              className="p-3 bg-white dark:bg-darkblack-600 hover:bg-gray-50 dark:hover:bg-darkblack-500 rounded-xl shadow-xs border border-gray-100 dark:border-darkblack-500 text-bgray-600 dark:text-bgray-300 transition-all"
             >
               <FontAwesomeIcon icon={faSync} className={`w-4 h-4 ${refreshTrigger > 0 ? 'animate-spin-once' : ''}`} />
             </button>
@@ -186,7 +186,7 @@ function Contract() {
         </div>
 
         {/* Filters and List Section */}
-        <div className="bg-white dark:bg-darkblack-600 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-darkblack-500">
+        <div className="bg-white dark:bg-darkblack-600 rounded-3xl p-6 shadow-xs border border-gray-100 dark:border-darkblack-500">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 relative z-40">
             <div className="flex-1" id="contracts-filter-section">
               <GenericFilter

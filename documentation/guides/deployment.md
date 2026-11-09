@@ -2,6 +2,15 @@
 
 FinteraUI builds to a static bundle in `dist/` and is served as a SPA.
 
+## Runtime
+
+FinteraUI targets **Node.js 26 LTS**. The version is declared in `.nvmrc`,
+`.node-version`, and `package.json` (`engines.node`).
+
+- Heroku/npm-style platforms honor `engines.node`.
+- Railway and other platforms that read `.node-version`/`.nvmrc` will use Node 26.
+- CI uses Node 26.x.
+
 ## Build
 
 ```bash

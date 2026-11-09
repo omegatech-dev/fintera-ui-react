@@ -93,7 +93,7 @@ function HeaderOne({ handleSidebar }) {
           onClick={handleSidebar}
           title="Toggle sidebar (Ctrl+b)"
           type="button"
-          className="group drawer-btn absolute left-0 top-auto rotate-180 transform transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-success-300 focus:ring-offset-2 dark:focus:ring-offset-darkblack-600"
+          className="group drawer-btn absolute left-0 top-auto rotate-180 transform transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-success-300 focus:ring-offset-2 dark:focus:ring-offset-darkblack-600"
         >
           <span className="block transition-all duration-300 group-hover:drop-shadow-lg">
             <svg
@@ -132,7 +132,7 @@ function HeaderOne({ handleSidebar }) {
         </div>
 
         {/* Right Section: Notifications + Profile */}
-        <div className="quick-access-wrapper relative flex-shrink-0">
+        <div className="quick-access-wrapper relative shrink-0">
           <div className="flex items-center space-x-[43px]">
             {/* Some hidden items + Toggles */}
             <div className="hidden items-center space-x-5 xl:flex">

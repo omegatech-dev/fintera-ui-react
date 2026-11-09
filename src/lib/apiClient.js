@@ -51,7 +51,7 @@ export async function request(endpoint, { body, ...customConfig } = {}) {
             throw error;
         }
         console.error("API Network Error:", error);
-        throw new Error("Network error");
+        throw new Error("Network error", { cause: error });
     }
 
     // Handle 401 Unauthorized globally

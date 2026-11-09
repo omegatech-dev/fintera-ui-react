@@ -8,7 +8,7 @@ function QuickActionCard({ title, description, icon, to, color = "blue", onClick
       relative overflow-hidden group p-6 rounded-2xl h-full
       bg-white dark:bg-darkblack-600 
       border border-transparent hover:border-${color}-200 dark:hover:border-${color}-800/50
-      shadow-sm hover:shadow-xl hover:shadow-${color}-500/10
+      shadow-xs hover:shadow-xl hover:shadow-${color}-500/10
       transition-all duration-300
     `}>
             {/* Background Gradient Effect */}
@@ -31,7 +31,7 @@ function QuickActionCard({ title, description, icon, to, color = "blue", onClick
                 <h3 className="text-lg font-bold text-bgray-900 dark:text-white mb-2 group-hover:text-${color}-600 dark:group-hover:text-${color}-400 transition-colors">
                     {title}
                 </h3>
-                <p className="text-sm text-bgray-500 dark:text-bgray-400 leading-relaxed mb-4 flex-grow">
+                <p className="text-sm text-bgray-500 dark:text-bgray-400 leading-relaxed mb-4 grow">
                     {description}
                 </p>
 
@@ -55,7 +55,7 @@ function QuickActionCard({ title, description, icon, to, color = "blue", onClick
                 whileHover={{ y: -5 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onClick}
-                className="w-full text-left focus:outline-none"
+                className="w-full text-left focus:outline-hidden"
             >
                 {CardContent}
             </motion.button>
@@ -67,7 +67,7 @@ function QuickActionCard({ title, description, icon, to, color = "blue", onClick
             whileHover={{ y: -5 }}
             whileTap={{ scale: 0.98 }}
         >
-            <Link to={to} className="block h-full focus:outline-none">
+            <Link to={to} className="block h-full focus:outline-hidden">
                 {CardContent}
             </Link>
         </motion.div>

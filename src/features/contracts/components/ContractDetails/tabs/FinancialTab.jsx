@@ -165,7 +165,7 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
 
             {isEditMode && (
                 <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40">
-                    <FontAwesomeIcon icon={faExclamationTriangle} className="text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
                     <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
                         {t("contractDetailsModal.scheduleEditWarning")}
                     </p>
@@ -173,7 +173,7 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
             )}
 
             {/* Editable Fields Grid */}
-            <div className="bg-white dark:bg-darkblack-500 rounded-[2.5rem] border border-gray-100 dark:border-darkblack-400 shadow-sm p-10">
+            <div className="bg-white dark:bg-darkblack-500 rounded-[2.5rem] border border-gray-100 dark:border-darkblack-400 shadow-xs p-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     {/* Payment Term */}
                     <div className="space-y-3">
@@ -186,7 +186,7 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
                                         type="number"
                                         value={paymentTerm}
                                         onChange={(e) => setPaymentTerm(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-darkblack-400 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkblack-600 outline-none transition-all font-bold text-bgray-900 dark:text-white"
+                                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-darkblack-400 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkblack-600 outline-hidden transition-all font-bold text-bgray-900 dark:text-white"
                                         min="1"
                                     />
                                     <span className="text-sm font-bold text-bgray-400">{t("contractDetailsModal.months")}</span>
@@ -207,7 +207,7 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
                                     type="number"
                                     value={reserveAmount}
                                     onChange={(e) => setReserveAmount(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-darkblack-400 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkblack-600 outline-none transition-all font-bold text-bgray-900 dark:text-white"
+                                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-darkblack-400 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkblack-600 outline-hidden transition-all font-bold text-bgray-900 dark:text-white"
                                     step="0.01"
                                 />
                             ) : (
@@ -226,7 +226,7 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
                                     type="number"
                                     value={downPayment}
                                     onChange={(e) => setDownPayment(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-darkblack-400 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkblack-600 outline-none transition-all font-bold text-bgray-900 dark:text-white"
+                                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-darkblack-400 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkblack-600 outline-hidden transition-all font-bold text-bgray-900 dark:text-white"
                                     step="0.01"
                                 />
                             ) : (
@@ -246,7 +246,7 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
                                         type="date"
                                         value={maxPaymentDate}
                                         onChange={(e) => setMaxPaymentDate(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-darkblack-400 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkblack-600 outline-none transition-all font-bold text-bgray-900 dark:text-white"
+                                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-darkblack-400 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkblack-600 outline-hidden transition-all font-bold text-bgray-900 dark:text-white"
                                     />
                                 ) : (
                                     <p className="pl-12 py-4 text-bgray-600 dark:text-bgray-300 font-bold">

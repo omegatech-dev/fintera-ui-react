@@ -4,16 +4,16 @@ Instructions for AI coding agents working in the FinteraUI repository.
 
 ## Project
 
-FinteraUI is a React 18 + Vite 6 single-page PWA for managing real-estate
+FinteraUI is a React 19 + Vite 8 single-page PWA for managing real-estate
 financing: projects, lots, contracts, payment schedules, payments, users,
 audits, analytics, financing uploads, and settings.
 
 - **Language:** JavaScript / JSX (no TypeScript).
-- **Node:** `>=22` (CI uses 23.x).
-- **Styling:** Tailwind CSS.
-- **Routing:** React Router 6 (`src/Router.jsx`).
-- **Tests:** Vitest 3 + jsdom + Testing Library.
-- **Lint:** ESLint 9 flat config (`eslint.config.js`).
+- **Node:** `>=26` (LTS; CI uses 26.x).
+- **Styling:** Tailwind CSS 4 (via `@tailwindcss/vite`).
+- **Routing:** React Router 7 (`src/Router.jsx`).
+- **Tests:** Vitest 5 + jsdom 31 + Testing Library.
+- **Lint:** ESLint 10 flat config (`eslint.config.js`).
 
 ## Commands
 
@@ -70,8 +70,9 @@ Path aliases (configured in `vite.config.js`):
 - Do not add comments unless they explain non-obvious behavior.
 - Do not introduce TypeScript, a new state library, or a new UI library without
   an OpenSpec change.
-- Follow the existing ESLint rules; `react/react-in-jsx-scope` and
-  `react/prop-types` are disabled, and unused vars are warnings.
+- ESLint 10 uses a flat config with `@eslint/js`,
+  `eslint-plugin-react-hooks`, and `eslint-plugin-react-refresh`.
+  `react/prop-types` is not enforced, and unused vars are warnings.
 - Use the `@` alias for imports inside `src/` where possible.
 
 ### Internationalization

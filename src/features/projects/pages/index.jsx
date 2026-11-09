@@ -150,7 +150,7 @@ function Projects() {
                 <button
                   id="import-projects-btn"
                   onClick={handleImportClick}
-                  className="w-full flex items-center justify-center gap-2 bg-white dark:bg-darkblack-600 text-bgray-700 dark:text-white px-6 py-3 rounded-2xl font-bold transition-all duration-200 border border-bgray-200 dark:border-darkblack-400 shadow-sm hover:bg-bgray-50 dark:hover:bg-darkblack-500 active:scale-95"
+                  className="w-full flex items-center justify-center gap-2 bg-white dark:bg-darkblack-600 text-bgray-700 dark:text-white px-6 py-3 rounded-2xl font-bold transition-all duration-200 border border-bgray-200 dark:border-darkblack-400 shadow-xs hover:bg-bgray-50 dark:hover:bg-darkblack-500 active:scale-95"
                 >
                   <FontAwesomeIcon icon={faFileUpload} />
                   <span>{t('projectsPage.importCSV')}</span>
@@ -175,7 +175,7 @@ function Projects() {
               {t('projectsPage.importOptions')}
             </div>
 
-            <div className="flex items-center gap-6 bg-white dark:bg-darkblack-600 px-6 py-3 rounded-2xl border border-bgray-200 dark:border-darkblack-400 shadow-sm">
+            <div className="flex items-center gap-6 bg-white dark:bg-darkblack-600 px-6 py-3 rounded-2xl border border-bgray-200 dark:border-darkblack-400 shadow-xs">
               <label className="flex items-center cursor-pointer group">
                 <div className="relative">
                   <input
@@ -185,7 +185,7 @@ function Projects() {
                     className="sr-only"
                   />
                   <div className={`w-9 h-5 rounded-full transition-colors duration-200 ${updateExisting ? 'bg-success-300' : 'bg-bgray-300 dark:bg-darkblack-400'}`}></div>
-                  <div className={`absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-sm ${updateExisting ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                  <div className={`absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-xs ${updateExisting ? 'translate-x-4' : 'translate-x-0'}`}></div>
                 </div>
                 <span className="ml-3 text-sm font-semibold text-bgray-700 dark:text-bgray-300 group-hover:text-success-300 transition-colors">
                   {t('projectsPage.updateExisting')}
@@ -201,7 +201,7 @@ function Projects() {
                     className="sr-only"
                   />
                   <div className={`w-9 h-5 rounded-full transition-colors duration-200 ${skipDuplicates ? 'bg-success-300' : 'bg-bgray-300 dark:bg-darkblack-400'}`}></div>
-                  <div className={`absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-sm ${skipDuplicates ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                  <div className={`absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-xs ${skipDuplicates ? 'translate-x-4' : 'translate-x-0'}`}></div>
                 </div>
                 <span className="ml-3 text-sm font-semibold text-bgray-700 dark:text-bgray-300 group-hover:text-success-300 transition-colors">
                   {t('projectsPage.skipDuplicates')}
@@ -225,7 +225,7 @@ function Projects() {
           <p>{t('projectsPage.errorPrefix')} {error}</p>
         </div>
       ) : projects.length === 0 ? (
-        <div className="text-center py-20 bg-white dark:bg-darkblack-600 rounded-3xl border border-dashed border-bgray-300 dark:border-darkblack-400 shadow-sm" data-aos="zoom-in" data-aos-duration="400">
+        <div className="text-center py-20 bg-white dark:bg-darkblack-600 rounded-3xl border border-dashed border-bgray-300 dark:border-darkblack-400 shadow-xs" data-aos="zoom-in" data-aos-duration="400">
           <div className="w-20 h-20 bg-bgray-100 dark:bg-darkblack-500 rounded-full flex items-center justify-center mx-auto mb-4 text-bgray-400">
             <FontAwesomeIcon icon={faSearch} size="2x" />
           </div>
@@ -259,20 +259,20 @@ function Projects() {
               <button
                 onClick={handlePrevPage}
                 disabled={page <= 1}
-                className="w-10 h-10 flex items-center justify-center bg-white dark:bg-darkblack-600 border border-bgray-200 dark:border-darkblack-400 rounded-xl text-bgray-700 dark:text-white disabled:opacity-50 hover:bg-bgray-50 transition-all active:scale-95 shadow-sm"
+                className="w-10 h-10 flex items-center justify-center bg-white dark:bg-darkblack-600 border border-bgray-200 dark:border-darkblack-400 rounded-xl text-bgray-700 dark:text-white disabled:opacity-50 hover:bg-bgray-50 transition-all active:scale-95 shadow-xs"
               >
                 <span className="sr-only">Previous</span>
                 &lsaquo;
               </button>
 
-              <div className="px-4 py-2 bg-white dark:bg-darkblack-600 border border-bgray-200 dark:border-darkblack-400 rounded-xl text-sm font-bold text-bgray-900 dark:text-white shadow-sm transition-all hover:shadow-md">
+              <div className="px-4 py-2 bg-white dark:bg-darkblack-600 border border-bgray-200 dark:border-darkblack-400 rounded-xl text-sm font-bold text-bgray-900 dark:text-white shadow-xs transition-all hover:shadow-md">
                 {t('projectsPage.page')} {page} <span className="text-bgray-400 mx-1">/</span> {pagination.pages}
               </div>
 
               <button
                 onClick={handleNextPage}
                 disabled={page >= pagination.pages}
-                className="w-10 h-10 flex items-center justify-center bg-white dark:bg-darkblack-600 border border-bgray-200 dark:border-darkblack-400 rounded-xl text-bgray-700 dark:text-white disabled:opacity-50 hover:bg-bgray-50 transition-all active:scale-95 shadow-sm"
+                className="w-10 h-10 flex items-center justify-center bg-white dark:bg-darkblack-600 border border-bgray-200 dark:border-darkblack-400 rounded-xl text-bgray-700 dark:text-white disabled:opacity-50 hover:bg-bgray-50 transition-all active:scale-95 shadow-xs"
               >
                 <span className="sr-only">Next</span>
                 &rsaquo;

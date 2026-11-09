@@ -17,21 +17,19 @@ Una aplicación web moderna para la gestión financiera de contratos inmobiliari
 ## 🛠️ Tecnologías Utilizadas
 
 ### Frontend
-- **React 18**: Framework principal para la interfaz de usuario
-- **Vite**: Herramienta de desarrollo rápida y moderna
-- **Tailwind CSS**: Framework de estilos utilitario
+- **React 19**: Framework principal para la interfaz de usuario
+- **Vite 8**: Herramienta de desarrollo rápida y moderna
+- **Tailwind CSS 4**: Framework de estilos utilitario
 - **React Router**: Navegación y enrutamiento
 - **Chart.js**: Gráficos y visualizaciones
 - **FontAwesome**: Iconos vectoriales
 - **AOS**: Animaciones de scroll
 - **Quill**: Editor de texto rico
-- **Swiper**: Carruseles y sliders
 
 ### Desarrollo y Testing
-- **Vitest**: Framework de testing moderno
+- **Vitest 5**: Framework de testing moderno
 - **Testing Library**: Utilidades para testing de componentes
-- **ESLint**: Linting y calidad de código
-- **PostCSS**: Procesamiento de CSS
+- **ESLint 10**: Linting y calidad de código
 - **PropTypes**: Validación de props en componentes
 
 ### PWA y Producción
@@ -47,7 +45,7 @@ Una aplicación web moderna para la gestión financiera de contratos inmobiliari
 
 ## 📋 Prerrequisitos
 
-- **Node.js**: `>=22` (CI usa 23.x; ver `engines` en `package.json`)
+- **Node.js**: `>=26` (LTS; CI usa 26.x; ver `.nvmrc` y `engines` en `package.json`)
 - **npm** o **yarn**: Gestor de paquetes
 - **Git**: Control de versiones
 - **Backend API**: Servidor Fintera API corriendo (normalmente en desarrollo local o staging)
@@ -58,6 +56,8 @@ Una aplicación web moderna para la gestión financiera de contratos inmobiliari
 ```bash
 git clone https://github.com/sjperalta/FinteraUI.git
 cd FinteraUI
+# Usa Node 26 LTS (ver .nvmrc / .node-version)
+nvm use
 ```
 
 ### 2. Instalar Dependencias

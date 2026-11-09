@@ -2,8 +2,7 @@
 import plugin from "tailwindcss/plugin";
 import fromPlugin from "@tailwindcss/forms";
 export default {
-  content: ["./index.html", "./src/**/*", "./src/component/**/*", "./node_modules/tailwind-datepicker-react/dist/**/*.js"],
-  darkMode: "class",
+  content: ["./index.html", "./src/**/*"],
   theme: {
     extend: {
       screens: {

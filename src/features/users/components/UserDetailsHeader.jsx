@@ -12,7 +12,7 @@ function UserDetailsHeader({ user, toggleStatus, onEdit, showActions = true, sho
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="relative w-full bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 mb-8 shadow-sm overflow-hidden"
+            className="relative w-full bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 mb-8 shadow-xs overflow-hidden"
         >
             {/* Decorative Background Elements */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />

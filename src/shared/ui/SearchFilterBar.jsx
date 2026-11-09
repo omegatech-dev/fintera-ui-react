@@ -108,7 +108,7 @@ function SearchFilterBar({
   }, [filterValue, filterOptions]);
 
   return (
-    <div id={id} className={customClass || "bg-white dark:bg-darkblack-600 rounded-xl p-4 mb-8 items-center flex flex-wrap gap-2 shadow-sm border border-gray-100 dark:border-darkblack-500"}>
+    <div id={id} className={customClass || "bg-white dark:bg-darkblack-600 rounded-xl p-4 mb-8 items-center flex flex-wrap gap-2 shadow-xs border border-gray-100 dark:border-darkblack-500"}>
       {/* Search Input */}
       <div className="flex items-center flex-1 pl-4">
         <span>
@@ -137,7 +137,7 @@ function SearchFilterBar({
         </span>
         <input
           type="text"
-          className="border-0 w-full dark:bg-darkblack-600 dark:text-white focus:outline-none focus:ring-0 focus:border-none ml-2 text-sm font-medium"
+          className="border-0 w-full dark:bg-darkblack-600 dark:text-white focus:outline-hidden focus:ring-0 focus:border-none ml-2 text-sm font-medium"
           placeholder={searchPlaceholder}
           value={term}
           onChange={handleTermChange}
@@ -150,7 +150,7 @@ function SearchFilterBar({
           <button
             type="button"
             onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-            className={`flex items-center pl-6 pr-4 h-10 cursor-pointer focus:outline-none transition-colors rounded-lg ${showFilterDropdown ? 'bg-gray-50 dark:bg-darkblack-500' : ''}`}
+            className={`flex items-center pl-6 pr-4 h-10 cursor-pointer focus:outline-hidden transition-colors rounded-lg ${showFilterDropdown ? 'bg-gray-50 dark:bg-darkblack-500' : ''}`}
             aria-expanded={showFilterDropdown}
             aria-haspopup="listbox"
             aria-label={filterPlaceholder}

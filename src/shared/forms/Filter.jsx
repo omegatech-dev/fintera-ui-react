@@ -69,7 +69,7 @@ function Filter({ options, onFilterChange }) {
         aria-expanded={isOpen}
         onClick={toggleDropdown}
         type="button"
-        className="flex h-full w-full items-center justify-center rounded-lg border border-bgray-300 bg-bgray-100 dark:border-darkblack-500 dark:bg-darkblack-500 focus:outline-none focus:ring-2 focus:ring-success-300"
+        className="flex h-full w-full items-center justify-center rounded-lg border border-bgray-300 bg-bgray-100 dark:border-darkblack-500 dark:bg-darkblack-500 focus:outline-hidden focus:ring-2 focus:ring-success-300"
       >
         <div className="flex items-center space-x-3">
           <span>

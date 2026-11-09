@@ -74,7 +74,7 @@ function Summary() {
     return (
       <div className="flex items-center justify-center min-h-[60vh] w-full">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-success-300 border-opacity-25 border-t-success-400 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-success-300/25 border-t-success-400 mx-auto mb-4"></div>
           <p className="text-lg text-bgray-600 dark:text-bgray-50">{t('payments.loadingBalance')}</p>
         </div>
       </div>

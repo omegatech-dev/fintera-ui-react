@@ -37,7 +37,7 @@ function AccountActivityCard({ user, delay = 0.1, showCreditScore = true }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay, ease: "easeOut" }}
-            className="bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 shadow-sm h-full"
+            className="bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 shadow-xs h-full"
         >
             <div className="flex items-center justify-between mb-8">
                 <h3 className="text-xl font-bold text-bgray-900 dark:text-white">

@@ -63,10 +63,10 @@ const Project = memo(function Project({ project, user, onDeleted }) {
   const soldPercent = (sold_lots / lot_count) * 100;
 
   return (
-    <div className="group bg-white dark:bg-darkblack-600 rounded-2xl shadow-sm hover:shadow-xl border border-bgray-200 dark:border-darkblack-400 p-0 overflow-hidden transition-all duration-300 hover:-translate-y-2 flex flex-col h-full">
+    <div className="group bg-white dark:bg-darkblack-600 rounded-2xl shadow-xs hover:shadow-xl border border-bgray-200 dark:border-darkblack-400 p-0 overflow-hidden transition-all duration-300 hover:-translate-y-2 flex flex-col h-full">
       {/* Header Image/Pattern Placeholder */}
       <div className="h-24 bg-gradient-to-r from-success-300 to-success-400 relative">
-        <div className="absolute top-4 right-4 bg-white/90 dark:bg-darkblack-500/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+        <div className="absolute top-4 right-4 bg-white/90 dark:bg-darkblack-500/90 backdrop-blur-xs px-3 py-1 rounded-full shadow-xs">
           <span className="text-xs font-bold text-success-400 uppercase tracking-wider">
             {t(`projects.${project_type}`) || project_type || t('projects.residential')}
           </span>
@@ -76,7 +76,7 @@ const Project = memo(function Project({ project, user, onDeleted }) {
         </div>
       </div>
 
-      <div className="pt-10 px-6 pb-6 flex-grow flex flex-col">
+      <div className="pt-10 px-6 pb-6 grow flex flex-col">
         {/* Title & Info */}
         <div className="mb-4">
           <h3 className="text-xl font-bold text-bgray-900 dark:text-white group-hover:text-success-300 transition-colors duration-300">

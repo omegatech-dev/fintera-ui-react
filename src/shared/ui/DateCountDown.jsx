@@ -24,7 +24,6 @@ function DateCountDown() {
     }, 1000);
 
     // Set initial remaining time immediately
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRemainingTime(calculateRemainingTime());
 
     return () => clearInterval(interval);

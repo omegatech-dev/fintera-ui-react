@@ -138,7 +138,7 @@ function PaymentList({ user }) {
         <div className="flex justify-center mt-8 pt-6 border-t border-gray-200 dark:border-darkblack-500">
           <button
             onClick={handleToggleShow}
-            className="inline-flex items-center px-6 py-3 bg-white dark:bg-darkblack-700 border border-gray-300 dark:border-darkblack-500 rounded-lg text-sm font-medium text-bgray-700 dark:text-bgray-200 hover:bg-gray-50 dark:hover:bg-darkblack-600 focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 transition-all duration-200"
+            className="inline-flex items-center px-6 py-3 bg-white dark:bg-darkblack-700 border border-gray-300 dark:border-darkblack-500 rounded-lg text-sm font-medium text-bgray-700 dark:text-bgray-200 hover:bg-gray-50 dark:hover:bg-darkblack-600 focus:outline-hidden focus:ring-2 focus:ring-success-500 focus:border-success-500 transition-all duration-200"
           >
             {showAll ? (
               <>

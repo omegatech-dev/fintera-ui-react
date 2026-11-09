@@ -26,7 +26,7 @@ const ApplicantTab = ({ contract }) => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                 {/* Details Card */}
-                <div className="bg-white dark:bg-darkblack-500 rounded-3xl border border-gray-100 dark:border-darkblack-400 shadow-sm p-8 space-y-8">
+                <div className="bg-white dark:bg-darkblack-500 rounded-3xl border border-gray-100 dark:border-darkblack-400 shadow-xs p-8 space-y-8">
                     <div className="flex items-center gap-6">
                         <div className="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-900/20 flex items-center justify-center text-3xl font-black text-indigo-600">
                             {contract.applicant_name?.charAt(0)}
@@ -63,7 +63,7 @@ const ApplicantTab = ({ contract }) => {
                     const isExcellent = score >= 750;
                     const isGood = score >= 670 && score < 750;
                     return (
-                        <div className="bg-white dark:bg-darkblack-500 rounded-3xl border border-gray-100 dark:border-darkblack-400 shadow-sm p-8 flex flex-col items-center justify-center text-center">
+                        <div className="bg-white dark:bg-darkblack-500 rounded-3xl border border-gray-100 dark:border-darkblack-400 shadow-xs p-8 flex flex-col items-center justify-center text-center">
                             <p className="text-xs font-bold text-bgray-400 uppercase tracking-widest mb-6">{t("contractDetailsModal.creditScore")}</p>
 
                             <div className="relative w-40 h-40 mb-6">

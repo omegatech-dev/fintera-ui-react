@@ -153,7 +153,7 @@ function EditProject() {
       transition={{ delay }}
       className="bg-bgray-50 dark:bg-darkblack-500 p-5 rounded-2xl border border-bgray-200 dark:border-darkblack-400 flex items-center space-x-4"
     >
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colorClass} bg-opacity-10`}>
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${colorClass}`}>
         <FontAwesomeIcon icon={icon} className="text-xl" />
       </div>
       <div>
@@ -218,28 +218,28 @@ function EditProject() {
             icon={faBoxOpen}
             label={t('projects.availableLots')}
             value={availableLots}
-            colorClass="text-success-300 bg-success-300"
+            colorClass="text-success-300 bg-success-300/10"
             delay={0.1}
           />
           <StatBlock
             icon={faBookmark}
             label={t('projects.reservedLots')}
             value={reservedLots}
-            colorClass="text-orange-500 bg-orange-500"
+            colorClass="text-orange-500 bg-orange-500/10"
             delay={0.2}
           />
           <StatBlock
             icon={faCheckDouble}
             label={t('projects.soldLots')}
             value={soldLots}
-            colorClass="text-red-500 bg-red-500"
+            colorClass="text-red-500 bg-red-500/10"
             delay={0.3}
           />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* General Information Card */}
-          <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-sm border border-bgray-200 dark:border-darkblack-400">
+          <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-xs border border-bgray-200 dark:border-darkblack-400">
             <SectionTitle icon={faProjectDiagram} title={t('dashboard.overview') || 'General Information'} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -367,7 +367,7 @@ function EditProject() {
 
           {/* Configuration & Pricing */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-sm border border-bgray-200 dark:border-darkblack-400">
+            <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-xs border border-bgray-200 dark:border-darkblack-400">
               <SectionTitle icon={faCubes} title={t('projects.lots') || 'Structure'} />
               <div className="space-y-6">
                 <div>
@@ -432,7 +432,7 @@ function EditProject() {
               </div>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-sm border border-bgray-200 dark:border-darkblack-400">
+            <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-xs border border-bgray-200 dark:border-darkblack-400">
               <SectionTitle icon={faPercentage} title={t('projects.interestRate') || 'Rates'} />
               <div className="space-y-6">
                 <div>

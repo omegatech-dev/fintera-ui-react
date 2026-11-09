@@ -89,7 +89,7 @@ const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerE
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white dark:bg-darkblack-600 rounded-xl p-4 border border-bgray-200 dark:border-darkblack-400 shadow-sm"
+          className="bg-white dark:bg-darkblack-600 rounded-xl p-4 border border-bgray-200 dark:border-darkblack-400 shadow-xs"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-bgray-500 dark:text-bgray-400">Total Cargos</span>
@@ -106,7 +106,7 @@ const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerE
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white dark:bg-darkblack-600 rounded-xl p-4 border border-bgray-200 dark:border-darkblack-400 shadow-sm"
+          className="bg-white dark:bg-darkblack-600 rounded-xl p-4 border border-bgray-200 dark:border-darkblack-400 shadow-xs"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-bgray-500 dark:text-bgray-400">Total Abonos</span>
@@ -123,7 +123,7 @@ const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerE
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white dark:bg-darkblack-600 rounded-xl p-4 border border-bgray-200 dark:border-darkblack-400 shadow-sm"
+          className="bg-white dark:bg-darkblack-600 rounded-xl p-4 border border-bgray-200 dark:border-darkblack-400 shadow-xs"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-bgray-500 dark:text-bgray-400">Saldo Actual</span>
@@ -138,7 +138,7 @@ const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerE
       </div>
 
       {/* Ledger Feed */}
-      <div className="bg-white dark:bg-darkblack-600 rounded-xl border border-bgray-200 dark:border-darkblack-400 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-darkblack-600 rounded-xl border border-bgray-200 dark:border-darkblack-400 shadow-xs overflow-hidden">
         <div className="p-4 border-b border-bgray-200 dark:border-darkblack-400 bg-bgray-50 dark:bg-darkblack-500 flex items-center justify-between">
           <h3 className="font-bold text-bgray-900 dark:text-white flex items-center gap-2">
             <FontAwesomeIcon icon={faReceipt} className="text-bgray-500" />

@@ -52,7 +52,7 @@ function PaymentTimeline({ payments, onPaymentSuccess }) {
             {rejected.length > 0 && (
                 <section>
                     <h3 className="text-rose-600 dark:text-rose-400 font-bold mb-6 flex items-center gap-3 text-lg">
-                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2z" />
                         </svg>
                         {t('payments.rejectedPayments')}

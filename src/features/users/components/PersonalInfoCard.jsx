@@ -3,7 +3,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 
 const InfoItem = ({ label, value, icon, copyable }) => (
     <div className="flex items-start gap-4 p-4 rounded-xl hover:bg-bgray-50 dark:hover:bg-white/5 transition-colors group cursor-default">
-        <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center flex-shrink-0 text-indigo-500 dark:text-indigo-400">
+        <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0 text-indigo-500 dark:text-indigo-400">
             {icon}
         </div>
         <div className="flex-1 min-w-0">
@@ -37,7 +37,7 @@ function PersonalInfoCard({ user, delay = 0 }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay, ease: "easeOut" }}
-            className="bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 shadow-sm h-full"
+            className="bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 shadow-xs h-full"
         >
             <div className="flex items-center justify-between mb-8">
                 <h3 className="text-xl font-bold text-bgray-900 dark:text-white">

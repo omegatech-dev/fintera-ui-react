@@ -46,6 +46,21 @@ npm run dev
 
 Run `npm run verify` before opening a pull request.
 
+## Continuous integration
+
+`.github/workflows/ci.yml` runs lint, tests, and the production build in a
+single job to keep CI fast and cheap:
+
+- Runs on pull requests to **any** base branch (including stacked PRs) and on
+  pushes to `main`, with `workflow_dispatch` for manual runs.
+- Cancels superseded runs for the same PR and uses a 15-minute timeout.
+- Draft PRs skip CI until marked **Ready for review**.
+- PRs that only touch Markdown, `documentation/`, or `openspec/` skip the heavy
+  steps; a docs-only message is still reported.
+- Uses the Node version from `.nvmrc`, npm's download cache, and
+  `npm ci --prefer-offline --no-audit --no-fund`.
+- Uses read-only `contents` permission.
+
 ## Path aliases
 
 Configured in `vite.config.js`:

@@ -73,7 +73,7 @@ function TimelinePaymentCard({ payment, onPaymentSuccess, cardId }) {
             {/* Timeline dot */}
             <div className={`absolute left-0 top-1 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-bgray-900 z-10 transition-transform group-hover:scale-125 ${getStatusColor()}`}></div>
 
-            <div className="bg-white dark:bg-bgray-900/50 backdrop-blur-sm border border-bgray-200 dark:border-bgray-800 rounded-2xl p-5 transition-all duration-300 hover:shadow-xl hover:shadow-bgray-200/50 dark:hover:shadow-none hover:-translate-y-1">
+            <div className="bg-white dark:bg-bgray-900/50 backdrop-blur-xs border border-bgray-200 dark:border-bgray-800 rounded-2xl p-5 transition-all duration-300 hover:shadow-xl hover:shadow-bgray-200/50 dark:hover:shadow-none hover:-translate-y-1">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
@@ -95,7 +95,7 @@ function TimelinePaymentCard({ payment, onPaymentSuccess, cardId }) {
                         )}
                         {isRejected && (
                             <div className="flex items-start gap-2 p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20">
-                                <svg className="w-5 h-5 flex-shrink-0 text-rose-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                <svg className="w-5 h-5 shrink-0 text-rose-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2z" />
                                 </svg>
                                 <div className="min-w-0">
@@ -153,7 +153,7 @@ function TimelinePaymentCard({ payment, onPaymentSuccess, cardId }) {
                         )}
                         {isRejected && (
                             <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-500/10 px-4 py-2 rounded-xl text-sm border border-rose-200 dark:border-rose-500/20">
-                                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2z" />
                                 </svg>
                                 {t('payments.statusOptions.rejected')}

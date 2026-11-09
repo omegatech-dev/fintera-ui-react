@@ -10,7 +10,7 @@ function NextPaymentCard({ payments, currency }) {
 
     if (!nextPayment) {
         return (
-            <div className="w-full bg-white dark:bg-bgray-900/50 backdrop-blur-sm border border-bgray-200 dark:border-bgray-800 rounded-2xl p-6 flex flex-col justify-center items-center text-center">
+            <div className="w-full bg-white dark:bg-bgray-900/50 backdrop-blur-xs border border-bgray-200 dark:border-bgray-800 rounded-2xl p-6 flex flex-col justify-center items-center text-center">
                 <p className="text-bgray-500 font-medium">{t('payments.noUpcomingPayments')}</p>
             </div>
         );
@@ -23,7 +23,7 @@ function NextPaymentCard({ payments, currency }) {
     const paymentContext = [nextPayment.description, displayProject && displayLot ? `${displayProject} – ${displayLot}` : displayProject || displayLot].filter(Boolean);
 
     return (
-        <div id="financing-next-payment" className="w-full bg-white dark:bg-bgray-900/50 backdrop-blur-sm border border-bgray-200 dark:border-bgray-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+        <div id="financing-next-payment" className="w-full bg-white dark:bg-bgray-900/50 backdrop-blur-xs border border-bgray-200 dark:border-bgray-800 rounded-2xl p-6 shadow-xs hover:shadow-md transition-all group overflow-hidden relative">
             {/* Dynamic background accent */}
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                 <svg className="w-24 h-24 text-purple-500" fill="currentColor" viewBox="0 0 24 24">

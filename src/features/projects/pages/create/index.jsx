@@ -119,7 +119,7 @@ function CreateProject() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* General Information Card */}
-          <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-sm border border-bgray-200 dark:border-darkblack-400">
+          <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-xs border border-bgray-200 dark:border-darkblack-400">
             <SectionTitle icon={faProjectDiagram} title={t('dashboard.overview') || 'General Information'} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -239,7 +239,7 @@ function CreateProject() {
 
           {/* Configuration & Pricing */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-sm border border-bgray-200 dark:border-darkblack-400">
+            <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-xs border border-bgray-200 dark:border-darkblack-400">
               <SectionTitle icon={faCubes} title={t('projects.lots') || 'Structure'} />
               <div className="space-y-6">
                 <div>
@@ -298,7 +298,7 @@ function CreateProject() {
               </div>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-sm border border-bgray-200 dark:border-darkblack-400">
+            <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-xs border border-bgray-200 dark:border-darkblack-400">
               <SectionTitle icon={faPercentage} title={t('projects.interestRate') || 'Rates'} />
               <div className="space-y-6">
                 <div>

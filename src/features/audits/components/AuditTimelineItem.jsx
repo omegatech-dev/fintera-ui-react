@@ -106,14 +106,14 @@ function AuditTimelineItem({ audit, isLast }) {
             )}
 
             {/* Timeline Icon */}
-            <div className={`absolute left-0 sm:left-2 top-3 w-8 h-8 rounded-full flex items-center justify-center border-2 border-white dark:border-darkblack-700 shadow-sm z-10 ${eventInfo.color}`}>
+            <div className={`absolute left-0 sm:left-2 top-3 w-8 h-8 rounded-full flex items-center justify-center border-2 border-white dark:border-darkblack-700 shadow-xs z-10 ${eventInfo.color}`}>
                 <FontAwesomeIcon icon={eventInfo.icon} className="text-xs" />
             </div>
 
             {/* Content Card */}
             <motion.div
                 layout
-                className={`relative bg-white dark:bg-darkblack-600 rounded-2xl p-5 border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-md transition-shadow duration-300 ${expanded ? 'ring-2 ring-blue-500/20 dark:ring-blue-500/10' : ''}`}
+                className={`relative bg-white dark:bg-darkblack-600 rounded-2xl p-5 border border-gray-100 dark:border-white/5 shadow-xs hover:shadow-md transition-shadow duration-300 ${expanded ? 'ring-2 ring-blue-500/20 dark:ring-blue-500/10' : ''}`}
             >
                 <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-3">
                     <div className="flex items-start gap-3">

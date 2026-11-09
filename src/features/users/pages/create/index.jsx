@@ -44,7 +44,7 @@ function CreateUser() {
     };
 
     const score = Object.values(criteria).reduce((s, ok) => s + (ok ? 1 : 0), 0);
-    let label = "";
+    let label;
     if (score <= 2) label = t('users.weak');
     else if (score <= 4) label = t('users.medium');
     else label = t('users.strong');
@@ -250,7 +250,7 @@ function CreateUser() {
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   className="mb-6 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/30 flex items-center gap-3"
                 >
-                  <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">{t('users.userCreatedSuccess')}</p>
@@ -263,7 +263,7 @@ function CreateUser() {
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   className="mb-6 p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-900/30 flex items-center gap-3"
                 >
-                  <svg className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <p className="text-sm font-semibold text-rose-700 dark:text-rose-300">{error}</p>
@@ -327,7 +327,7 @@ function CreateUser() {
                       value={formData.full_name}
                       onChange={handleChange}
                       required
-                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-sm p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none"
+                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-xs p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-hidden"
                     />
                   </motion.div>
 
@@ -343,7 +343,7 @@ function CreateUser() {
                       value={formData.phone}
                       onChange={handleChange}
                       required
-                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-sm p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none"
+                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-xs p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-hidden"
                     />
                   </motion.div>
 
@@ -359,7 +359,7 @@ function CreateUser() {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-sm p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none"
+                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-xs p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-hidden"
                     />
                   </motion.div>
 
@@ -376,7 +376,7 @@ function CreateUser() {
                       onChange={handleChange}
                       placeholder={t('users.identityPlaceholder')}
                       required
-                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-sm p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none"
+                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-xs p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-hidden"
                     />
                   </motion.div>
 
@@ -393,7 +393,7 @@ function CreateUser() {
                       onChange={handleChange}
                       placeholder={t('users.rtnPlaceholder')}
                       required
-                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-sm p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none"
+                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-xs p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-hidden"
                     />
                   </motion.div>
 
@@ -409,7 +409,7 @@ function CreateUser() {
                       value={formData.address}
                       onChange={handleChange}
                       placeholder={t('users.addressOptional')}
-                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-sm p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none"
+                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-xs p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-hidden"
                     />
                   </motion.div>
                 </div>
@@ -437,7 +437,7 @@ function CreateUser() {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-sm p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none"
+                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-xs p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-hidden"
                     />
 
                     {/* Password Strength Indicator */}
@@ -529,7 +529,7 @@ function CreateUser() {
                       value={formData.password_confirmation}
                       onChange={handleChange}
                       required
-                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-sm p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none"
+                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-xs p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-hidden"
                     />
                     <AnimatePresence mode="wait">
                       {formData.password_confirmation && (
@@ -585,7 +585,7 @@ function CreateUser() {
                       name="role"
                       value={formData.role}
                       onChange={handleChange}
-                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-sm p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none"
+                      className="bg-bgray-50/50 dark:bg-darkblack-500/50 backdrop-blur-xs p-4 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-hidden"
                       disabled={creator?.role !== 'admin'}
                     >
                       <option value="user">{t('users.userRole')}</option>

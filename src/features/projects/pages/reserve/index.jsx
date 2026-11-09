@@ -452,7 +452,7 @@ function Reserve() {
                       {/* Project Address Display */}
                       {(projectAddress || lotAddress) && (
                         <div className="flex items-start gap-3 p-3 rounded-2xl bg-bgray-50 dark:bg-darkblack-500 border border-bgray-100 dark:border-darkblack-400 group transition-all duration-300 hover:border-success-300/50">
-                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-darkblack-400 flex items-center justify-center shadow-sm text-bgray-400 group-hover:text-success-500 transition-colors">
+                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-darkblack-400 flex items-center justify-center shadow-xs text-bgray-400 group-hover:text-success-500 transition-colors">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -477,7 +477,7 @@ function Reserve() {
                         <motion.div
                           initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="flex items-center gap-3 bg-white dark:bg-darkblack-400/50 px-4 py-2 rounded-2xl border border-bgray-100 dark:border-darkblack-400 shadow-sm self-start"
+                          className="flex items-center gap-3 bg-white dark:bg-darkblack-400/50 px-4 py-2 rounded-2xl border border-bgray-100 dark:border-darkblack-400 shadow-xs self-start"
                         >
                           <div className="flex flex-col">
                             <span className="text-[10px] font-black text-bgray-400 uppercase tracking-[0.2em]">{t("reservations.systemGuid") || "SYSTEM GUID"}</span>
@@ -558,7 +558,7 @@ function Reserve() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="p-4 rounded-2xl bg-bgray-50 dark:bg-darkblack-500 border border-bgray-100 dark:border-darkblack-400 shadow-sm group hover:border-success-300 transition-all duration-300"
+                  className="p-4 rounded-2xl bg-bgray-50 dark:bg-darkblack-500 border border-bgray-100 dark:border-darkblack-400 shadow-xs group hover:border-success-300 transition-all duration-300"
                 >
                   <p className="uppercase tracking-widest text-[9px] text-bgray-500 dark:text-bgray-400 font-extrabold mb-1 flex items-center">
                     <span className="mr-1 opacity-70">{item.icon}</span> {item.label}
@@ -1051,7 +1051,7 @@ function Reserve() {
                     animate={{ opacity: 1, y: 0 }}
                     className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 flex gap-3 text-red-500 text-sm font-bold"
                   >
-                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     {error}

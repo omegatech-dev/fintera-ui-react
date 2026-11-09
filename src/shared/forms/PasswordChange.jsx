@@ -23,7 +23,7 @@ const PasswordInputField = ({ label, value, onChange, show, onToggle, id, placeh
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`w-full bg-white dark:bg-darkblack-500 text-bgray-900 dark:text-white p-4 pl-12 pr-12 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 outline-none`}
+        className={`w-full bg-white dark:bg-darkblack-500 text-bgray-900 dark:text-white p-4 pl-12 pr-12 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 outline-hidden`}
         required={required}
       />
       <button
@@ -128,7 +128,7 @@ function PasswordChange({ userId }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 shadow-sm"
+      className="w-full bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 shadow-xs"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {!isAdminOverride && (

@@ -40,7 +40,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
           aria-label="Toggle sidebar"
           type="button"
           onClick={handleActive}
-          className="group drawer-btn absolute right-0 top-auto transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-success-300 focus:ring-offset-2 dark:focus:ring-offset-darkblack-600"
+          className="group drawer-btn absolute right-0 top-auto transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-success-300 focus:ring-offset-2 dark:focus:ring-offset-darkblack-600"
           title="Toggle sidebar (Ctrl+b)"
         >
           <span className="block transition-all duration-300 group-hover:drop-shadow-lg">
@@ -93,7 +93,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
                         viewBox="0 0 18 21"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                        className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                       >
                         <path
                           d="M0 8.84719C0 7.99027 0.366443 7.17426 1.00691 6.60496L6.34255 1.86217C7.85809 0.515019 10.1419 0.515019 11.6575 1.86217L16.9931 6.60496C17.6336 7.17426 18 7.99027 18 8.84719V17C18 19.2091 16.2091 21 14 21H4C1.79086 21 0 19.2091 0 17V8.84719Z"
@@ -126,7 +126,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
                         viewBox="0 0 18 21"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                        className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                       >
                         <path
                           d="M0 8.84719C0 7.99027 0.366443 7.17426 1.00691 6.60496L6.34255 1.86217C7.85809 0.515019 10.1419 0.515019 11.6575 1.86217L16.9931 6.60496C17.6336 7.17426 18 7.99027 18 8.84719V17C18 19.2091 16.2091 21 14 21H4C1.79086 21 0 19.2091 0 17V8.84719Z"
@@ -155,7 +155,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
                 >
                   <Link to="/payments">
                     <div className="flex items-center space-x-2 sm:space-x-2.5">
-                      <span className="item-ico w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0">
+                      <span className="item-ico w-4 h-4 sm:w-5 sm:h-5 shrink-0">
                         <svg
                           width="22"
                           height="20"
@@ -220,7 +220,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
                 >
                   <Link to="/contracts">
                     <div className="flex items-center space-x-2 sm:space-x-2.5">
-                      <span className="item-ico w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0">
+                      <span className="item-ico w-4 h-4 sm:w-5 sm:h-5 shrink-0">
                         <svg
                           width="20"
                           height="20"
@@ -259,7 +259,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
                 >
                   <Link to="/projects">
                     <div className="flex items-center space-x-2 sm:space-x-2.5">
-                      <span className="item-ico w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0">
+                      <span className="item-ico w-4 h-4 sm:w-5 sm:h-5 shrink-0">
                         <svg
                           width="24"
                           height="24"
@@ -312,7 +312,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
                         viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                        className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                       >
                         <ellipse
                           cx="11.7778"
@@ -350,7 +350,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
                         viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                        className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                       >
                         <path
                           d="M21 21H4.6C4.03995 21 3.75992 21 3.54601 20.891C3.35785 20.7951 3.20487 20.6422 3.10899 20.454C3 20.2401 3 19.9601 3 19.4V3M7 16V12M11 16V8M15 16V13M19 16V10"
@@ -382,7 +382,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
                         viewBox="0 0 18 21"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                        className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                       >
                         <path
                           d="M17.5 12.5C17.5 17.1944 13.6944 21 9 21C4.30558 21 0.5 17.1944 0.5 12.5C0.5 7.80558 4.30558 4 9 4C13.6944 4 17.5 7.80558 17.5 12.5Z"
@@ -432,7 +432,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                      className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                     >
                       <ellipse
                         cx="11.7778"
@@ -467,7 +467,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
                       viewBox="0 0 21 18"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+                      className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                     >
                       <path
                         fillRule="evenodd"

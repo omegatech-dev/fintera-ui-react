@@ -158,7 +158,7 @@ const ContractDetailsModal = memo(function ContractDetailsModal({
 
         {/* Content Area */}
         <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-darkblack-600 relative">
-          <div className="h-20 flex-shrink-0 flex items-center justify-between px-10 border-b border-gray-50 dark:border-darkblack-500">
+          <div className="h-20 shrink-0 flex items-center justify-between px-10 border-b border-gray-50 dark:border-darkblack-500">
             <h4 className="text-2xl font-black text-bgray-900 dark:text-white capitalize">
               {tabs.find(t => t.id === activeTab)?.label}
             </h4>

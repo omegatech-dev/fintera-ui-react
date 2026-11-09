@@ -56,7 +56,7 @@ const ContractTableRow = ({
         >
             <td className="px-6 py-4">
                 <div onClick={handleNavigateToLot} className="group cursor-pointer flex items-center">
-                    <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400 mr-3 group-hover:bg-green-100 dark:group-hover:bg-green-900/40 transition-colors border border-green-100 dark:border-green-900/20 shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 dark:text-green-400 mr-3 group-hover:bg-green-100 dark:group-hover:bg-green-900/40 transition-colors border border-green-100 dark:border-green-900/20 shadow-xs">
                         <FontAwesomeIcon icon={faHome} />
                     </div>
                     <div className="min-w-0">
@@ -102,7 +102,7 @@ const ContractTableRow = ({
             </td>
 
             <td className="px-6 py-4 text-center">
-                <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-400 text-xs font-bold border border-indigo-100 dark:border-indigo-800/20 shadow-sm">
+                <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-400 text-xs font-bold border border-indigo-100 dark:border-indigo-800/20 shadow-xs">
                     <FontAwesomeIcon icon={faCreditCard} className="mr-2 opacity-70" />
                     {translateFinancingType(contract.financing_type, t)}
                 </div>
@@ -110,7 +110,7 @@ const ContractTableRow = ({
 
             <td className="px-6 py-4">
                 <div className="flex flex-col items-center gap-1.5">
-                    <div className={`px-4 py-1.5 rounded-full ${statusTheme.bg} ${statusTheme.text} text-[10px] font-bold uppercase tracking-wider border ${statusTheme.border} flex items-center shadow-sm`}>
+                    <div className={`px-4 py-1.5 rounded-full ${statusTheme.bg} ${statusTheme.text} text-[10px] font-bold uppercase tracking-wider border ${statusTheme.border} flex items-center shadow-xs`}>
                         <FontAwesomeIcon icon={statusTheme.icon} className="mr-2" />
                         {formatStatus(contract.status?.toLowerCase(), t)}
                     </div>

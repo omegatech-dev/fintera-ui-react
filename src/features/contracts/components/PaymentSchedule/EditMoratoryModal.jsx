@@ -96,7 +96,7 @@ const EditMoratoryModal = ({
                                                 if (val !== "" && !isNaN(num) && num < 0) return;
                                                 setMoratoryAmount(val);
                                             }}
-                                            className="w-full pl-10 pr-4 py-4 bg-gray-50 dark:bg-darkblack-500 border-2 border-transparent focus:border-amber-500/50 rounded-2xl dark:text-white font-bold transition-all outline-none"
+                                            className="w-full pl-10 pr-4 py-4 bg-gray-50 dark:bg-darkblack-500 border-2 border-transparent focus:border-amber-500/50 rounded-2xl dark:text-white font-bold transition-all outline-hidden"
                                         />
                                     </div>
                                 </div>

@@ -16,7 +16,7 @@ function LoginForm({
   return (
     <div className="mx-auto w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-3xl">
       <div
-        className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50 p-8 sm:p-10 relative overflow-hidden animate-fade-in-up"
+        className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xs rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50 p-8 sm:p-10 relative overflow-hidden animate-fade-in-up"
         style={{ willChange: "transform, opacity" }}
       >
         {/* Decorative gradient background */}
@@ -60,7 +60,7 @@ function LoginForm({
                   className={`w-full px-4 py-4 pl-12 border-2 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 ${errors.email
                       ? "border-red-400 focus:ring-red-500/20 focus:border-red-500 bg-red-50/50 dark:bg-red-900/20"
                       : "border-gray-200 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-white dark:hover:bg-gray-700"
-                    } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-lg backdrop-blur-sm`}
+                    } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-lg backdrop-blur-xs`}
                   style={{
                     transitionProperty:
                       "box-shadow, border-color, background-color, transform",
@@ -134,7 +134,7 @@ function LoginForm({
                   className={`w-full px-4 py-4 pl-12 border-2 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 ${errors.password
                       ? "border-red-400 focus:ring-red-500/20 focus:border-red-500 bg-red-50/50 dark:bg-red-900/20"
                       : "border-gray-200 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-white dark:hover:bg-gray-700"
-                    } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-lg backdrop-blur-sm`}
+                    } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-lg backdrop-blur-xs`}
                   style={{
                     transitionProperty:
                       "box-shadow, border-color, background-color, transform",
@@ -179,9 +179,9 @@ function LoginForm({
 
           {/* API Error */}
           {apiError && (
-            <div className="p-4 bg-red-50/80 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-800 rounded-xl backdrop-blur-sm">
+            <div className="p-4 bg-red-50/80 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-800 rounded-xl backdrop-blur-xs">
               <div className="flex items-center">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <svg
                     className="w-5 h-5 text-red-500"
                     fill="currentColor"
@@ -206,7 +206,7 @@ function LoginForm({
             <label className="flex items-center">
               <input
                 type="checkbox"
-                className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                className="rounded border-gray-300 text-blue-600 shadow-xs focus:border-blue-300 focus:ring-3 focus:ring-blue-200/50"
               />
               <span className="ml-2 text-gray-600 dark:text-gray-400">
                 {t("auth.rememberMe")}
@@ -218,7 +218,7 @@ function LoginForm({
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 disabled:from-blue-400 disabled:to-indigo-400 text-white font-semibold py-5 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-2xl hover:shadow-blue-500/50 relative overflow-hidden group"
+            className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 disabled:from-blue-400 disabled:to-indigo-400 text-white font-semibold py-5 px-6 rounded-xl transition-all duration-300 focus:outline-hidden focus:ring-4 focus:ring-blue-500/30 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-2xl hover:shadow-blue-500/50 relative overflow-hidden group"
           >
             {/* Button shimmer effect (prefers-reduced-motion respected) */}
             <div
@@ -278,7 +278,7 @@ function LoginForm({
             <button
               type="button"
               onClick={() => setModalOpen(true)}
-              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-all duration-200 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500/30 rounded-lg px-3 py-2 inline-flex items-center bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/30"
+              className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-all duration-200 hover:underline focus:outline-hidden focus:ring-2 focus:ring-blue-500/30 rounded-lg px-3 py-2 inline-flex items-center bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/30"
             >
               <svg
                 className="w-4 h-4 mr-1"

@@ -25,7 +25,7 @@ function HeroSection({ balance, currency, userName }) {
 
             <div className="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-8">
                 <div className="text-center lg:text-left space-y-4">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 backdrop-blur-md shadow-sm">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 backdrop-blur-md shadow-xs">
                         <span className="flex h-2 w-2 rounded-full bg-success-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
                         <span className="text-[10px] font-black text-bgray-900 dark:text-success-400 uppercase tracking-[0.2em]">
                             {t('payments.welcomeMessage', { name: userName?.split(' ')[0] || t('dashboard.user') })}
@@ -33,7 +33,7 @@ function HeroSection({ balance, currency, userName }) {
                     </div>
 
                     <div className="space-y-1">
-                        <h1 className="text-4xl sm:text-5xl font-black tracking-tighter text-bgray-900 dark:text-white leading-tight drop-shadow-sm">
+                        <h1 className="text-4xl sm:text-5xl font-black tracking-tighter text-bgray-900 dark:text-white leading-tight drop-shadow-xs">
                             {t('payments.balanceDashboard')}
                         </h1>
                         <p className="text-bgray-500 dark:text-slate-400 text-sm sm:text-base max-w-md font-medium leading-relaxed">

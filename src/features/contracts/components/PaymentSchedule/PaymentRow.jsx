@@ -90,7 +90,7 @@ const PaymentRow = ({
             <div className={`flex-1 flex flex-col md:flex-row items-center gap-3 p-3 rounded-xl border-2 transition-all duration-300 ${isUpcoming ? 'bg-blue-50/30 dark:bg-blue-900/10 border-blue-500 shadow-xl shadow-blue-500/10' : 'bg-white dark:bg-darkblack-600 border-gray-50 dark:border-darkblack-500 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-xl hover:shadow-blue-500/5'}`}>
 
                 {/* Installment Badge */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                     <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center ${isUpcoming ? 'bg-blue-600 text-white' : (row.payment_type === 'capital_repayment' ? 'bg-emerald-500 text-white' : 'bg-gray-50 dark:bg-darkblack-500 text-gray-400')}`}>
                         <p className="text-[8px] font-black uppercase mb-0.5 opacity-60">
                             {row.payment_type === 'capital_repayment' ? 'Abono' : 'Cuota'}
@@ -152,7 +152,7 @@ const PaymentRow = ({
                 </div>
 
                 {/* Status Label */}
-                <div className="flex-shrink-0 flex items-center gap-4">
+                <div className="shrink-0 flex items-center gap-4">
                     {moratoryDays > 0 && !isPaid && (
                         <div className="hidden lg:flex flex-col items-end">
                             <p className="text-[9px] font-black uppercase text-rose-400 tracking-tighter">Mora</p>
@@ -166,7 +166,7 @@ const PaymentRow = ({
                 </div>
 
                 {/* Integrated Actions */}
-                <div className="flex-shrink-0 h-full border-l border-gray-100 dark:border-darkblack-500 pl-6 flex items-center gap-2">
+                <div className="shrink-0 h-full border-l border-gray-100 dark:border-darkblack-500 pl-6 flex items-center gap-2">
                     {isReadjustment ? (
                         <FontAwesomeIcon icon={faLock} className="text-gray-300" />
                     ) : (

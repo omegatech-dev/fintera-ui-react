@@ -33,7 +33,7 @@ function CreditScoreCard({ creditScore }) {
   };
 
   return (
-    <div className="bg-white/50 dark:bg-darkblack-600/40 backdrop-blur-sm rounded-xl p-4 border border-bgray-100 dark:border-darkblack-400 transition-all duration-300">
+    <div className="bg-white/50 dark:bg-darkblack-600/40 backdrop-blur-xs rounded-xl p-4 border border-bgray-100 dark:border-darkblack-400 transition-all duration-300">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
           <div className={`w-8 h-8 rounded-lg bg-gray-50 dark:bg-darkblack-500 flex items-center justify-center border border-bgray-100 dark:border-darkblack-400`}>
@@ -61,7 +61,7 @@ function CreditScoreCard({ creditScore }) {
             initial={{ width: 0 }}
             animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className={`h-full bg-gradient-to-r ${getProgressBarColor(score)} rounded-full shadow-sm relative`}
+            className={`h-full bg-gradient-to-r ${getProgressBarColor(score)} rounded-full shadow-xs relative`}
           />
         </div>
         <div className="flex justify-between items-center px-0.5">

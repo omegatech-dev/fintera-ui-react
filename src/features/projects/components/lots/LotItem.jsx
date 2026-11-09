@@ -92,7 +92,7 @@ const LotItem = memo(function LotItem({ lot, userRole, index = 0, isHighlighted 
         className={`relative group bg-white dark:bg-darkblack-600 rounded-[2.5rem] border-2 ${isHighlighted
           ? "border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.2)]"
           : "border-bgray-100 dark:border-darkblack-400"
-          } p-6 transition-all duration-300 hover:border-success-300 dark:hover:border-success-500/50 shadow-sm hover:shadow-2xl overflow-hidden h-full flex flex-col`}
+          } p-6 transition-all duration-300 hover:border-success-300 dark:hover:border-success-500/50 shadow-xs hover:shadow-2xl overflow-hidden h-full flex flex-col`}
       >
         {/* Decorative background glass effect */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-success-300/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-success-300/10 transition-colors duration-500" />
@@ -126,7 +126,7 @@ const LotItem = memo(function LotItem({ lot, userRole, index = 0, isHighlighted 
               )}
             </div>
           </div>
-          <span className={`${badgeClass} shadow-sm px-3 py-1 text-[10px] font-black uppercase tracking-tighter rounded-full border border-bgray-100 dark:border-darkblack-400`}>
+          <span className={`${badgeClass} shadow-xs px-3 py-1 text-[10px] font-black uppercase tracking-tighter rounded-full border border-bgray-100 dark:border-darkblack-400`}>
             {statusLabel}
           </span>
         </div>
@@ -210,7 +210,7 @@ const LotItem = memo(function LotItem({ lot, userRole, index = 0, isHighlighted 
         </div>
 
         {/* Reserved Info (if any) */}
-        <div className="mb-6 flex-grow">
+        <div className="mb-6 grow">
           <p className="text-[10px] font-black uppercase tracking-wider text-bgray-400 mb-1">
             {t("lotsTable.reservedBy")}
           </p>

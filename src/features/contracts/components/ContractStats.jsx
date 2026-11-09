@@ -15,7 +15,7 @@ const StatCard = ({ title, value, icon, color, delay }) => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay }}
-        className="bg-white dark:bg-darkblack-600 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-darkblack-500 flex items-center space-x-4"
+        className="bg-white dark:bg-darkblack-600 rounded-2xl p-6 shadow-xs border border-gray-100 dark:border-darkblack-500 flex items-center space-x-4"
     >
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color} text-white text-xl`}>
             <FontAwesomeIcon icon={icon} />

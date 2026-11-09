@@ -32,7 +32,7 @@ const DatePicker = ({
       icons: "text-blue-500 transition-colors hover:text-blue-600",
       text: "text-bgray-900 dark:text-white font-semibold",
       disabledText: "text-bgray-300 dark:text-bgray-700",
-      input: "w-full px-5 py-3 pr-12 border-0 rounded-2xl bg-white/60 dark:bg-darkblack-500/60 text-bgray-900 dark:text-white placeholder-bgray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all duration-300 hover:bg-white/80 dark:hover:bg-darkblack-500/80 cursor-pointer shadow-sm",
+      input: "w-full px-5 py-3 pr-12 border-0 rounded-2xl bg-white/60 dark:bg-darkblack-500/60 text-bgray-900 dark:text-white placeholder-bgray-400 font-semibold focus:outline-hidden focus:ring-2 focus:ring-blue-500/30 transition-all duration-300 hover:bg-white/80 dark:hover:bg-darkblack-500/80 cursor-pointer shadow-xs",
       inputIcon: "hidden",
       selected: "bg-blue-600 text-white hover:bg-blue-700 font-bold shadow-md"
     },

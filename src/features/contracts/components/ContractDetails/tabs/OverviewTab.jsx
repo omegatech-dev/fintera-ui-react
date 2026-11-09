@@ -92,7 +92,7 @@ const OverviewTab = ({ contract, displayContract, progressPercent, paidAmount })
                             navigator.clipboard.writeText(contract.guid);
                             showToast(t("common.copiedToClipboard") || "Copiado al portapapeles", "success");
                         }}
-                        className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gray-50 dark:bg-darkblack-500/50 border border-bgray-100 dark:border-darkblack-400 group hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 transition-all active:scale-95 shadow-sm"
+                        className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gray-50 dark:bg-darkblack-500/50 border border-bgray-100 dark:border-darkblack-400 group hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 transition-all active:scale-95 shadow-xs"
                         title={t("reservations.systemGuid") || "System ID"}
                     >
                         <span className="text-xs font-black text-bgray-400 dark:text-bgray-500 group-hover:text-blue-500 transition-colors uppercase tracking-wider">
@@ -119,7 +119,7 @@ const OverviewTab = ({ contract, displayContract, progressPercent, paidAmount })
                                     : (t("contracts.pendingReview") || "El contrato está esperando revisión administrativa.")}
                         </p>
                     </div>
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                         <div className={`px-6 py-3 rounded-2xl bg-white dark:bg-darkblack-500 shadow-xl border ${statusTheme.border} flex items-center gap-3`}>
                             <FontAwesomeIcon icon={statusTheme.icon} className={statusTheme.text} />
                             <span className={`text-lg font-black ${statusTheme.text}`}>{formatStatus(contract.status, t)}</span>

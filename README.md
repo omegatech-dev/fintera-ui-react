@@ -134,6 +134,8 @@ FinteraUI/
 ├── package.json               # Dependencias y scripts
 ├── vite.config.js             # Configuración de Vite
 ├── tailwind.config.js         # Configuración de Tailwind
+├── Dockerfile                 # Imagen de producción (Vite build + Nginx)
+├── .docker/nginx.conf.template # Configuración de Nginx para SPA y PWA
 └── Procfile                   # Configuración para Heroku
 ```
 
@@ -189,7 +191,19 @@ chore: cambios en herramientas
 1. Push a rama main
 2. Railway detecta cambios en el codigo y hace el autodeploy
 3. Build optimizado con Vite
-4. Servidor estático con `serve`
+4. Despliegue con Docker (`Dockerfile`) usando Nginx para servir el bundle estático
+
+La imagen se puede construir y ejecutar localmente:
+
+```bash
+docker build -t fintera-ui --build-arg VITE_API_URL=https://api.example.com/api/v1 .
+docker run --rm -p 8080:8080 -e PORT=8080 fintera-ui
+```
+
+Railway inyecta la variable `PORT`; la imagen escucha en ese puerto. Las
+variables `VITE_*` se embeben en tiempo de build, así que deben pasarse como
+`--build-arg` (o configurarse como build args en Railway) y reconstruir al
+cambiarlas. Ver [`documentation/guides/deployment.md`](documentation/guides/deployment.md).
 
 ### Configuración PWA
 - Assets generados automáticamente con `@vite-pwa/assets-generator`

@@ -15,7 +15,7 @@ describe('ModeToggler Performance', () => {
   });
 
   it('accesses localStorage only on mount, not on every render', () => {
-    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem');
+    const getItemSpy = vi.spyOn(localStorage, 'getItem');
 
     const theme = 'dark';
     const setTheme = vi.fn();

@@ -1,8 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
 import PaymentTimeline from '../PaymentTimeline';
 import * as LocaleContextModule from '../../../../contexts/LocaleContext';
+
+expect.extend(matchers);
 
 // Mock TimelinePaymentCard to simplify testing
 vi.mock('../TimelinePaymentCard', () => ({

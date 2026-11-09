@@ -36,8 +36,8 @@ describe('Layout Performance', () => {
     // Set up initial localStorage state
     localStorage.setItem('theme', 'dark');
 
-    // Spy on localStorage.getItem
-    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem');
+    // Spy on the storage instance used by the app and tests
+    const getItemSpy = vi.spyOn(localStorage, 'getItem');
 
     // Initial render
     const { rerender } = render(

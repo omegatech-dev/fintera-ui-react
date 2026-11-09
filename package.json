@@ -15,6 +15,8 @@
     "generate-pwa-assets": "pwa-assets-generator --preset minimal public/logo.png",
     "heroku-postbuild": "npm run build",
     "test": "vitest --environment jsdom",
+    "test:run": "vitest run --environment jsdom",
+    "verify": "npm run lint && npm run test:run && npm run build",
     "audit:ci": "npm audit --audit-level=high"
   },
   "dependencies": {

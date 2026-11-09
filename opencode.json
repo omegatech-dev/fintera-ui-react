@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "references": {
+    "docs": {
+      "path": "documentation",
+      "description": "Architecture, guides, feature docs, and QA scenarios for FinteraUI."
+    },
+    "openspec": {
+      "path": "openspec",
+      "description": "OpenSpec behavior specs and change proposals."
+    }
+  }
+}

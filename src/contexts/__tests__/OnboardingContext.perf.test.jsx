@@ -6,7 +6,7 @@ import { LocaleProvider } from "../LocaleContext";
 
 describe("OnboardingContext Performance", () => {
     it("should access local storage efficiently when checking tour completion multiple times", () => {
-        const getItemSpy = vi.spyOn(Storage.prototype, "getItem");
+        const getItemSpy = vi.spyOn(localStorage, "getItem");
 
         const wrapper = ({ children }) => (
             <LocaleProvider>

@@ -30,8 +30,13 @@ src/features/users/pages/Users.perf.test.jsx
 
 ## Test setup
 
-This project does **not** use a shared setup file for jest-dom. Import and
-extend the matchers explicitly in each test file:
+Vitest loads `src/test/setup.js` (configured in `vite.config.js`). It installs
+in-memory `localStorage` and `sessionStorage` implementations because Node 22+
+exposes an experimental global `localStorage` that can shadow jsdom's storage
+and is unusable without `--localstorage-file`.
+
+This project does **not** use the setup file for jest-dom. Import and extend
+the matchers explicitly in each test file:
 
 ```js
 import * as matchers from "@testing-library/jest-dom/matchers";

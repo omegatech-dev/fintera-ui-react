@@ -103,6 +103,9 @@ See `.agents/rules/internationalization.md`.
   ```
 
 - Mock `src/lib/apiClient` and contexts (e.g. `LocaleContext`) as needed.
+- Vitest loads `src/test/setup.js`, which provides in-memory
+  `localStorage`/`sessionStorage` (Node 22+ exposes an experimental global that
+  would otherwise shadow jsdom's storage).
 - Performance/benchmark tests exist; keep them passing.
 
 ## Documentation

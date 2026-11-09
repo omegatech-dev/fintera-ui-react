@@ -4,7 +4,7 @@ Este documento contiene escenarios de prueba para el componente `PaymentSchedule
 
 ## Información General
 - **Componente Probado**: `PaymentScheduleModal.jsx`
-- **Ubicación**: `src/component/contracts/PaymentScheduleModal.jsx`
+- **Ubicación**: `src/features/contracts/components/PaymentScheduleModal.jsx`
 - **Dependencias**: Requiere contrato válido, usuario autenticado (preferiblemente admin), y acceso a APIs de backend.
 - **Entorno de Prueba**: Staging o desarrollo, con datos de prueba.
 - **Herramientas**: Navegador web, consola de desarrollador para logs.

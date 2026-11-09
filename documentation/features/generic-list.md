@@ -7,7 +7,7 @@ The `GenericList` component is a highly reusable, feature-rich list component th
 ## Location
 
 ```
-src/component/ui/GenericList.jsx
+src/shared/ui/GenericList.jsx
 ```
 
 ## Features

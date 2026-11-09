@@ -1,12 +1,17 @@
 # SearchFilterBar Component - Refactoring Summary
 
+> **Historical document.** This summarizes an implementation at a point in
+> time; some paths and details may no longer match the current code. Current
+> behavior is described in `documentation/features/search-filter-bar.md` and
+> `openspec/specs/`.
+
 ## 🎯 Objective
 Extract the UserFilter component into a reusable SearchFilterBar component that can be used across different pages in the application.
 
 ## ✅ What Was Done
 
 ### 1. Created Reusable Component
-**File**: `src/component/ui/SearchFilterBar.jsx`
+**File**: `src/shared/ui/SearchFilterBar.jsx`
 
 A flexible, reusable search and filter bar with:
 - Debounced search input (500ms delay)
@@ -17,7 +22,7 @@ A flexible, reusable search and filter bar with:
 - Full accessibility support
 
 ### 2. Migrated Users Page
-**File**: `src/pages/users/index.jsx`
+**File**: `src/features/users/pages/index.jsx`
 
 **Before**:
 ```jsx
@@ -115,14 +120,14 @@ const actions = [
 ## 📁 Files Modified/Created
 
 ### Created
-1. ✅ `src/component/ui/SearchFilterBar.jsx` - New reusable component
+1. ✅ `src/shared/ui/SearchFilterBar.jsx` - New reusable component
 2. ✅ `SEARCHFILTERBAR_COMPONENT.md` - Component documentation
 
 ### Modified
-1. ✅ `src/pages/users/index.jsx` - Migrated to use SearchFilterBar
+1. ✅ `src/features/users/pages/index.jsx` - Migrated to use SearchFilterBar
 
 ### Preserved (for backward compatibility)
-- `src/component/user/UserFilter.jsx` - Can be deprecated later
+- `src/features/users/components/UserFilter.jsx` - Can be deprecated later
 
 ## 🚀 Where to Use SearchFilterBar
 

@@ -47,7 +47,7 @@ Una aplicación web moderna para la gestión financiera de contratos inmobiliari
 
 ## 📋 Prerrequisitos
 
-- **Node.js**: Versión 23.x (especificado en `engines`)
+- **Node.js**: `>=22` (CI usa 23.x; ver `engines` en `package.json`)
 - **npm** o **yarn**: Gestor de paquetes
 - **Git**: Control de versiones
 - **Backend API**: Servidor Fintera API corriendo (normalmente en desarrollo local o staging)
@@ -90,55 +90,56 @@ npm run preview
 
 ### 7. Ejecutar Tests
 ```bash
-npm test
+npm run test       # modo watch
+npm run test:run   # ejecución única (CI)
 ```
 
-### 8. Linting
+### 8. Linting y verificación
 ```bash
 npm run lint
+npm run verify     # lint + test:run + build
 ```
 
 ## 📁 Estructura del Proyecto
 
 ```
 FinteraUI/
-├── public/                 # Archivos estáticos
-│   ├── apple-touch-icon-180x180.png
-│   ├── favicon.ico
-│   ├── logo.png
-│   └── ...
+├── public/                    # Archivos estáticos (íconos, logo, manifest)
 ├── src/
-│   ├── assets/            # Recursos (CSS, imágenes, fuentes)
-│   │   ├── css/
-│   │   ├── images/
-│   │   └── webfonts/
-│   ├── component/         # Componentes reutilizables
-│   │   ├── auth/         # Componentes de autenticación
-│   │   ├── button/       # Botones personalizados
-│   │   ├── chart/        # Gráficos y visualizaciones
-│   │   ├── contracts/    # Componentes de contratos
-│   │   ├── forms/        # Formularios
-│   │   └── ...
-│   ├── context/          # Contextos de React (Auth, etc.)
-│   ├── pages/            # Páginas principales
-│   │   ├── dashboard/
-│   │   ├── projects/
-│   │   ├── contracts/
-│   │   └── ...
-│   ├── utils/            # Utilidades y helpers
-│   ├── App.jsx           # Componente principal
-│   ├── main.jsx          # Punto de entrada
-│   └── Router.jsx        # Configuración de rutas
-├── config.js             # Configuración de API
-├── auth.js               # Utilidades de autenticación
-├── index.css             # Estilos globales
-├── package.json          # Dependencias y scripts
-├── vite.config.js        # Configuración de Vite
-├── tailwind.config.js    # Configuración de Tailwind
-├── postcss.config.js     # Configuración de PostCSS
-├── Procfile              # Configuración para Heroku
-└── qa-document.md        # Documento de pruebas QA
+│   ├── assets/                # CSS, imágenes y fuentes
+│   ├── features/<dominio>/    # Código por dominio
+│   │   ├── api.js             # Llamadas API del dominio (apiClient)
+│   │   ├── pages/             # Páginas de ruta (lazy-loaded)
+│   │   ├── components/        # Componentes del dominio
+│   │   └── hooks/             # Hooks del dominio
+│   ├── shared/                # Código reutilizable
+│   │   ├── ui/                # Componentes UI (exportados en index.js)
+│   │   ├── auth/              # ProtectedRoute, AdminRoute, AdminOrOwnerRoute
+│   │   ├── layout/            # Shell de la aplicación
+│   │   ├── api/               # Helpers API compartidos
+│   │   └── utils/             # Formatters y helpers
+│   ├── contexts/              # Auth, Locale, Theme, Toast, Onboarding
+│   ├── hooks/                 # Hooks compartidos
+│   ├── lib/apiClient.js       # Wrapper fetch para todas las llamadas HTTP
+│   ├── locales/               # en.json, es.json
+│   ├── App.jsx                # Composición de providers
+│   ├── main.jsx               # Punto de entrada
+│   └── Router.jsx             # Tabla de rutas
+├── documentation/             # Arquitectura, guías, features y QA
+├── openspec/                  # Especificaciones de comportamiento (OpenSpec)
+├── AGENTS.md                  # Instrucciones para agentes de IA
+├── opencode.json              # Configuración de opencode
+├── config.js                  # Configuración de API
+├── auth.js                    # Utilidades de autenticación
+├── package.json               # Dependencias y scripts
+├── vite.config.js             # Configuración de Vite
+├── tailwind.config.js         # Configuración de Tailwind
+└── Procfile                   # Configuración para Heroku
 ```
+
+> La documentación técnica en `documentation/` está en inglés. El índice está
+> en [`documentation/README.md`](documentation/README.md). Los contratos de
+> comportamiento viven en [`openspec/`](openspec/).
 
 ## 🔄 Flujo de Trabajo de Desarrollo
 
@@ -172,15 +173,15 @@ chore: cambios en herramientas
 
 ### 4. Code Quality
 - **ESLint**: Configurado para React y hooks
-- **Prettier**: Formateo automático de código
-- **Testing**: Cobertura mínima del 80% con Vitest
+- **ESLint**: Configuración flat para React y hooks
+- **Testing**: Vitest + Testing Library (tests colocados junto al código)
 - **Type Checking**: Uso de PropTypes para validación
 
 ### 5. Testing Strategy
 - **Unit Tests**: Componentes individuales con Testing Library
 - **Integration Tests**: Flujos completos de usuario
 - **E2E Tests**: Con Playwright (planeado)
-- **QA Manual**: Escenarios documentados en `qa-document.md`
+- **QA Manual**: Escenarios documentados en [`documentation/qa/`](documentation/qa/)
 
 ## 🚀 Despliegue
 
@@ -199,15 +200,22 @@ chore: cambios en herramientas
 
 1. Fork el proyecto
 2. Crear rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+3. Commit tus cambios siguiendo Conventional Commits (`git commit -m 'feat: agregar AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abrir Pull Request
 
 ### Guías de Contribución
 - Seguir el estilo de código establecido
 - Agregar tests para nuevas funcionalidades
-- Actualizar documentación según cambios
+- Actualizar `documentation/` y `openspec/specs/` según los cambios
+- Ejecutar `npm run verify` antes de abrir el PR
 - Mantener compatibilidad con versiones anteriores
+
+### Agentes de IA
+- Instrucciones: [`AGENTS.md`](AGENTS.md)
+- Configuración de opencode: [`opencode.json`](opencode.json)
+- Comandos (`/verify`, `/new-feature`, `/new-component`, `/docs-sync`, `/opsx-*`): `.opencode/commands/`
+- Especificaciones de comportamiento: [`openspec/`](openspec/)
 
 ## 📄 Licencia
 
@@ -218,7 +226,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 Para soporte técnico o preguntas:
 - Crear issue en GitHub
 - Contactar al equipo de desarrollo
-- Revisar documentación en `qa-document.md`
+- Revisar la documentación en [`documentation/README.md`](documentation/README.md)
 
 ## 🔄 Versiones
 

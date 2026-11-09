@@ -1,0 +1,67 @@
+schema: spec-driven
+
+context: |
+  FinteraUI is a React 18 + Vite 6 single-page application (PWA) for managing
+  real-estate financing: projects, lots, contracts, payment schedules, payments,
+  users, audits, analytics, and financing uploads/summaries.
+
+  Tech stack:
+  - React 18 function components, React Router 6, Vite 6.
+  - Tailwind CSS for styling; AOS for animations; Chart.js for charts.
+  - ESLint 9 flat config; Vitest 3 with jsdom and Testing Library.
+  - Node.js >= 22 (CI uses 23.x).
+
+  Source layout:
+  - src/features/<domain>/ -> api.js, pages/, components/, hooks/ (domain code).
+  - src/shared/ -> ui/, api/, auth/, layout/, forms/, modals/, overlays/, error/, utils/.
+  - src/contexts/ -> AuthContext, LocaleContext, ThemeContext, ToastContext, OnboardingContext.
+  - src/lib/apiClient.js -> shared fetch wrapper (apiClient.get/post/put/patch/delete).
+  - src/locales/en.json and src/locales/es.json -> translations.
+  - Aliases: @ -> src, @config -> config.js, @auth -> auth.js.
+
+  Conventions:
+  - Routes are defined in src/Router.jsx; pages are lazy-loaded.
+  - Access control uses ProtectedRoute, AdminRoute, AdminOrOwnerRoute.
+  - All HTTP calls go through src/lib/apiClient.js. A 401 dispatches the
+    "auth:unauthorized" window event. FormData bodies are supported.
+  - Each feature may expose an api.js that wraps apiClient.
+  - User-facing strings should use LocaleContext / src/locales when practical.
+  - Tests live next to the code as *.test.jsx and import jest-dom matchers
+    explicitly (expect.extend(matchers)).
+
+  Commands:
+  - npm run dev, npm run build, npm run preview
+  - npm run lint, npm run test, npm run test:run, npm run verify
+
+  Behavior contracts for existing capabilities live in openspec/specs/. Proposals
+  should describe observable behavior and only reference existing code paths when
+  necessary; implementation detail belongs in design.md and tasks.md.
+
+rules:
+  proposal:
+    - Always include a Capabilities section listing new or modified specs.
+    - Do not invent requirements just to satisfy validation; use skip_specs for pure refactors, tooling, or docs.
+    - Keep the proposal to 1-2 pages and focus on the "why".
+  specs:
+    - Describe observable behavior, inputs, outputs, and error conditions, not internal class/function names.
+    - Use one capability per spec file under openspec/specs/<capability>/spec.md.
+    - Every requirement needs at least one Scenario with WHEN/THEN.
+    - Preserve existing capability paths when modifying requirements.
+  design:
+    - Describe affected feature modules, routing, API surface, and state/context changes.
+    - Include tradeoffs and migration or rollback notes for risky changes.
+  tasks:
+    - Break work into small, verifiable tasks with concrete file paths.
+    - Include lint/test/build verification and any required documentation or spec updates.
+    - Update task checkboxes as work completes.
+
+operations:
+  apply:
+    guidance:
+      - Run "npm run lint", "npm run test:run", and "npm run build" before reporting completion.
+      - Update documentation/ and openspec/specs/ when behavior or conventions change.
+      - Keep changes scoped to the change proposal; do not refactor unrelated code.
+  archive:
+    guidance:
+      - Confirm all tasks are checked and specs are synced before archiving.
+      - Summarize the archived change and any follow-up work.

@@ -1,5 +1,10 @@
 # GenericList Implementation Summary
 
+> **Historical document.** This summarizes an implementation at a point in
+> time; some paths and details may no longer match the current code. Current
+> behavior is described in `documentation/features/generic-list.md` and
+> `openspec/specs/`.
+
 ## Overview
 
 Successfully abstracted the UsersList component into a reusable GenericList component that can be used across the entire application for any entity type (users, projects, contracts, payments, etc.).
@@ -11,7 +16,7 @@ January 2025
 ## Changes Made
 
 ### 1. Created GenericList Component
-**File**: `src/component/ui/GenericList.jsx` (447 lines)
+**File**: `src/shared/ui/GenericList.jsx` (447 lines)
 
 **Features**:
 - Reusable paginated list component for any entity
@@ -37,7 +42,7 @@ January 2025
 - Additional optional props for customization
 
 ### 2. Refactored UserData Component
-**File**: `src/component/user/UserData.jsx`
+**File**: `src/features/users/components/UserData.jsx`
 
 **Changes**:
 - Added `isMobileCard` boolean prop
@@ -49,7 +54,7 @@ January 2025
 - Updated PropTypes to include new prop
 
 ### 3. Migrated Users Page to GenericList
-**File**: `src/pages/users/index.jsx`
+**File**: `src/features/users/pages/index.jsx`
 
 **Changes**:
 - Replaced `UsersList` import with `GenericList` and `UserData`
@@ -236,7 +241,7 @@ If issues are discovered:
 
 1. **Quick Rollback**: Restore old UsersList component
    ```jsx
-   // In src/pages/users/index.jsx
+   // In src/features/users/pages/index.jsx
    import UsersList from "../../component/user/UsersList";
    
    // Replace GenericList with UsersList
@@ -254,9 +259,9 @@ If issues are discovered:
 ## Files Modified
 
 ```
-src/component/ui/GenericList.jsx (NEW - 447 lines)
-src/component/user/UserData.jsx (MODIFIED - dual rendering)
-src/pages/users/index.jsx (MODIFIED - GenericList integration)
+src/shared/ui/GenericList.jsx (NEW - 447 lines)
+src/features/users/components/UserData.jsx (MODIFIED - dual rendering)
+src/features/users/pages/index.jsx (MODIFIED - GenericList integration)
 src/locales/en.json (MODIFIED - added translation keys)
 src/locales/es.json (MODIFIED - added translation keys)
 GENERICLIST_COMPONENT.md (NEW - documentation)
@@ -314,8 +319,8 @@ The Users page now uses GenericList and serves as a reference implementation for
 
 For questions or issues with this implementation, refer to:
 - **Documentation**: `GENERICLIST_COMPONENT.md`
-- **Code**: `src/component/ui/GenericList.jsx`
-- **Example Usage**: `src/pages/users/index.jsx`
+- **Code**: `src/shared/ui/GenericList.jsx`
+- **Example Usage**: `src/features/users/pages/index.jsx`
 
 ---
 

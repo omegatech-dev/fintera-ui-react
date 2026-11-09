@@ -1,5 +1,9 @@
 # Payment History Pagination Implementation
 
+> **Historical document.** This summarizes an implementation at a point in
+> time; some paths and details may no longer match the current code. Current
+> behavior is described in `documentation/features/` and `openspec/specs/`.
+
 ## Overview
 The Payment History page now has **full pagination support** for both UI and backend integration.
 

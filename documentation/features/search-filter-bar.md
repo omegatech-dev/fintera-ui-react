@@ -4,7 +4,7 @@
 A reusable, flexible search and filter bar component that can be used across different pages in the application.
 
 ## Location
-`src/component/ui/SearchFilterBar.jsx`
+`src/shared/ui/SearchFilterBar.jsx`
 
 ## Features
 - ✅ **Debounced Search**: Prevents excessive API calls with 500ms delay

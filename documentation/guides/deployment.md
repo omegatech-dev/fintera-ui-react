@@ -26,6 +26,35 @@ npm run preview   # local preview of the production build
 - Railway deploys from the `main` branch (`npm run build`, then the static
   server).
 
+## Docker
+
+`Dockerfile` is a two-stage build:
+
+1. `node:26-alpine` installs dependencies and runs `npm run build`.
+2. `nginx:alpine` serves `dist/` with SPA fallback, gzip, immutable caching for
+   hashed assets, and no-cache headers for `index.html`, `sw.js`, and
+   `manifest.webmanifest`.
+
+Build and run locally:
+
+```bash
+docker build -t fintera-ui \
+  --build-arg VITE_API_URL=http://localhost:3001/api/v1 .
+docker run --rm -p 8080:8080 fintera-ui
+```
+
+The container listens on `$PORT` (default `8080`), so the same image works
+locally, on Railway, and on other PaaS platforms that inject `PORT`.
+
+For Railway, point the service at the `Dockerfile`; Railway sets `PORT`
+automatically. Because Vite embeds `VITE_*` values at build time, configure
+`VITE_API_URL`, `VITE_APP_ENV`, `VITE_ROLLBAR_ACCESS_TOKEN`, and
+`VITE_APP_VERSION` as **build arguments** on the service (or pass `--build-arg`
+locally) and redeploy after changing them.
+
+`.dockerignore` keeps the build context small by excluding `node_modules`,
+`dist`, tests, docs, OpenSpec, and local `.env*` files.
+
 ## Environment variables
 
 Set these in the hosting provider:

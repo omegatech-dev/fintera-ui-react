@@ -677,7 +677,7 @@ button.fc-button.fc-button-primary.fc-prev-button {
 
 .min-calender .fc .fc-daygrid .fc-day-today {
   background: #22c55e !important;
-  color: #ffffff !;
+  color: #ffffff !important;
   border: none !important;
   border-radius: 8px !important;
 }

@@ -286,7 +286,7 @@ function GenericList({
   // Empty state
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 px-6 text-center bg-white/40 dark:bg-darkblack-600/40 backdrop-blur-xl rounded-[48px] border border-dashed border-slate-200 dark:border-white/10 shadow-sm">
+      <div className="flex flex-col items-center justify-center py-24 px-6 text-center bg-white/40 dark:bg-darkblack-600/40 backdrop-blur-xl rounded-[48px] border border-dashed border-slate-200 dark:border-white/10 shadow-xs">
         <div className="relative mb-10">
           <div className="absolute inset-0 bg-blue-500/10 blur-[60px] rounded-full scale-150" />
           <div className="relative w-28 h-28 bg-white dark:bg-darkblack-500 shadow-2xl rounded-[32px] flex items-center justify-center border border-slate-100 dark:border-white/5">

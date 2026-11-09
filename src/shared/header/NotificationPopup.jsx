@@ -108,7 +108,7 @@ function NotificationPopup({
                       e.stopPropagation();
                       onMarkAsRead(n.id);
                     }}
-                    className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-bgray-400 hover:text-success-300 hover:bg-success-50 dark:hover:bg-success-900/20 transition-colors duration-150 mt-0.5"
+                    className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-bgray-400 hover:text-success-300 hover:bg-success-50 dark:hover:bg-success-900/20 transition-colors duration-150 mt-0.5"
                     aria-label={t("notifications.markAsRead")}
                     title={t("notifications.markAsRead")}
                   >

@@ -132,7 +132,7 @@ const ExportDropdown = memo(function ExportDropdown({ startDate, endDate, onExpo
                     flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all duration-300
                     ${isOpen
                         ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
-                        : "bg-white dark:bg-darkblack-600 text-gray-700 dark:text-white border border-gray-200 dark:border-darkblack-500 hover:border-blue-400 shadow-sm"
+                        : "bg-white dark:bg-darkblack-600 text-gray-700 dark:text-white border border-gray-200 dark:border-darkblack-500 hover:border-blue-400 shadow-xs"
                     }
                 `}
             >

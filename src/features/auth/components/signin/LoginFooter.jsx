@@ -13,7 +13,7 @@ function LoginFooter() {
         <button
           type="button"
           onClick={() => setTermsOpen(true)}
-          className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium underline focus:outline-none focus:ring-2 focus:ring-blue-500/30 rounded"
+          className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium underline focus:outline-hidden focus:ring-2 focus:ring-blue-500/30 rounded"
         >
           {t("auth.termsTitle")}
         </button>

@@ -94,7 +94,7 @@ const RevenueTrendChart = memo(({
                         <select
                             value={trendProjectId}
                             onChange={(e) => setTrendProjectId(e.target.value)}
-                            className="appearance-none bg-slate-900/5 dark:bg-slate-900/40 px-4 py-2 pr-10 rounded-xl backdrop-blur-sm border border-black/5 dark:border-white/5 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer hover:bg-black/10 dark:hover:bg-white/10"
+                            className="appearance-none bg-slate-900/5 dark:bg-slate-900/40 px-4 py-2 pr-10 rounded-xl backdrop-blur-xs border border-black/5 dark:border-white/5 text-sm font-bold text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer hover:bg-black/10 dark:hover:bg-white/10"
                         >
                             {projectOptions.map(opt => (
                                 <option key={opt.value} value={opt.value} className="bg-white dark:bg-darkblack-600">
@@ -109,7 +109,7 @@ const RevenueTrendChart = memo(({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 bg-slate-900/5 dark:bg-slate-900/40 px-3 py-2 rounded-xl backdrop-blur-sm border border-black/5 dark:border-white/5">
+                    <div className="flex items-center gap-4 bg-slate-900/5 dark:bg-slate-900/40 px-3 py-2 rounded-xl backdrop-blur-xs border border-black/5 dark:border-white/5">
                         <button
                             onClick={() => setSelectedYear(y => y - 1)}
                             className="text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-lg transition-all"

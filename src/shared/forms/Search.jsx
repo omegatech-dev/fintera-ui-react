@@ -15,7 +15,6 @@ function Search({ onSearch, initialValue }) {
 
   // Synchronize local term state with initialValue prop
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTerm(initialValue || "");
   }, [initialValue]);
 
@@ -59,7 +58,7 @@ function Search({ onSearch, initialValue }) {
         value={term}
         onChange={handleChange}
         placeholder="Search by name, email, or others..."
-        className="w-full h-14 px-4 pl-12 bg-bgray-100 dark:bg-darkblack-500 rounded-lg border border-transparent focus:border-success-300 focus:outline-none focus:ring-0 text-sm text-bgray-600 placeholder:text-sm placeholder:font-medium placeholder:text-bgray-500 dark:text-white"
+        className="w-full h-14 px-4 pl-12 bg-bgray-100 dark:bg-darkblack-500 rounded-lg border border-transparent focus:border-success-300 focus:outline-hidden focus:ring-0 text-sm text-bgray-600 placeholder:text-sm placeholder:font-medium placeholder:text-bgray-500 dark:text-white"
         aria-label="Search lots"
       />
       {/* Search Icon */}

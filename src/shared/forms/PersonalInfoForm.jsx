@@ -52,7 +52,7 @@ function InputField({ label, name, value, onChange, type = "text", readOnly = fa
           value={value ?? ""}
           onChange={onChange}
           readOnly={readOnly}
-          className={`w-full bg-white dark:bg-darkblack-500 text-bgray-900 dark:text-white p-4 ${icon ? 'pl-12' : 'pl-4'} rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 outline-none ${readOnly ? "opacity-70 cursor-not-allowed bg-bgray-50 dark:bg-darkblack-600" : ""}`}
+          className={`w-full bg-white dark:bg-darkblack-500 text-bgray-900 dark:text-white p-4 ${icon ? 'pl-12' : 'pl-4'} rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 outline-hidden ${readOnly ? "opacity-70 cursor-not-allowed bg-bgray-50 dark:bg-darkblack-600" : ""}`}
         />
       </div>
     </div>
@@ -241,7 +241,7 @@ function PersonalInfoForm({ userId }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 shadow-sm"
+      className="w-full bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 shadow-xs"
     >
       <div className="border-b border-bgray-200 dark:border-darkblack-400 pb-6 mb-8">
         <h3 className="text-xl font-bold text-bgray-900 dark:text-white">
@@ -379,7 +379,7 @@ function PersonalInfoForm({ userId }) {
                   id="locale"
                   value={user.locale}
                   onChange={handleInputChange}
-                  className="w-full bg-white dark:bg-darkblack-500 text-bgray-900 dark:text-white p-4 pl-12 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 outline-none appearance-none"
+                  className="w-full bg-white dark:bg-darkblack-500 text-bgray-900 dark:text-white p-4 pl-12 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 outline-hidden appearance-none"
                 >
                   <option value="es">{t("personalInfo.spanish")}</option>
                   <option value="en">{t("personalInfo.english")}</option>

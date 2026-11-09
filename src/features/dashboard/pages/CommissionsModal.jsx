@@ -97,7 +97,7 @@ const CommissionsModal = ({ isActive, handleClose, initialDate }) => {
 
     return (
         <AnimatePresence>
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
                 <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -118,7 +118,7 @@ const CommissionsModal = ({ isActive, handleClose, initialDate }) => {
                             </p>
                         </div>
 
-                        <div className="flex items-center bg-white dark:bg-darkblack-500 rounded-xl p-1 shadow-sm border border-gray-100 dark:border-darkblack-400">
+                        <div className="flex items-center bg-white dark:bg-darkblack-500 rounded-xl p-1 shadow-xs border border-gray-100 dark:border-darkblack-400">
                             <button
                                 onClick={() => changeMonth(-1)}
                                 className="p-2 hover:bg-gray-100 dark:hover:bg-darkblack-400 rounded-lg text-gray-600 dark:text-gray-300 transition-colors"
@@ -160,7 +160,7 @@ const CommissionsModal = ({ isActive, handleClose, initialDate }) => {
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
                             </div>
                         ) : commissions.length > 0 ? (
-                            <div className="bg-white dark:bg-darkblack-600 rounded-xl shadow-sm border border-gray-100 dark:border-darkblack-500 overflow-hidden">
+                            <div className="bg-white dark:bg-darkblack-600 rounded-xl shadow-xs border border-gray-100 dark:border-darkblack-500 overflow-hidden">
                                 <table className="w-full">
                                     <thead className="bg-gray-50 dark:bg-darkblack-500 border-b border-gray-100 dark:border-darkblack-400">
                                         <tr className="text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">

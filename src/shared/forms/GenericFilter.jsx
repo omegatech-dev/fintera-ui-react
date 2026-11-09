@@ -134,7 +134,7 @@ function GenericFilter({
             <div className="flex-1 flex items-center bg-white/60 dark:bg-darkblack-500/60 rounded-2xl px-5 py-3 group focus-within:ring-2 focus-within:ring-blue-500/30 transition-all duration-300 border border-transparent focus-within:border-blue-500/20">
               <motion.span
                 animate={term ? { scale: [1, 1.2, 1], color: "#3B82F6" } : { scale: 1, color: "currentColor" }}
-                className={`flex-shrink-0 ${term ? "" : "text-slate-400 dark:text-gray-200"}`}
+                className={`shrink-0 ${term ? "" : "text-slate-400 dark:text-gray-200"}`}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
@@ -143,7 +143,7 @@ function GenericFilter({
               </motion.span>
               <input
                 type="text"
-                className="bg-transparent border-0 w-full dark:text-white focus:outline-none focus:ring-0 ml-4 text-sm font-semibold placeholder:text-bgray-400"
+                className="bg-transparent border-0 w-full dark:text-white focus:outline-hidden focus:ring-0 ml-4 text-sm font-semibold placeholder:text-bgray-400"
                 placeholder={searchPlaceholder}
                 value={term}
                 onChange={handleTermChange}

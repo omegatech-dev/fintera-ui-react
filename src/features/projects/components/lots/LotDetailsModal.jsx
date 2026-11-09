@@ -65,7 +65,7 @@ function LotDetailsModal({ lot, onClose }) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={onClose}
-                className="absolute inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-sm"
+                className="absolute inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-xs"
             />
 
             <motion.div
@@ -98,7 +98,7 @@ function LotDetailsModal({ lot, onClose }) {
                             </div>
                             <button
                                 onClick={onClose}
-                                className="p-3 rounded-2xl bg-white dark:bg-darkblack-500 text-bgray-500 hover:text-red-500 dark:hover:text-red-400 border-2 border-bgray-100 dark:border-darkblack-400 hover:border-red-100 dark:hover:border-red-900/30 transition-all shadow-sm group"
+                                className="p-3 rounded-2xl bg-white dark:bg-darkblack-500 text-bgray-500 hover:text-red-500 dark:hover:text-red-400 border-2 border-bgray-100 dark:border-darkblack-400 hover:border-red-100 dark:hover:border-red-900/30 transition-all shadow-xs group"
                             >
                                 <svg className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />

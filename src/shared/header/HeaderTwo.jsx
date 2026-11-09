@@ -23,7 +23,7 @@ function HeaderTwo({ handleSidebar }) {
             <button
               aria-label="Toggle sidebar"
               type="button"
-              className="drawer-btn rotate-180 transform flex-shrink-0"
+              className="drawer-btn rotate-180 transform shrink-0"
               onClick={handleSidebar}
             >
               <span>
@@ -65,7 +65,7 @@ function HeaderTwo({ handleSidebar }) {
             <button
               onClick={() => handleActivePopup(!activePopup)}
               aria-label="Profile menu"
-              className="flex cursor-pointer space-x-0 lg:space-x-3 flex-shrink-0"
+              className="flex cursor-pointer space-x-0 lg:space-x-3 shrink-0"
             >
               <div className={`h-[52px] w-[52px] rounded-xl border border-bgray-300 ${(user?.profile_picture || user?.profile_picture_thumb) ? '' : getAvatarColor(displayName)} flex items-center justify-center overflow-hidden bg-white dark:bg-darkblack-500`}>
                 {(user?.profile_picture || user?.profile_picture_thumb) ? (

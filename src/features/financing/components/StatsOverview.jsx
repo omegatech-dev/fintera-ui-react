@@ -12,7 +12,7 @@ function StatsOverview({ totalAmount, totalPaid, currency }) {
     };
 
     return (
-        <div id="financing-stats" className="w-full bg-white dark:bg-darkblack-600 rounded-xl p-6 shadow-sm border border-bgray-200 dark:border-darkblack-500">
+        <div id="financing-stats" className="w-full bg-white dark:bg-darkblack-600 rounded-xl p-6 shadow-xs border border-bgray-200 dark:border-darkblack-500">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-bgray-900 dark:text-white">
                     {t('payments.paymentProgress')}

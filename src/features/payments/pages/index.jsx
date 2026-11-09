@@ -163,7 +163,7 @@ function Payments() {
                 key={idx}
                 variants={itemVariants}
                 whileHover={{ y: -5 }}
-                className="bg-white dark:bg-darkblack-600 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-darkblack-500 flex items-center space-x-4"
+                className="bg-white dark:bg-darkblack-600 rounded-2xl p-6 shadow-xs border border-gray-100 dark:border-darkblack-500 flex items-center space-x-4"
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-${card.color}-500 text-white shadow-lg shadow-${card.color}-500/20 text-xl`}>
                   {card.icon}

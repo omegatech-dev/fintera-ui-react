@@ -2,6 +2,7 @@ import path from "path";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 // Add PWA configuration
 const pwaConfig = {
@@ -69,12 +70,12 @@ export default defineConfig({
   base: "/",
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "@config": path.resolve(__dirname, "./config.js"),
-      "@auth": path.resolve(__dirname, "./auth.js"),
+      "@": path.resolve(import.meta.dirname, "./src"),
+      "@config": path.resolve(import.meta.dirname, "./config.js"),
+      "@auth": path.resolve(import.meta.dirname, "./auth.js"),
     },
   },
-  plugins: [react(), VitePWA(pwaConfig)],
+  plugins: [react(), tailwindcss(), VitePWA(pwaConfig)],
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.js"],
@@ -88,24 +89,20 @@ export default defineConfig({
     include: ['jwt-decode']
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         manualChunks: (id) => {
           if (id.includes("node_modules")) {
             // Core React and any package that uses React – must share same chunk to avoid "createContext of undefined"
             if (id.includes("react-dom") || id.includes("react-router-dom") || id.includes("react/")) return "vendor";
-            if (id.includes("react-hot-toast") || id.includes("react-transition-group")) return "vendor";
+            if (id.includes("react-transition-group")) return "vendor";
             if (id.includes("@rollbar/react")) return "vendor";
             // Heavy UI / chart libs – split so no single chunk blows the limit
             if (id.includes("chart.js") || id.includes("react-chartjs-2")) return "charts";
-            if (id.includes("@fullcalendar")) return "fullcalendar";
             // Keep @fortawesome in vendor – splitting it causes "Cannot access 'Te' before initialization"
             if (id.includes("@fortawesome")) return "vendor";
             if (id.includes("framer-motion")) return "motion";
             if (id.includes("quill")) return "quill";
-            if (id.includes("swiper")) return "swiper";
-            if (id.includes("jsvectormap")) return "jsvectormap";
-            if (id.includes("tailwind-datepicker")) return "datepicker";
             // Medium libs (no React dependency)
             if (id.includes("date-fns")) return "date-fns";
             if (id.includes("@rollbar") || id.includes("rollbar")) return "rollbar";

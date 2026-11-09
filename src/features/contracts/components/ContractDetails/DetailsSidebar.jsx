@@ -20,7 +20,7 @@ const DetailsSidebar = ({
     t
 }) => {
     return (
-        <div className="w-full md:w-80 flex-shrink-0 bg-gray-50/50 dark:bg-darkblack-500/50 backdrop-blur-sm border-b md:border-b-0 md:border-r border-gray-100 dark:border-darkblack-400 flex flex-col">
+        <div className="w-full md:w-80 shrink-0 bg-gray-50/50 dark:bg-darkblack-500/50 backdrop-blur-xs border-b md:border-b-0 md:border-r border-gray-100 dark:border-darkblack-400 flex flex-col">
             {/* Sidebar Header with Status */}
             <div className={`p-8 ${statusTheme.bg} transition-colors duration-500`}>
                 <div className="flex items-center gap-4 mb-4">

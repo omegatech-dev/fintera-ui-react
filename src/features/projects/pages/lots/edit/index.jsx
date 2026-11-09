@@ -400,7 +400,7 @@ function EditLot() {
 
               {/* OVERRIDES DIVIDER */}
               <div className="grid md:grid-cols-2 gap-8">
-                <div className="group p-6 rounded-3xl bg-white dark:bg-darkblack-600 border-2 border-bgray-100 dark:border-darkblack-400 hover:border-success-300 transition-all shadow-sm">
+                <div className="group p-6 rounded-3xl bg-white dark:bg-darkblack-600 border-2 border-bgray-100 dark:border-darkblack-400 hover:border-success-300 transition-all shadow-xs">
                   <label className="flex items-center gap-4 mb-4 cursor-pointer">
                     <input
                       type="checkbox"
@@ -433,7 +433,7 @@ function EditLot() {
                   </AnimatePresence>
                 </div>
 
-                <div className="group p-6 rounded-3xl bg-white dark:bg-darkblack-600 border-2 border-bgray-100 dark:border-darkblack-400 hover:border-blue-300 transition-all shadow-sm">
+                <div className="group p-6 rounded-3xl bg-white dark:bg-darkblack-600 border-2 border-bgray-100 dark:border-darkblack-400 hover:border-blue-300 transition-all shadow-xs">
                   <label className="flex items-center gap-4 mb-4 cursor-pointer">
                     <input
                       type="checkbox"

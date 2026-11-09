@@ -65,7 +65,7 @@ const RejectionModal = ({ isOpen, onClose, onSubmit, loading }) => {
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full px-6 py-5 rounded-3xl bg-gray-50 dark:bg-darkblack-500 border-2 border-transparent focus:border-red-500 focus:bg-white dark:focus:bg-darkblack-400 outline-none transition-all font-medium text-bgray-900 dark:text-white min-h-[160px] resize-none"
+                className="w-full px-6 py-5 rounded-3xl bg-gray-50 dark:bg-darkblack-500 border-2 border-transparent focus:border-red-500 focus:bg-white dark:focus:bg-darkblack-400 outline-hidden transition-all font-medium text-bgray-900 dark:text-white min-h-[160px] resize-none"
                 placeholder={t("contracts.rejectionReasonPlaceholder") || "Ingrese detalladamente por qué este contrato no puede ser aprobado..."}
                 required
                 disabled={loading}

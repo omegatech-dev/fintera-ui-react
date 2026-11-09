@@ -2,7 +2,7 @@
 
 ## Stack
 
-- **Vitest 3** with `jsdom`
+- **Vitest 5** with `jsdom` 31
 - **@testing-library/react** and `@testing-library/user-event`
 - **@testing-library/jest-dom** matchers
 
@@ -32,8 +32,8 @@ src/features/users/pages/Users.perf.test.jsx
 
 Vitest loads `src/test/setup.js` (configured in `vite.config.js`). It installs
 in-memory `localStorage` and `sessionStorage` implementations because Node 22+
-exposes an experimental global `localStorage` that can shadow jsdom's storage
-and is unusable without `--localstorage-file`.
+(including Node 26) exposes an experimental global `localStorage` that can
+shadow jsdom's storage and is unusable without `--localstorage-file`.
 
 This project does **not** use the setup file for jest-dom. Import and extend
 the matchers explicitly in each test file:

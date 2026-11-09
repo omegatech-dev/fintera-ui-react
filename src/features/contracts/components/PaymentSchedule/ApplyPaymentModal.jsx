@@ -178,7 +178,7 @@ const ApplyPaymentModal = ({
                                                 }
                                             }}
                                             placeholder={selectedPayment?.isCapitalPayment ? t('contracts.enterCapitalPaymentAmount') : ""}
-                                            className="w-full pl-10 pr-4 py-4 bg-gray-50 dark:bg-darkblack-500 border-2 border-transparent focus:border-blue-500/50 rounded-2xl dark:text-white font-bold transition-all outline-none"
+                                            className="w-full pl-10 pr-4 py-4 bg-gray-50 dark:bg-darkblack-500 border-2 border-transparent focus:border-blue-500/50 rounded-2xl dark:text-white font-bold transition-all outline-hidden"
                                         />
                                     </div>
                                 </div>
@@ -207,7 +207,7 @@ const ApplyPaymentModal = ({
                                                         const interest = parseFloat(newInterest) || 0;
                                                         setEditableTotal((amount + interest).toString());
                                                     }}
-                                                    className="w-full pl-10 pr-4 py-4 bg-amber-50/50 dark:bg-amber-900/10 border-2 border-transparent focus:border-amber-500/50 rounded-2xl dark:text-white font-bold transition-all outline-none"
+                                                    className="w-full pl-10 pr-4 py-4 bg-amber-50/50 dark:bg-amber-900/10 border-2 border-transparent focus:border-amber-500/50 rounded-2xl dark:text-white font-bold transition-all outline-hidden"
                                                 />
                                             </div>
                                         </div>
@@ -224,7 +224,7 @@ const ApplyPaymentModal = ({
                                                     step="0.01"
                                                     value={editableTotal}
                                                     readOnly
-                                                    className="w-full pl-10 pr-4 py-4 bg-blue-50/50 dark:bg-blue-900/20 border-2 border-blue-100 dark:border-blue-900/30 rounded-2xl text-blue-600 dark:text-blue-400 font-black transition-all outline-none"
+                                                    className="w-full pl-10 pr-4 py-4 bg-blue-50/50 dark:bg-blue-900/20 border-2 border-blue-100 dark:border-blue-900/30 rounded-2xl text-blue-600 dark:text-blue-400 font-black transition-all outline-hidden"
                                                 />
                                             </div>
                                         </div>

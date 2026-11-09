@@ -1,7 +1,7 @@
 import js from "@eslint/js";
 import globals from "globals";
-import pluginReact from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
 import { defineConfig } from "eslint/config";
 
 export default defineConfig([
@@ -27,6 +27,9 @@ export default defineConfig([
     files: ["**/*.{js,mjs,jsx}"],
     languageOptions: {
       sourceType: "module",
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
       globals: {
         ...globals.browser,
         ...globals.node,
@@ -47,25 +50,21 @@ export default defineConfig([
       },
     },
   },
-  pluginReact.configs.flat.recommended,
   {
     plugins: {
       "react-hooks": reactHooks,
     },
-    rules: reactHooks.configs.recommended.rules,
-  },
-  {
-    settings: {
-      react: {
-        version: "detect",
-      },
-    },
     rules: {
-      "react/react-in-jsx-scope": "off",
-      "react/prop-types": "off",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+  reactRefresh.configs.vite,
+  {
+    rules: {
       "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
       "no-case-declarations": "off",
-      "react/no-unescaped-entities": "off",
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true, allowCompoundComponents: true }],
     },
   },
 ]);

@@ -28,7 +28,6 @@ function LotsList() {
     if (location.state?.selectedLotId || location.state?.selectedLotName) {
       // Set the search term to the lot name to help find it in the list
       if (location.state.selectedLotName) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSearchTerm(location.state.selectedLotName);
       }
 

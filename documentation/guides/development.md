@@ -2,11 +2,13 @@
 
 ## Prerequisites
 
-- Node.js `>=22` (CI uses 23.x)
+- Node.js `>=26` LTS (CI uses 26.x; see `.nvmrc`)
 - npm
 - Access to the Fintera backend API
 
 ## Setup
+
+Use the Node version in `.nvmrc` (Node 26 LTS), for example with `nvm use`.
 
 ```bash
 npm install

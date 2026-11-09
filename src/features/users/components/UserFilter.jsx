@@ -51,7 +51,6 @@ function UserFilter({ searchTerm, role, onSearchChange, onRoleChange }) {
   };
 
   // Create a debounced version of onSearchChange
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const debouncedSearch = useMemo(
     () => debounce((value) => {
       if (value.length >= 3) {
@@ -99,7 +98,7 @@ function UserFilter({ searchTerm, role, onSearchChange, onRoleChange }) {
         </span>
         <input
           type="text"
-          className="border-0 w-full dark:bg-darkblack-600 dark:text-white focus:outline-none focus:ring-0 focus:border-none"
+          className="border-0 w-full dark:bg-darkblack-600 dark:text-white focus:outline-hidden focus:ring-0 focus:border-none"
           placeholder={_t('userFilter.searchPlaceholder')}
           value={term}
           onChange={handleTermChange}
@@ -138,7 +137,7 @@ function UserFilter({ searchTerm, role, onSearchChange, onRoleChange }) {
           </span>
           <input
             type="text"
-            className="border-0 dark:bg-darkblack-600 focus:outline-none focus:ring-0 focus:border-none"
+            className="border-0 dark:bg-darkblack-600 focus:outline-hidden focus:ring-0 focus:border-none"
             placeholder={_t('userFilter.selectType')}
             value={activeFilter ? activeFilter : ""}
             readOnly

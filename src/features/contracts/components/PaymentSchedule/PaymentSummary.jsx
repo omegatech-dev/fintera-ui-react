@@ -39,7 +39,7 @@ const PaymentSummary = ({
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
                         <div className="space-y-1">
                             <div className="flex items-center gap-2 mb-2">
-                                <div className="w-8 h-8 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center text-sm shadow-sm">
+                                <div className="w-8 h-8 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center text-sm shadow-xs">
                                     <FontAwesomeIcon icon={faChartLine} />
                                 </div>
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">{t('contracts.totalValue')}</p>

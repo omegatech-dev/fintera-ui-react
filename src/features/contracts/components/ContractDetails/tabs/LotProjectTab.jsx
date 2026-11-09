@@ -17,7 +17,7 @@ const LotProjectTab = ({ contract }) => {
                     <h5 className="text-xl font-black text-bgray-900 dark:text-white">{t("contractDetailsModal.project")}</h5>
                 </div>
 
-                <div className="bg-white dark:bg-darkblack-500 rounded-3xl border border-gray-100 dark:border-darkblack-400 shadow-sm p-8 space-y-6">
+                <div className="bg-white dark:bg-darkblack-500 rounded-3xl border border-gray-100 dark:border-darkblack-400 shadow-xs p-8 space-y-6">
                     <div>
                         <p className="text-xs font-bold text-bgray-400 uppercase tracking-widest mb-1">{t("contractDetailsModal.name")}</p>
                         <p className="text-lg font-black text-bgray-900 dark:text-white">{contract.project_name || "N/A"}</p>
@@ -49,7 +49,7 @@ const LotProjectTab = ({ contract }) => {
                     <h5 className="text-xl font-black text-bgray-900 dark:text-white">{t("contractDetailsModal.lot")}</h5>
                 </div>
 
-                <div className="bg-white dark:bg-darkblack-500 rounded-3xl border border-gray-100 dark:border-darkblack-400 shadow-sm p-8 space-y-6">
+                <div className="bg-white dark:bg-darkblack-500 rounded-3xl border border-gray-100 dark:border-darkblack-400 shadow-xs p-8 space-y-6">
                     <div>
                         <p className="text-xs font-bold text-bgray-400 uppercase tracking-widest mb-1">{t("contractDetailsModal.name")}</p>
                         <p className="text-lg font-black text-bgray-900 dark:text-white">{contract.lot_name || "N/A"}</p>

@@ -1,15 +1,15 @@
 schema: spec-driven
 
 context: |
-  FinteraUI is a React 18 + Vite 6 single-page application (PWA) for managing
+  FinteraUI is a React 19 + Vite 8 single-page application (PWA) for managing
   real-estate financing: projects, lots, contracts, payment schedules, payments,
   users, audits, analytics, and financing uploads/summaries.
 
   Tech stack:
-  - React 18 function components, React Router 6, Vite 6.
-  - Tailwind CSS for styling; AOS for animations; Chart.js for charts.
-  - ESLint 9 flat config; Vitest 3 with jsdom and Testing Library.
-  - Node.js >= 22 (CI uses 23.x).
+  - React 19 function components, React Router 7, Vite 8.
+  - Tailwind CSS 4 (via @tailwindcss/vite); AOS for animations; Chart.js for charts.
+  - ESLint 10 flat config; Vitest 5 with jsdom 31 and Testing Library.
+  - Node.js >= 26 LTS (CI uses 26.x; see .nvmrc).
 
   Source layout:
   - src/features/<domain>/ -> api.js, pages/, components/, hooks/ (domain code).

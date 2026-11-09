@@ -1,53 +1,57 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import PaymentTimeline from '../PaymentTimeline';
-import { describe, it, expect, vi } from 'vitest';
-import React from 'react';
+import * as LocaleContextModule from '../../../../contexts/LocaleContext';
 
 expect.extend(matchers);
 
-// Mock useLocale
-vi.mock('@/contexts/LocaleContext', () => ({
-  useLocale: () => ({
-    t: (key) => key,
-    locale: 'en',
-  }),
-}));
-
-// Mock useToast
-vi.mock('@/contexts/ToastContext', () => ({
-  useToast: () => ({
-    showToast: vi.fn(),
-  }),
-}));
-
-// Mock paymentsApi
-vi.mock('@/features/payments/api', () => ({
-  paymentsApi: {
-    uploadReceipt: vi.fn(),
-  },
+// Mock TimelinePaymentCard to simplify testing
+vi.mock('../TimelinePaymentCard', () => ({
+  default: ({ payment }) => (
+    <div data-testid={`payment-card-${payment.id}`}>
+      {payment.status} - {payment.due_date}
+    </div>
+  ),
 }));
 
 describe('PaymentTimeline', () => {
-  const DAY_MS = 24 * 60 * 60 * 1000;
-  const pastDate = new Date(Date.now() - 5 * DAY_MS).toISOString().slice(0, 10);
-  const futureDate = new Date(Date.now() + 5 * DAY_MS).toISOString().slice(0, 10);
+  const mockT = vi.fn((key) => key);
+  const mockUseLocale = { t: mockT, locale: 'en' };
 
-  const mockPayments = [
-    { id: 1, status: 'REJECTED', amount: 100, due_date: pastDate },
-    { id: 2, status: 'OVERDUE', amount: 200, due_date: pastDate },
-    { id: 3, status: 'UPCOMING', amount: 300, due_date: futureDate }
-  ];
+  beforeEach(() => {
+    vi.spyOn(LocaleContextModule, 'useLocale').mockReturnValue(mockUseLocale);
+  });
 
   it('categorizes payments correctly', () => {
-    // We need to pass mock payments and a handler
-    render(<PaymentTimeline payments={mockPayments} onPaymentSuccess={() => {}} />);
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
 
-    // Check for section headers (the keys are used as text by the mock).
-    // Scope to headings because the overdue key also appears as a card status.
-    expect(screen.getByRole('heading', { name: 'payments.rejectedPayments' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'payments.overdue' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'payments.upcoming' })).toBeInTheDocument();
+    const payments = [
+      { id: 1, status: 'rejected', due_date: tomorrow.toISOString() },
+      { id: 2, status: 'pending', due_date: yesterday.toISOString() }, // overdue
+      { id: 3, status: 'pending', due_date: tomorrow.toISOString() },  // upcoming
+      { id: 4, status: 'paid', due_date: yesterday.toISOString() },
+    ];
+
+    render(<PaymentTimeline payments={payments} onPaymentSuccess={() => {}} />);
+
+    // Check for section headers
+    expect(screen.getByText('payments.rejectedPayments')).toBeInTheDocument();
+    expect(screen.getByText('payments.overdue')).toBeInTheDocument();
+    expect(screen.getByText('payments.upcoming')).toBeInTheDocument();
+    expect(screen.getByText('payments.completed')).toBeInTheDocument();
+
+    // Check if payments are in the correct sections by checking order if necessary,
+    // but here we just check presence.
+    expect(screen.getByTestId('payment-card-1')).toBeInTheDocument();
+    expect(screen.getByTestId('payment-card-2')).toBeInTheDocument();
+    expect(screen.getByTestId('payment-card-3')).toBeInTheDocument();
+    expect(screen.getByTestId('payment-card-4')).toBeInTheDocument();
   });
 
   it('shows empty state when no payments', () => {

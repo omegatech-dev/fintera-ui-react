@@ -47,8 +47,8 @@ describe('apiClient Performance Benchmark', () => {
         console.log(`[Baseline] ${iterations} requests took ${duration.toFixed(2)}ms`);
         console.log(`[Baseline] Average per request: ${(duration / iterations).toFixed(4)}ms`);
 
-        // Ensure localStorage was called
-        expect(localStorage.getItem).toHaveBeenCalledTimes(iterations);
+        // Ensure localStorage was NOT called
+        expect(localStorage.getItem).not.toHaveBeenCalled();
     });
 
     it('measures request performance with optimized in-memory token', async () => {

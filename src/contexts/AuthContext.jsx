@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('refresh_token');
+    setAuthToken(null);
     setUser(null);
     setToken(null);
     setRefreshToken(null);
@@ -63,6 +64,7 @@ export const AuthProvider = ({ children }) => {
           setRefreshToken(data.refresh_token);
         }
 
+        setAuthToken(data.token);
         setToken(data.token);
         setUser(data.user);
         setError(null);
@@ -104,6 +106,7 @@ export const AuthProvider = ({ children }) => {
             }
           } else {
             // Token is still valid
+            setAuthToken(storedToken);
             setToken(storedToken);
             setUser(parsedUser);
             setRefreshToken(storedRefresh);
@@ -160,6 +163,7 @@ export const AuthProvider = ({ children }) => {
           setRefreshToken(data.refresh_token);
         }
 
+        setAuthToken(data.token);
         setToken(data.token);
         setUser(data.user);
         setError(null);

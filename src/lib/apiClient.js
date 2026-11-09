@@ -17,7 +17,7 @@ export const setAuthToken = (token) => {
  * @returns {Promise<any>} - Parsed JSON response
  */
 export async function request(endpoint, { body, ...customConfig } = {}) {
-    const token = authToken || localStorage.getItem("token");
+    const token = authToken;
     const headers = { ...HEADERS_DEFAULT };
 
     if (token) {

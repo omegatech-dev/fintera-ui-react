@@ -649,7 +649,12 @@ button.fc-button.fc-button-primary.fc-prev-button {
   }
 }
 
-@media (max-width: 426px) {}
+@media (max-width: 426px) {
+  .fc .fc-view-harness {
+    width: 100% !important;
+    height: 300px !important;
+  }
+}
 
 /* TODO: ===============RESPONSIVE END */
 

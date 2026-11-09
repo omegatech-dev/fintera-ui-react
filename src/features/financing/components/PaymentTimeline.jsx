@@ -7,13 +7,36 @@ function PaymentTimeline({ payments, onPaymentSuccess }) {
     const [showAllUpcoming, setShowAllUpcoming] = React.useState(false);
     const [showAllPaid, setShowAllPaid] = React.useState(false);
 
-    const sortedPayments = [...payments].sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+    const { rejected, overdue, upcoming, paid } = React.useMemo(() => {
+        const now = new Date();
+        const rejected = [];
+        const overdue = [];
+        const upcoming = [];
+        const paid = [];
 
-    // Group by status/time (rejected first, then overdue/upcoming/paid)
-    const rejected = sortedPayments.filter(p => (p.status || '').toLowerCase() === 'rejected');
-    const overdue = sortedPayments.filter(p => new Date(p.due_date) < new Date() && (p.status || '').toLowerCase() !== 'paid' && (p.status || '').toLowerCase() !== 'rejected');
-    const upcoming = sortedPayments.filter(p => new Date(p.due_date) >= new Date() && (p.status || '').toLowerCase() !== 'paid' && (p.status || '').toLowerCase() !== 'rejected');
-    const paid = sortedPayments.filter(p => (p.status || '').toLowerCase() === 'paid');
+        // Pre-parse dates once to optimize sorting and filtering
+        const processedPayments = payments.map(p => ({
+            ...p,
+            _dueDateObj: new Date(p.due_date),
+            _statusLower: (p.status || '').toLowerCase()
+        }));
+
+        processedPayments.sort((a, b) => a._dueDateObj - b._dueDateObj);
+
+        processedPayments.forEach(p => {
+            if (p._statusLower === 'rejected') {
+                rejected.push(p);
+            } else if (p._statusLower === 'paid') {
+                paid.push(p);
+            } else if (p._dueDateObj < now) {
+                overdue.push(p);
+            } else if (p._dueDateObj >= now) {
+                upcoming.push(p);
+            }
+        });
+
+        return { rejected, overdue, upcoming, paid };
+    }, [payments]);
 
     const displayedUpcoming = showAllUpcoming ? upcoming : upcoming.slice(0, 3);
     const displayedPaid = showAllPaid ? paid : paid.slice(0, 3);

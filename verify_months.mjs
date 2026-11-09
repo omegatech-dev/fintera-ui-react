@@ -1,8 +1,8 @@
-import fs from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 
-function checkMonths(filePath) {
-    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+async function checkMonths(filePath) {
+    const data = JSON.parse(await fs.readFile(filePath, 'utf8'));
     const months = data.months;
     if (!months) {
         console.error(`ERROR: No months object in ${filePath}`);
@@ -23,15 +23,21 @@ function checkMonths(filePath) {
     return true;
 }
 
-const enPath = path.join(process.cwd(), 'src/locales/en.json');
-const esPath = path.join(process.cwd(), 'src/locales/es.json');
+async function run() {
+    const enPath = path.join(process.cwd(), 'src/locales/en.json');
+    const esPath = path.join(process.cwd(), 'src/locales/es.json');
 
-const enOk = checkMonths(enPath);
-const esOk = checkMonths(esPath);
+    const [enOk, esOk] = await Promise.all([
+        checkMonths(enPath),
+        checkMonths(esPath)
+    ]);
 
-if (enOk && esOk) {
-    console.log('All month translations are present.');
-    process.exit(0);
-} else {
-    process.exit(1);
+    if (enOk && esOk) {
+        console.log('All month translations are present.');
+        process.exit(0);
+    } else {
+        process.exit(1);
+    }
 }
+
+run();

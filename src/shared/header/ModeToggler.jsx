@@ -2,14 +2,16 @@ import { useContext, useEffect } from "react";
 import { ThemeContext } from "../../contexts/ThemeContext";
 
 function ModeToggler() {
-  // you can change default theme here
-  if (
-    localStorage.getItem("theme") !== "" &&
-    localStorage.getItem("theme") !== "dark"
-  ) {
-    localStorage.setItem("theme", "");
-  }
   const { theme, setTheme } = useContext(ThemeContext);
+
+  useEffect(() => {
+    // Move localStorage validation to useEffect to avoid synchronous access on every render
+    const storedTheme = localStorage.getItem("theme");
+    if (storedTheme !== "" && storedTheme !== "dark") {
+      localStorage.setItem("theme", "");
+    }
+  }, []);
+
   const toggleMode = () => {
     if (theme === "dark") {
       setTheme("");
@@ -19,6 +21,7 @@ function ModeToggler() {
       localStorage.setItem("theme", "dark");
     }
   };
+
   useEffect(() => {
     document.querySelector("html").classList = theme;
   }, [theme]);

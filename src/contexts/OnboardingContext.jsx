@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { useLocale } from "./LocaleContext";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
@@ -16,25 +16,30 @@ export const useOnboarding = () => {
 export const OnboardingProvider = ({ children }) => {
     const { t } = useLocale();
 
-    // Helper to check if a specific tour is completed
-    const isTourCompleted = (tourKey) => {
+    // Cache completed tours in state using lazy initialization
+    const [completedTours, setCompletedTours] = useState(() => {
         try {
-            const completedTours = JSON.parse(localStorage.getItem("fintera_onboarding_status") || "{}");
-            return !!completedTours[tourKey];
+            return JSON.parse(localStorage.getItem("fintera_onboarding_status") || "{}");
         } catch {
-            return false;
+            return {};
         }
-    };
+    });
+
+    // Helper to check if a specific tour is completed
+    const isTourCompleted = useCallback((tourKey) => {
+        return !!completedTours[tourKey];
+    }, [completedTours]);
 
     // Helper to mark a specific tour as completed
-    const markTourCompleted = (tourKey) => {
-        const completedTours = JSON.parse(localStorage.getItem("fintera_onboarding_status") || "{}");
-        completedTours[tourKey] = true;
-        localStorage.setItem("fintera_onboarding_status", JSON.stringify(completedTours));
-        // Trigger a re-render if needed, or just rely on the stored value next time
-    };
+    const markTourCompleted = useCallback((tourKey) => {
+        setCompletedTours((prev) => {
+            const next = { ...prev, [tourKey]: true };
+            localStorage.setItem("fintera_onboarding_status", JSON.stringify(next));
+            return next;
+        });
+    }, []);
 
-    const startTour = (tourKey = "home") => {
+    const startTour = useCallback((tourKey = "home") => {
         // Define steps for each tour
         const stepsConfig = {
             home: [
@@ -464,10 +469,12 @@ export const OnboardingProvider = ({ children }) => {
         });
 
         driverObj.drive();
-    };
+    }, [t, markTourCompleted]);
+
+    const contextValue = useMemo(() => ({ startTour, isTourCompleted }), [startTour, isTourCompleted]);
 
     return (
-        <OnboardingContext.Provider value={{ startTour, isTourCompleted }}>
+        <OnboardingContext.Provider value={contextValue}>
             {children}
         </OnboardingContext.Provider>
     );

@@ -1,36 +1,77 @@
-name: FinteraUI CI
+name: CI
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    types: [ opened, synchronize, reopened, ready_for_review ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel superseded PR runs; keep main runs intact.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
+  verify:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Draft PRs skip CI until they are marked ready for review.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
 
     strategy:
+      # Report every failing check instead of stopping at the first one.
+      fail-fast: false
       matrix:
-        node-version: [26.x]
+        include:
+          - name: Lint
+            command: npm run lint
+          - name: Test
+            command: npm run test:run
+          - name: Build
+            command: npm run build
 
     steps:
-    - uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v5
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v5
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - name: Detect code changes
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          if git diff --name-only "$BASE_SHA" HEAD | grep -qvE '^(documentation/|openspec/|.*\.md$)'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Skip heavy checks for docs-only changes
+        if: steps.changes.outputs.code == 'false'
+        run: echo "Docs-only change detected; skipping ${{ matrix.name }}."
 
-    - name: Lint
-      run: npm run lint
+      - name: Use Node.js from .nvmrc
+        if: steps.changes.outputs.code == 'true'
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-    - name: Test
-      run: npm run test:run
+      - name: Install dependencies
+        if: steps.changes.outputs.code == 'true'
+        run: npm ci --no-audit --no-fund --prefer-offline
 
-    - name: Build
-      run: npm run build
+      - name: ${{ matrix.name }}
+        if: steps.changes.outputs.code == 'true'
+        run: ${{ matrix.command }}

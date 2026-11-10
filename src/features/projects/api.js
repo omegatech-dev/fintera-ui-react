@@ -18,4 +18,20 @@ export const projectsApi = {
     getLot: (projectId, lotId) => apiClient.get(`/api/v1/projects/${projectId}/lots/${lotId}`),
     updateLot: (projectId, lotId, data) => apiClient.put(`/api/v1/projects/${projectId}/lots/${lotId}`, data),
     createContract: (projectId, lotId, data) => apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/contracts`, data),
+
+    // Project media
+    listDrawings: (projectId) => apiClient.get(`/api/v1/projects/${projectId}/drawings`),
+    uploadDrawings: (projectId, formData) => apiClient.post(`/api/v1/projects/${projectId}/drawings`, formData),
+    updateDrawing: (drawingId, data) => apiClient.patch(`/api/v1/drawings/${drawingId}`, data),
+    deleteDrawing: (drawingId) => apiClient.delete(`/api/v1/drawings/${drawingId}`),
+
+    listProjectPhotos: (projectId) => apiClient.get(`/api/v1/projects/${projectId}/photos`),
+    uploadProjectPhotos: (projectId, formData) => apiClient.post(`/api/v1/projects/${projectId}/photos`, formData),
+    updateProjectPhoto: (photoId, data) => apiClient.patch(`/api/v1/project-photos/${photoId}`, data),
+    deleteProjectPhoto: (photoId) => apiClient.delete(`/api/v1/project-photos/${photoId}`),
+
+    listLotPhotos: (projectId, lotId) => apiClient.get(`/api/v1/projects/${projectId}/lots/${lotId}/photos`),
+    uploadLotPhotos: (projectId, lotId, formData) => apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/photos`, formData),
+    updateLotPhoto: (photoId, data) => apiClient.patch(`/api/v1/photos/${photoId}`, data),
+    deleteLotPhoto: (photoId) => apiClient.delete(`/api/v1/photos/${photoId}`),
 };

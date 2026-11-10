@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { projectsApi } from "../../api";
+import AuthContext from "../../../../contexts/AuthContext";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { useToast } from "../../../../contexts/ToastContext";
+import ProjectDrawingsPanel from "../../components/media/ProjectDrawingsPanel";
+import ProjectPhotosPanel from "../../components/media/ProjectPhotosPanel";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -29,8 +32,10 @@ import {
 function EditProject() {
   const { t } = useLocale();
   const { showToast } = useToast();
+  const { user } = useContext(AuthContext);
   const { id } = useParams();
   const navigate = useNavigate();
+  const canManageMedia = user?.role === "admin";
 
   const [name, setName] = useState("");
   const [guid, setGuid] = useState("");
@@ -569,6 +574,12 @@ function EditProject() {
             </button>
           </motion.div>
         </form >
+        {id && (
+          <div className="mt-8 space-y-6">
+            <ProjectDrawingsPanel projectId={id} canManage={canManageMedia} />
+            <ProjectPhotosPanel projectId={id} canManage={canManageMedia} />
+          </div>
+        )}
       </motion.div >
     </main >
   );

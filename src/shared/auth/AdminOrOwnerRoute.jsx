@@ -1,6 +1,7 @@
 import { Navigate, useLocation, useParams } from "react-router-dom";
 import { useContext } from "react";
 import AuthContext from "@/contexts/AuthContext";
+import ForbiddenPage from "@/features/common/ForbiddenPage";
 
 const AdminOrOwnerRoute = ({ children }) => {
   const { token, user: currentUser, loading } = useContext(AuthContext);
@@ -22,17 +23,17 @@ const AdminOrOwnerRoute = ({ children }) => {
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
-  // Allow if current user is admin
-  if (currentUser?.role === "admin") return children;
+  // Admin and seller are the back-office roles.
+  if (currentUser?.role === "admin" || currentUser?.role === "seller") {
+    return children;
+  }
 
-  // Allow if current user is the same as requested user id
-  if (params.userId && String(currentUser?.id) === String(params.userId)) return children;
+  // Allow a user to inspect their own resources.
+  if (params.userId && String(currentUser?.id) === String(params.userId)) {
+    return children;
+  }
 
-  // If the requested user has a created_by field and matches current user allow
-  // Note: we can't fetch the target user here synchronously; components should still guard.
-  // This route covers common cases (self or admin). For created_by checks prefer component-level checks.
-
-  return <Navigate to="/projects" replace />;
+  return <ForbiddenPage />;
 };
 
 export default AdminOrOwnerRoute;

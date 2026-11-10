@@ -66,10 +66,22 @@ npm install
 ```
 
 ### 3. Configurar Variables de Entorno
-Crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
+Crear un archivo `.env` en la raíz del proyecto (hay una plantilla en
+`.env.example`). Todas las variables deben llevar el prefijo `VITE_`.
+
+| Variable | Requerida | Descripción |
+| --- | --- | --- |
+| `VITE_API_URL` | Sí | Origen de FinteraAPI incluyendo `/api/v1` (ej. `http://localhost:8081/api/v1`). |
+| `VITE_APP_ENV` | No | Entorno de la app (`development`, `staging`, `production`). |
+| `VITE_CUSTOMER_PORTAL_URL` | No | Origen público del portal de clientes (FinteraWeb). Los usuarios con rol `user` son redirigidos aquí tras iniciar sesión y la pantalla de registro enlaza aquí. Sin valor, se muestra la pantalla 403 local. Dev: `http://localhost:5173`; staging: `https://portal.staging.fintera.app`; prod: `https://portal.fintera.app`. |
+| `VITE_DEFAULT_EMAIL` | No | Prellena el correo en el login durante desarrollo/staging. |
+| `VITE_DEFAULT_PASSWORD` | No | Prellena la contraseña en el login durante desarrollo/staging. |
+| `VITE_ROLLBAR_ACCESS_TOKEN` | No | Token de Rollbar para reporte de errores. |
+
 ```env
-VITE_API_URL=http://localhost:3001/api/v1
+VITE_API_URL=http://localhost:8081/api/v1
 VITE_APP_ENV=development
+VITE_CUSTOMER_PORTAL_URL=http://localhost:5173
 ```
 
 ### 4. Ejecutar en Modo Desarrollo

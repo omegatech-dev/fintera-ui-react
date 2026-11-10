@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import ProtectedRoute from "./shared/auth/ProtectedRoute";
 import AdminRoute from "./shared/auth/AdminRoute";
 import AdminOrOwnerRoute from "./shared/auth/AdminOrOwnerRoute";
+import Forbidden from "./features/common/ForbiddenPage";
 import Layout from "./shared/layout/Layout";
 import RouteErrorElement from "./shared/error/RouteErrorElement";
 
@@ -50,33 +51,33 @@ const router = createBrowserRouter(
         {
           index: true,
           element: (
-            <ProtectedRoute>
+            <AdminOrOwnerRoute>
               <Home />
-            </ProtectedRoute>
+            </AdminOrOwnerRoute>
           ),
         },
         {
           path: "/contracts",
           element: (
-            <ProtectedRoute>
+            <AdminOrOwnerRoute>
               <Contracts />
-            </ProtectedRoute>
+            </AdminOrOwnerRoute>
           ),
         },
         {
           path: "/payments",
           element: (
-            <ProtectedRoute>
+            <AdminOrOwnerRoute>
               <Payments />
-            </ProtectedRoute>
+            </AdminOrOwnerRoute>
           ),
         },
         {
           path: "/projects",
           element: (
-            <ProtectedRoute>
+            <AdminOrOwnerRoute>
               <Projects />
-            </ProtectedRoute>
+            </AdminOrOwnerRoute>
           ),
         },
         {
@@ -98,9 +99,9 @@ const router = createBrowserRouter(
         {
           path: "/projects/:id/lots",
           element: (
-            <ProtectedRoute>
+            <AdminOrOwnerRoute>
               <LotsList />
-            </ProtectedRoute>
+            </AdminOrOwnerRoute>
           ),
         },
         {
@@ -114,17 +115,17 @@ const router = createBrowserRouter(
         {
           path: "/projects/:project_id/lots/:lot_id/edit",
           element: (
-            <ProtectedRoute>
+            <AdminOrOwnerRoute>
               <EditLot />
-            </ProtectedRoute>
+            </AdminOrOwnerRoute>
           ),
         },
         {
           path: "/audits",
           element: (
-            <ProtectedRoute>
+            <AdminRoute>
               <Audits />
-            </ProtectedRoute>
+            </AdminRoute>
           ),
         },
         {
@@ -138,17 +139,17 @@ const router = createBrowserRouter(
         {
           path: "/projects/:id/lots/:lot_id/contracts/create",
           element: (
-            <ProtectedRoute>
+            <AdminOrOwnerRoute>
               <Reserve />
-            </ProtectedRoute>
+            </AdminOrOwnerRoute>
           ),
         },
         {
           path: "/financing/user/:userId",
           element: (
-            <AdminOrOwnerRoute>
+            <AdminRoute>
               <Financing />
-            </AdminOrOwnerRoute>
+            </AdminRoute>
           ),
           children: [
             {
@@ -186,25 +187,25 @@ const router = createBrowserRouter(
         {
           path: "/users",
           element: (
-            <ProtectedRoute>
+            <AdminRoute>
               <Users />
-            </ProtectedRoute>
+            </AdminRoute>
           ),
         },
         {
           path: "/users/create",
           element: (
-            <ProtectedRoute>
+            <AdminRoute>
               <CreateUser />
-            </ProtectedRoute>
+            </AdminRoute>
           ),
         },
         {
           path: "/analytics",
           element: (
-            <ProtectedRoute>
+            <AdminRoute>
               <Analytics />
-            </ProtectedRoute>
+            </AdminRoute>
           ),
         },
         {
@@ -218,6 +219,10 @@ const router = createBrowserRouter(
       ],
     },
 
+    {
+      path: "/forbidden",
+      element: <Forbidden />,
+    },
     {
       path: "/signin",
       element: (

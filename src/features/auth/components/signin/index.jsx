@@ -4,6 +4,7 @@ import AuthContext from "@/contexts/AuthContext";
 import PasswordResetModal from "@/shared/modals/PasswordResetModal";
 import LeftSide from "./LeftSide";
 import { useLocale } from "@/contexts/LocaleContext";
+import { resolvePostLoginDestination } from "../../postLoginDestination";
 
 function SignIn() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -46,16 +47,12 @@ function SignIn() {
 
     const result = await login(email, password);
     if (result?.success) {
-      const user = result.user;
-      if (user.must_change_password) {
-        navigate(`/settings/user/${user.id}/security`);
+      const destination = resolvePostLoginDestination(result.user);
+      if (destination.type === "external") {
+        window.location.assign(destination.path);
         return;
       }
-      if (user.role === 'admin' || user.role === 'seller') {
-        navigate("/");
-      } else {
-        navigate(`/financing/user/${user.id}`);
-      }
+      navigate(destination.path);
     }
     // If not success, error is handled by apiError from context
   };

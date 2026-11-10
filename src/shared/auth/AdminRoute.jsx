@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import AuthContext from "@/contexts/AuthContext";
+import ForbiddenPage from "@/features/common/ForbiddenPage";
 
 const AdminRoute = ({ children }) => {
   const { token, user, loading } = useContext(AuthContext);
@@ -21,9 +22,8 @@ const AdminRoute = ({ children }) => {
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
-  if (!user || user.role !== 'admin') {
-    // Redirect non-admin users to projects list (or could show 403)
-    return <Navigate to="/projects" replace />;
+  if (!user || user.role !== "admin") {
+    return <ForbiddenPage />;
   }
 
   return children;

@@ -5,6 +5,8 @@ import { BrandingLogo } from "../../../../shared/branding";
 import { Link } from "react-router-dom";
 
 function SignUp() {
+  const portalUrl = import.meta.env.VITE_CUSTOMER_PORTAL_URL;
+
   return (
     <section className="bg-white dark:bg-darkblack-500">
       <div className="flex flex-col lg:flex-row justify-between min-h-screen">
@@ -26,6 +28,18 @@ function SignUp() {
                 Send, spend and save smarter
               </p>
             </header>
+
+            {portalUrl && (
+              <p className="mb-6 rounded-lg border border-success-300/40 bg-success-50 px-4 py-3 text-center text-sm font-medium text-bgray-800 dark:bg-darkblack-400 dark:text-bgray-50">
+                ¿Eres cliente?{" "}
+                <a
+                  href={portalUrl}
+                  className="font-semibold text-success-300 underline"
+                >
+                  Crea tu cuenta en el portal de clientes →
+                </a>
+              </p>
+            )}
             {/* Google & Apple Button  */}
             <div className="flex flex-col md:flex-row gap-4">
               <a
@@ -128,7 +142,7 @@ function SignUp() {
           </div>
         </div>
         {/*  Right  */}
-        <RightSide img={signupImg} />ß
+        <RightSide img={signupImg} />
       </div>
     </section>
   );

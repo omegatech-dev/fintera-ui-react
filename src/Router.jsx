@@ -26,6 +26,7 @@ const Security = lazy(() => import("./features/settings/pages/security"));
 const TermsAndCondition = lazy(() => import("./features/settings/pages/terms&condition"));
 const CreateProject = lazy(() => import("./features/projects/pages/create"));
 const EditProject = lazy(() => import("./features/projects/pages/edit"));
+const ProjectPaymentInstructions = lazy(() => import("./features/projects/pages/paymentInstructions"));
 const LotsList = lazy(() => import("./features/projects/pages/lots"));
 const CreateLot = lazy(() => import("./features/projects/pages/lots/create"));
 const EditLot = lazy(() => import("./features/projects/pages/lots/edit"));
@@ -92,6 +93,14 @@ const router = createBrowserRouter(
           element: (
             <AdminRoute>
               <EditProject />
+            </AdminRoute>
+          ),
+        },
+        {
+          path: "/projects/:id/payment-instructions",
+          element: (
+            <AdminRoute>
+              <ProjectPaymentInstructions />
             </AdminRoute>
           ),
         },

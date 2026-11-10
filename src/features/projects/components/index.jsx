@@ -11,7 +11,8 @@ import {
   faEdit,
   faTrashAlt,
   faArrowRight,
-  faCopy
+  faCopy,
+  faUniversity
 } from "@fortawesome/free-solid-svg-icons";
 
 const Project = memo(function Project({ project, user, onDeleted }) {
@@ -182,6 +183,14 @@ const Project = memo(function Project({ project, user, onDeleted }) {
           <div className="flex items-center space-x-3">
             {user && user.role === "admin" && (
               <>
+                <Link
+                  to={`/projects/${id}/payment-instructions`}
+                  id="project-payment-instructions-btn"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-bgray-100 dark:bg-darkblack-500 text-bgray-600 dark:text-bgray-300 hover:bg-indigo-600 hover:text-white transition-all duration-200"
+                  title={t("paymentInstructions.title")}
+                >
+                  <FontAwesomeIcon icon={faUniversity} />
+                </Link>
                 <Link
                   to={`/projects/${id}/edit`}
                   id="project-edit-btn"

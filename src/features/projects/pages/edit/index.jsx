@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { projectsApi } from "../../api";
 import AuthContext from "../../../../contexts/AuthContext";
 import { useLocale } from "../../../../contexts/LocaleContext";
@@ -26,7 +26,9 @@ import {
   faBookmark,
   faCheckDouble,
   faFingerprint,
-  faCopy
+  faCopy,
+  faUniversity,
+  faArrowRight
 } from "@fortawesome/free-solid-svg-icons";
 
 function EditProject() {
@@ -626,6 +628,25 @@ function EditProject() {
         </form >
         {id && (
           <div className="mt-8 space-y-6">
+            <Link
+              to={`/projects/${id}/payment-instructions`}
+              className="flex items-center justify-between gap-4 rounded-[2.5rem] border border-bgray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-darkblack-400 dark:bg-darkblack-600"
+            >
+              <div className="flex items-center gap-4">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                  <FontAwesomeIcon icon={faUniversity} />
+                </span>
+                <div>
+                  <p className="text-sm font-black text-bgray-900 dark:text-white">
+                    {t("paymentInstructions.title")}
+                  </p>
+                  <p className="text-xs font-semibold text-bgray-500">
+                    {t("paymentInstructions.description")}
+                  </p>
+                </div>
+              </div>
+              <FontAwesomeIcon icon={faArrowRight} className="text-bgray-400" />
+            </Link>
             <ProjectDrawingsPanel projectId={id} canManage={canManageMedia} />
             <ProjectPhotosPanel projectId={id} canManage={canManageMedia} />
           </div>

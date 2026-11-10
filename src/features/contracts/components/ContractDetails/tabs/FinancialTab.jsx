@@ -1,11 +1,20 @@
 
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalculator, faSave, faExclamationTriangle, faCalendarAlt, faDollarSign, faCreditCard } from "@fortawesome/free-solid-svg-icons";
+import { faCalculator, faSave, faExclamationTriangle, faCalendarAlt, faDollarSign, faCreditCard, faUniversity, faClipboardCheck } from "@fortawesome/free-solid-svg-icons";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useToast } from "@/contexts/ToastContext";
 import { contractsApi } from "../../../api";
 import { formatCurrency } from "@/shared/utils/formatters";
+
+const BANK_CREDIT_STATUSES = ["not_started", "pre_qualified", "pre_approved", "approved"];
+
+const BANK_CREDIT_STATUS_KEYS = {
+    not_started: "notStarted",
+    pre_qualified: "preQualified",
+    pre_approved: "preApproved",
+    approved: "approved",
+};
 
 const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, setIsEditMode, onSaveSuccess, isLoadingFull }) => {
     const { t } = useLocale();
@@ -18,7 +27,14 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
     const [maxPaymentDate, setMaxPaymentDate] = useState(
         contract?.max_payment_date ? String(contract.max_payment_date).slice(0, 10) : ""
     );
+    const [bankName, setBankName] = useState(contract?.bank_name ?? "");
+    const [bankCreditStatus, setBankCreditStatus] = useState(contract?.bank_credit_status ?? "");
     const [isSaving, setIsSaving] = useState(false);
+
+    const bankCreditStatusLabel = (status) => {
+        const key = BANK_CREDIT_STATUS_KEYS[status];
+        return key ? t(`contractDetailsModal.bankCreditStatuses.${key}`) : "—";
+    };
 
     // Sync local state from contract when it changes, but only if not editing to avoid overwriting user input?
     // Actually the original code synced on [contract.id, contract.payment_term, ...]
@@ -28,8 +44,10 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
             setReserveAmount(contract.reserve_amount ?? "");
             setDownPayment(contract.down_payment ?? "");
             setMaxPaymentDate(contract.max_payment_date ? String(contract.max_payment_date).slice(0, 10) : "");
+            setBankName(contract.bank_name ?? "");
+            setBankCreditStatus(contract.bank_credit_status ?? "");
         }
-    }, [contract?.id, contract?.payment_term, contract?.reserve_amount, contract?.down_payment, contract?.max_payment_date, contract]);
+    }, [contract?.id, contract?.payment_term, contract?.reserve_amount, contract?.down_payment, contract?.max_payment_date, contract?.bank_name, contract?.bank_credit_status, contract]);
 
     const calculateCurrentMonthlyPayment = () => {
         // If we have full contract details, check the payment schedule for the first installment
@@ -71,6 +89,12 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
                 down_payment: Number(downPayment),
                 ...((displayContract?.financing_type?.toLowerCase() === "bank" || displayContract?.financing_type?.toLowerCase() === "cash") && maxPaymentDate
                     ? { max_payment_date: maxPaymentDate }
+                    : {}),
+                ...(displayContract?.financing_type?.toLowerCase() === "bank"
+                    ? {
+                        bank_name: bankName.trim(),
+                        bank_credit_status: bankCreditStatus || null,
+                    }
                     : {}),
             };
 
@@ -252,6 +276,55 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
                                     <p className="pl-12 py-4 text-bgray-600 dark:text-bgray-300 font-bold">
                                         {maxPaymentDate ? new Date(maxPaymentDate).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }) : "—"}
                                     </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Bank name (bank only) */}
+                    {displayContract?.financing_type?.toLowerCase() === "bank" && (
+                        <div className="space-y-3">
+                            <label className="text-sm font-black text-bgray-900 dark:text-white block uppercase tracking-wider">{t("contractDetailsModal.bankName")}</label>
+                            <div className="relative group">
+                                <FontAwesomeIcon icon={faUniversity} className="absolute left-5 top-1/2 -translate-y-1/2 text-bgray-400 group-focus-within:text-blue-500 transition-colors" />
+                                {isEditMode ? (
+                                    <input
+                                        type="text"
+                                        value={bankName}
+                                        onChange={(e) => setBankName(e.target.value)}
+                                        placeholder={t("contractDetailsModal.bankNamePlaceholder")}
+                                        maxLength={120}
+                                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-darkblack-400 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkblack-600 outline-hidden transition-all font-bold text-bgray-900 dark:text-white"
+                                    />
+                                ) : (
+                                    <p className="pl-12 py-4 text-bgray-600 dark:text-bgray-300 font-bold">{bankName || "—"}</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Bank credit status (bank only) */}
+                    {displayContract?.financing_type?.toLowerCase() === "bank" && (
+                        <div className="space-y-3">
+                            <label className="text-sm font-black text-bgray-900 dark:text-white block uppercase tracking-wider">{t("contractDetailsModal.bankCreditStatus")}</label>
+                            <div className="relative group">
+                                <FontAwesomeIcon icon={faClipboardCheck} className="absolute left-5 top-1/2 -translate-y-1/2 text-bgray-400 group-focus-within:text-blue-500 transition-colors" />
+                                {isEditMode ? (
+                                    <select
+                                        value={bankCreditStatus || ""}
+                                        onChange={(e) => setBankCreditStatus(e.target.value)}
+                                        aria-label={t("contractDetailsModal.bankCreditStatus")}
+                                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-darkblack-400 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-darkblack-600 outline-hidden transition-all font-bold text-bgray-900 dark:text-white appearance-none"
+                                    >
+                                        <option value="">—</option>
+                                        {BANK_CREDIT_STATUSES.map((status) => (
+                                            <option key={status} value={status}>
+                                                {bankCreditStatusLabel(status)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p className="pl-12 py-4 text-bgray-600 dark:text-bgray-300 font-bold">{bankCreditStatusLabel(bankCreditStatus)}</p>
                                 )}
                             </div>
                         </div>

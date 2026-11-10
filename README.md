@@ -84,6 +84,10 @@ VITE_APP_ENV=development
 VITE_CUSTOMER_PORTAL_URL=http://localhost:5173
 ```
 
+`VITE_CUSTOMER_PORTAL_URL` points customer (`user` role) accounts to the
+FinteraWeb customer portal; the admin app shows a redirect notice instead of the
+customer screens.
+
 ### 4. Ejecutar en Modo Desarrollo
 ```bash
 npm run dev

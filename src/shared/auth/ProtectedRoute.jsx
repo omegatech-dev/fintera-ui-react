@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import AuthContext from "@/contexts/AuthContext";
+import CustomerPortalNotice from "./CustomerPortalNotice";
 
 const ProtectedRoute = ({ children }) => {
   const { token, user, loading } = useContext(AuthContext);
@@ -23,6 +24,11 @@ const ProtectedRoute = ({ children }) => {
   // Redirect to signin if not authenticated
   if (!token) {
     return <Navigate to="/signin" state={{ from: location }} replace />;
+  }
+
+  // Customers use the dedicated customer portal, not the admin app.
+  if (user?.role === "user") {
+    return <CustomerPortalNotice />;
   }
 
   // First-time login: must change password before accessing other pages

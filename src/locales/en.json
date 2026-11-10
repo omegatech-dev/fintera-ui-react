@@ -1732,6 +1732,23 @@
     "errorFileType": "Choose a PNG, JPEG or WebP image.",
     "errorFileSize": "The image must be 2 MB or smaller.",
     "errorFile": "The file must be a PNG, JPEG or WebP image up to 2 MB",
-    "error": "Could not update settings"
+    "error": "Could not update settings",
+    "generalTitle": "Support and reservations",
+    "generalSubtitle": "Contact number and lot-hold duration for the customer portal.",
+    "supportWhatsApp": "Support WhatsApp",
+    "supportWhatsAppHint": "Include the country code, e.g. +50499998888.",
+    "supportEmail": "Support email",
+    "holdHours": "Reservation hold (hours)",
+    "holdHoursHint": "How long a lot stays reserved while the customer pays. Between 1 and 720 hours.",
+    "errorWhatsApp": "The WhatsApp number must have 8 to 20 digits",
+    "errorEmail": "The support email is not valid",
+    "errorHoldHours": "The hold must be between 1 and 720 hours",
+    "generalSaved": "General settings updated",
+    "generalError": "Could not update the general settings"
+  },
+  "customerPortal": {
+    "title": "Your customer account lives in the customer portal",
+    "description": "Reservations, payments and tracking are now managed in the Fintera customer portal.",
+    "action": "Go to the customer portal"
   }
 }

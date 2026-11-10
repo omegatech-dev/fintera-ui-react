@@ -1165,6 +1165,15 @@
     "paymentTerm": "Plazo de Pago",
     "reserveAmount": "Monto de Reserva",
     "downPayment": "Pago Inicial",
+    "bankName": "Banco",
+    "bankNamePlaceholder": "Nombre del banco o financiera",
+    "bankCreditStatus": "Estado del Crédito",
+    "bankCreditStatuses": {
+      "notStarted": "No iniciado",
+      "preQualified": "Pre-calificado",
+      "preApproved": "Pre-aprobado",
+      "approved": "Aprobado"
+    },
     "monthlyPayment": "Pago Mensual",
     "financedAmount": "Monto Financiado",
     "maxPaymentDate": "Fecha Máxima de Pago",

@@ -1145,6 +1145,15 @@
     "paymentTerm": "Payment Term",
     "reserveAmount": "Reserve Amount",
     "downPayment": "Down Payment",
+    "bankName": "Bank",
+    "bankNamePlaceholder": "Bank or financial institution name",
+    "bankCreditStatus": "Credit Status",
+    "bankCreditStatuses": {
+      "notStarted": "Not started",
+      "preQualified": "Pre-qualified",
+      "preApproved": "Pre-approved",
+      "approved": "Approved"
+    },
     "monthlyPayment": "Monthly Payment",
     "financedAmount": "Financed Amount",
     "maxPaymentDate": "Maximum Payment Date",

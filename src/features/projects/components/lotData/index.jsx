@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useLocale } from "../../../../contexts/LocaleContext";
+import { areaUnitLabel, linearUnitLabel } from "../../../../shared/utils/units";
 
 function LotData({ lotInfo, index }) {
   const { t } = useLocale();
@@ -13,6 +14,7 @@ function LotData({ lotInfo, index }) {
     area,
     length,
     width,
+    measurement_unit,
     status,
   } = lotInfo;
 
@@ -26,13 +28,13 @@ function LotData({ lotInfo, index }) {
             </h4>
             <div>
               <span className="font-medium text-base text-bgray-700 dark:text-bgray-50">
-                {t('lots.area')}: {area} m² •{" "}
+                {t('lots.area')}: {area} {areaUnitLabel(measurement_unit)} •{" "}
               </span>
               <span className="font-medium text-base text-bgray-700 dark:text-bgray-50">
-                {t('lots.length')}: {length} m
+                {t('lots.length')}: {length} {linearUnitLabel(measurement_unit)}
               </span>•{" "}
               <span className="font-medium text-base text-bgray-700 dark:text-bgray-50">
-                {t('lots.width')}: {width} m
+                {t('lots.width')}: {width} {linearUnitLabel(measurement_unit)}
               </span>•{" "}
               <span className="font-medium text-base text-bgray-700 dark:text-bgray-50">
                 {t('lots.price')}: {price} HNL

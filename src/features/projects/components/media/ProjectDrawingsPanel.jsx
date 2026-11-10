@@ -103,6 +103,7 @@ export default function ProjectDrawingsPanel({ projectId, canManage }) {
     <MediaSection
       title={t("media.drawingsTitle")}
       description={t("media.drawingsDescription")}
+      hint={t("media.drawingsHint")}
       actions={
         canManage ? (
           <button

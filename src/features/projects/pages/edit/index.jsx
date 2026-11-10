@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { projectsApi } from "../../api";
 import AuthContext from "../../../../contexts/AuthContext";
 import { useLocale } from "../../../../contexts/LocaleContext";
@@ -26,7 +26,11 @@ import {
   faBookmark,
   faCheckDouble,
   faFingerprint,
-  faCopy
+  faCopy,
+  faUniversity,
+  faArrowRight,
+  faEye,
+  faEyeSlash
 } from "@fortawesome/free-solid-svg-icons";
 
 function EditProject() {
@@ -58,6 +62,8 @@ function EditProject() {
   const [loading, setLoading] = useState(false);
   const [loadingProject, setLoadingProject] = useState(true);
   const [error, setError] = useState(null);
+  const [isPublished, setIsPublished] = useState(false);
+  const [changingVisibility, setChangingVisibility] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -88,6 +94,7 @@ function EditProject() {
         const rawDate = pdata.delivery_date || "";
         setDeliveryDate(rawDate ? rawDate.slice(0, 10) : "");
         setProjectType(pdata.project_type || "residential");
+        setIsPublished(Boolean(pdata.is_published));
         setAvailableLots(pdata.available_lots || 0);
         setReservedLots(pdata.reserved_lots || 0);
         setSoldLots(pdata.sold_lots || 0);
@@ -100,6 +107,14 @@ function EditProject() {
 
     fetchProject();
   }, [id, t]);
+
+  const handleMeasurementUnitChange = (event) => {
+    const next = event.target.value;
+    if (next === measurementUnit) return;
+    if (window.confirm(t("projects.measurementUnitChangeWarning"))) {
+      setMeasurementUnit(next);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -131,6 +146,25 @@ function EditProject() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVisibilityToggle = async () => {
+    setChangingVisibility(true);
+    try {
+      const response = isPublished
+        ? await projectsApi.unpublish(id)
+        : await projectsApi.publish(id);
+      const updated = response?.project || response?.data || response;
+      setIsPublished(Boolean(updated?.is_published));
+      showToast(
+        isPublished ? t("projects.unpublishSuccess") : t("projects.publishSuccess"),
+        "success"
+      );
+    } catch (err) {
+      showToast(err?.message || t("projects.visibilityError"), "error");
+    } finally {
+      setChangingVisibility(false);
     }
   };
 
@@ -209,6 +243,16 @@ function EditProject() {
             <p className="mt-2 text-bgray-600 dark:text-bgray-400">
               {t('projects.updateProjectInfo')}
             </p>
+            <span
+              className={`mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider ${
+                isPublished
+                  ? "bg-success-50 text-success-600 dark:bg-success-900/20 dark:text-success-400"
+                  : "bg-bgray-100 text-bgray-600 dark:bg-darkblack-500 dark:text-bgray-300"
+              }`}
+            >
+              <FontAwesomeIcon icon={isPublished ? faEye : faEyeSlash} />
+              {isPublished ? t("projects.published") : t("projects.unpublished")}
+            </span>
           </div>
         </div>
 
@@ -248,7 +292,7 @@ function EditProject() {
           />
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form id="project-edit-form" onSubmit={handleSubmit} className="space-y-8">
           {/* General Information Card */}
           <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-xs border border-bgray-200 dark:border-darkblack-400">
             <SectionTitle icon={faProjectDiagram} title={t('dashboard.overview') || 'General Information'} />
@@ -450,7 +494,7 @@ function EditProject() {
                     </span>
                     <select
                       value={measurementUnit}
-                      onChange={(e) => setMeasurementUnit(e.target.value)}
+                      onChange={handleMeasurementUnitChange}
                       className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all dark:text-white appearance-none"
                     >
                       <option value="m2">{t('projects.squareMeters')}</option>
@@ -568,60 +612,94 @@ function EditProject() {
                   <div className="mt-3 h-3 w-full bg-bgray-200 dark:bg-darkblack-400 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${(soldLots / lotCount) * 100}%` }}
+                      animate={{ width: `${lotCount > 0 ? (soldLots / lotCount) * 100 : 0}%` }}
                       transition={{ duration: 1, delay: 0.5 }}
                       className="h-full bg-indigo-600 rounded-full"
                     />
                   </div>
                   <div className="mt-1 text-[10px] font-bold text-bgray-500 uppercase">
-                    {Math.round((soldLots / lotCount) * 100)}% {t('projects.soldLots')}
+                    {lotCount > 0 ? Math.round((soldLots / lotCount) * 100) : 0}% {t('projects.soldLots')}
                   </div>
                 </div>
               </div>
             </motion.div>
           </div>
 
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-bgray-700 dark:text-bgray-300 font-bold hover:bg-bgray-100 dark:hover:bg-darkblack-500 transition-all border border-bgray-200 dark:border-darkblack-400"
-            >
-              {t('common.back') || 'Back'}
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className={`
-                w-full sm:w-auto px-12 py-3.5 rounded-xl font-bold text-white shadow-lg 
-                ${loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-indigo-500/20'} 
-                transition-all duration-300 flex items-center justify-center
-              `}
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  {t('projects.saving')}
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faSave} className="mr-2" />
-                  {t('projects.saveChanges')}
-                </>
-              )}
-            </button>
-          </motion.div>
         </form >
         {id && (
           <div className="mt-8 space-y-6">
+            <Link
+              to={`/projects/${id}/payment-instructions`}
+              className="flex items-center justify-between gap-4 rounded-[2.5rem] border border-bgray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-darkblack-400 dark:bg-darkblack-600"
+            >
+              <div className="flex items-center gap-4">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                  <FontAwesomeIcon icon={faUniversity} />
+                </span>
+                <div>
+                  <p className="text-sm font-black text-bgray-900 dark:text-white">
+                    {t("paymentInstructions.title")}
+                  </p>
+                  <p className="text-xs font-semibold text-bgray-500">
+                    {t("paymentInstructions.description")}
+                  </p>
+                </div>
+              </div>
+              <FontAwesomeIcon icon={faArrowRight} className="text-bgray-400" />
+            </Link>
             <ProjectDrawingsPanel projectId={id} canManage={canManageMedia} />
             <ProjectPhotosPanel projectId={id} canManage={canManageMedia} />
           </div>
         )}
+
+        {/* Final actions: kept last so Back and Save close the page */}
+        <motion.div variants={itemVariants} className="mt-8 flex flex-col sm:flex-row items-center justify-end gap-4 pt-4">
+          <button
+            type="button"
+            onClick={handleVisibilityToggle}
+            disabled={changingVisibility}
+            className={`w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold border transition-all disabled:opacity-50 ${
+              isPublished
+                ? "border-bgray-200 dark:border-darkblack-400 text-bgray-700 dark:text-bgray-300 hover:bg-bgray-100 dark:hover:bg-darkblack-500"
+                : "border-success-300 bg-success-50 text-success-600 hover:bg-success-100 dark:border-success-300/40 dark:bg-success-900/20 dark:text-success-400"
+            }`}
+          >
+            <FontAwesomeIcon icon={isPublished ? faEyeSlash : faEye} className="mr-2" />
+            {isPublished ? t("projects.unpublish") : t("projects.publish")}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-bgray-700 dark:text-bgray-300 font-bold hover:bg-bgray-100 dark:hover:bg-darkblack-500 transition-all border border-bgray-200 dark:border-darkblack-400"
+          >
+            {t('common.back') || 'Back'}
+          </button>
+          <button
+            type="submit"
+            form="project-edit-form"
+            disabled={loading}
+            className={`
+              w-full sm:w-auto px-12 py-3.5 rounded-xl font-bold text-white shadow-lg
+              ${loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-indigo-500/20'}
+              transition-all duration-300 flex items-center justify-center
+            `}
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {t('projects.saving')}
+              </>
+            ) : (
+              <>
+                <FontAwesomeIcon icon={faSave} className="mr-2" />
+                {t('projects.saveChanges')}
+              </>
+            )}
+          </button>
+        </motion.div>
       </motion.div >
     </main >
   );

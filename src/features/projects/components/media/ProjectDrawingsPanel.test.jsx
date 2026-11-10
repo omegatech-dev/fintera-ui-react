@@ -47,6 +47,8 @@ describe("ProjectDrawingsPanel", () => {
     expect(await screen.findByText("Levantamiento")).toBeInTheDocument();
     expect(screen.getByText("DWG")).toBeInTheDocument();
     expect(screen.getByText(/v2/)).toBeInTheDocument();
+    expect(screen.getByText("media.drawingsHint")).toBeInTheDocument();
+    expect(screen.queryByText("media.photosHint")).not.toBeInTheDocument();
   });
 
   it("rejects a disallowed file before uploading", async () => {

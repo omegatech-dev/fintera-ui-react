@@ -32,6 +32,8 @@ describe('LotItem Performance', () => {
     status: 'available',
     price: 1000,
     area: 100,
+    length: 14,
+    width: 25,
     measurement_unit: 'm2'
   };
 
@@ -66,5 +68,17 @@ describe('LotItem Performance', () => {
     // Assert that LotDetailsModal is now called
     expect(LotDetailsModal).toHaveBeenCalled();
     expect(screen.getByTestId('lot-details-modal')).toBeInTheDocument();
+  });
+
+  it('renders dimensions and area with the real measurement unit', () => {
+    render(
+      <MemoryRouter>
+        <LotItem lot={{ ...mockLot, measurement_unit: 'ft2' }} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getAllByText('25 x 14').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('ft').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('ft²').length).toBeGreaterThan(0);
   });
 });

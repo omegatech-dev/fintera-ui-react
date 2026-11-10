@@ -25,6 +25,9 @@ Technical documentation for the FinteraUI frontend.
 - [Payment schedule](features/payment-schedule.md)
 - [Pagination](features/pagination.md)
 - [Bank/cash reservation](features/bank-cash-reservation.md)
+- [Project media](features/project-media.md)
+- [Project publishing](features/project-publishing.md)
+- [Project cards](features/project-cards.md)
 
 ## QA
 

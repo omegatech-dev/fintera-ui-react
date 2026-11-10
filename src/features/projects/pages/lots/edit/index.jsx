@@ -4,6 +4,7 @@ import AuthContext from "../../../../../contexts/AuthContext";
 import { projectsApi } from "../../../api";
 import { useLocale } from "../../../../../contexts/LocaleContext";
 import LotPhotosPanel from "../../../components/media/LotPhotosPanel";
+import { areaUnitLabel, linearUnitLabel } from "../../../../../shared/utils/units";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ---- Area conversion factors (from m2) ----
@@ -232,22 +233,6 @@ function EditLot() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => navigate(-1)}
-                  className="px-6 py-3 rounded-xl border-2 border-bgray-200 dark:border-darkblack-400 text-bgray-600 dark:text-bgray-300 font-bold hover:bg-bgray-100 transition-all text-sm uppercase tracking-widest"
-                >
-                  {t("common.back")}
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving || user?.role !== 'admin'}
-                  className={`px-8 py-3 rounded-xl font-black text-white shadow-lg transition-all text-sm uppercase tracking-widest ${saving ? 'bg-bgray-400' : 'bg-success-300 hover:bg-success-400'}`}
-                >
-                  {saving ? t("common.saving") : t("common.saveChanges")}
-                </button>
-              </div>
             </div>
           </div>
 
@@ -339,7 +324,7 @@ function EditLot() {
               <div className="grid md:grid-cols-3 gap-8 items-start">
                 <div className="space-y-6 md:col-span-1">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.length")} ({measurementUnit})</label>
+                    <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.length")} ({linearUnitLabel(measurementUnit)})</label>
                     <input
                       type="number"
                       value={length}
@@ -348,7 +333,7 @@ function EditLot() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.width")} ({measurementUnit})</label>
+                    <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.width")} ({linearUnitLabel(measurementUnit)})</label>
                     <input
                       type="number"
                       value={width}
@@ -365,7 +350,7 @@ function EditLot() {
                     <p className="text-[10px] font-black text-success-500 uppercase tracking-[0.2em] mb-2">{t("lots.calculatedArea")}</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-4xl font-black text-bgray-900 dark:text-white">{fmtNum(displayedArea)}</span>
-                      <span className="text-sm font-bold text-bgray-400">{measurementUnit}</span>
+                      <span className="text-sm font-bold text-bgray-400">{areaUnitLabel(measurementUnit)}</span>
                     </div>
                     {overrideArea && (
                       <motion.span
@@ -522,7 +507,7 @@ function EditLot() {
               onClick={() => navigate(-1)}
               className="px-10 py-5 rounded-2xl border-2 border-bgray-200 dark:border-darkblack-400 text-bgray-600 dark:text-bgray-300 font-black hover:bg-white transition-all text-xs uppercase tracking-[0.2em]"
             >
-              {t("common.cancel")}
+              {t("common.back")}
             </button>
             <motion.button
               whileHover={{ scale: 1.02 }}

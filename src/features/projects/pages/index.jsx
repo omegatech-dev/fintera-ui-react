@@ -248,6 +248,7 @@ function Projects() {
                   project={project}
                   user={user}
                   onDeleted={fetchProjects}
+                  onVisibilityChanged={fetchProjects}
                 />
               </div>
             ))}

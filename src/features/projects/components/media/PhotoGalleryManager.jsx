@@ -1,8 +1,9 @@
-import { useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { useToast } from "../../../../contexts/ToastContext";
 import MediaSection from "./MediaSection";
-import { PHOTO_ACCEPT, mediaUrl, validatePhotoFile } from "./mediaFiles";
+import PhotoDropzone from "./PhotoDropzone";
+import { mediaUrl } from "./mediaFiles";
 
 export default function PhotoGalleryManager({
   title,
@@ -18,39 +19,30 @@ export default function PhotoGalleryManager({
 }) {
   const { t } = useLocale();
   const { showToast } = useToast();
-  const photoInput = useRef(null);
-  const thumbInput = useRef(null);
   const [uploading, setUploading] = useState(false);
-  const [rejected, setRejected] = useState([]);
   const [editingAlt, setEditingAlt] = useState(null);
 
-  const handleUpload = async () => {
-    const files = Array.from(photoInput.current?.files || []);
-    const thumbs = Array.from(thumbInput.current?.files || []);
-    if (photoInput.current) photoInput.current.value = "";
-    if (thumbInput.current) thumbInput.current.value = "";
+  const orderedPhotos = useMemo(() => {
+    return [...photos].sort((a, b) => {
+      const positionA = a.position ?? Number.MAX_SAFE_INTEGER;
+      const positionB = b.position ?? Number.MAX_SAFE_INTEGER;
+      if (positionA !== positionB) return positionA - positionB;
+      return (a.id ?? 0) - (b.id ?? 0);
+    });
+  }, [photos]);
+
+  const handleUpload = async (files) => {
     if (files.length === 0) return;
 
-    const valid = [];
-    const failures = [];
-    files.forEach((file) => {
-      const result = validatePhotoFile(file);
-      if (result.ok) valid.push(file);
-      else failures.push({ name: file.name, reason: result.reason });
-    });
-    setRejected(failures);
-    if (valid.length === 0) return;
-
     const formData = new FormData();
-    valid.forEach((file, index) => {
+    files.forEach((file, index) => {
       formData.append(`photos[${index}]`, file);
-      if (thumbs[index]) formData.append(`thumbs[${index}]`, thumbs[index]);
     });
 
     setUploading(true);
     try {
       await onUpload(formData);
-      showToast(t("media.uploadSuccess", { count: valid.length }), "success");
+      showToast(t("media.uploadSuccess", { count: files.length }), "success");
     } catch (err) {
       showToast(err?.message || t("media.uploadError"), "error");
     } finally {
@@ -70,7 +62,7 @@ export default function PhotoGalleryManager({
 
   const handleMove = async (photo, index, direction) => {
     const target = index + direction;
-    if (target < 0 || target >= photos.length) return;
+    if (target < 0 || target >= orderedPhotos.length) return;
     try {
       await onUpdate(photo.id, { position: target });
     } catch (err) {
@@ -101,64 +93,8 @@ export default function PhotoGalleryManager({
     <MediaSection
       title={title}
       description={description}
-      actions={
-        canManage ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => photoInput.current?.click()}
-              className="rounded-xl bg-indigo-600 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white"
-            >
-              {t("media.uploadPhotos")}
-            </button>
-            <button
-              type="button"
-              onClick={() => thumbInput.current?.click()}
-              className="rounded-xl border border-bgray-200 dark:border-darkblack-400 px-4 py-3 text-[10px] font-black uppercase tracking-widest text-bgray-600 dark:text-bgray-300"
-            >
-              {t("media.thumbnails")}
-            </button>
-            <button
-              type="button"
-              onClick={handleUpload}
-              disabled={uploading}
-              className="rounded-xl bg-bgray-900 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white disabled:opacity-50 dark:bg-white dark:text-bgray-900"
-            >
-              {uploading ? t("media.uploading") : t("media.send")}
-            </button>
-          </div>
-        ) : null
-      }
+      hint={t("media.photosHint")}
     >
-      <input
-        ref={photoInput}
-        type="file"
-        accept={PHOTO_ACCEPT}
-        multiple
-        className="hidden"
-        onChange={() => setRejected([])}
-      />
-      <input
-        ref={thumbInput}
-        type="file"
-        accept={PHOTO_ACCEPT}
-        multiple
-        className="hidden"
-      />
-
-      {rejected.length > 0 && (
-        <ul className="mb-4 space-y-1 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-600">
-          {rejected.map((item) => (
-            <li key={item.name}>
-              {item.name}:{" "}
-              {item.reason === "size"
-                ? t("media.errorSize", { size: "10 MB" })
-                : t("media.errorPhotoType")}
-            </li>
-          ))}
-        </ul>
-      )}
-
       {loading && <p className="text-sm font-semibold text-bgray-500">{t("common.loading")}</p>}
       {error && !loading && (
         <div className="space-y-2">
@@ -171,15 +107,21 @@ export default function PhotoGalleryManager({
         </div>
       )}
 
-      {!loading && !error && photos.length === 0 && (
+      {!loading && !error && canManage && (
+        <div className="mb-5">
+          <PhotoDropzone onFiles={handleUpload} uploading={uploading} />
+        </div>
+      )}
+
+      {!loading && !error && orderedPhotos.length === 0 && (
         <p className="rounded-2xl border border-dashed border-bgray-300 dark:border-darkblack-400 p-6 text-sm font-semibold text-bgray-500">
           {t("media.noPhotos")}
         </p>
       )}
 
-      {!loading && !error && photos.length > 0 && (
+      {!loading && !error && orderedPhotos.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {photos.map((photo, index) => (
+          {orderedPhotos.map((photo, index) => (
             <article
               key={photo.id || photo.url}
               className="overflow-hidden rounded-2xl border border-bgray-200 dark:border-darkblack-400"
@@ -198,11 +140,11 @@ export default function PhotoGalleryManager({
                 )}
               </div>
               <div className="space-y-2 p-3">
-                {editingAlt?.id === photo.id ? (
+                {editingAlt && photo.id != null && editingAlt.id === photo.id ? (
                   <div className="flex gap-2">
                     <input
                       autoFocus
-                      value={editingAlt.alt}
+                      value={editingAlt.alt ?? ""}
                       onChange={(event) => setEditingAlt({ ...editingAlt, alt: event.target.value })}
                       placeholder={t("media.altText")}
                       className="min-w-0 flex-1 rounded-lg border border-bgray-200 px-2 py-1 text-xs dark:border-darkblack-400 dark:bg-darkblack-500"
@@ -221,7 +163,7 @@ export default function PhotoGalleryManager({
                   </p>
                 )}
 
-                {canManage && (
+                {canManage && photo.id != null && (
                   <div className="flex flex-wrap gap-1.5">
                     <button
                       type="button"
@@ -242,7 +184,7 @@ export default function PhotoGalleryManager({
                     <button
                       type="button"
                       onClick={() => handleMove(photo, index, 1)}
-                      disabled={index === photos.length - 1}
+                      disabled={index === orderedPhotos.length - 1}
                       className="rounded-lg border border-bgray-200 px-2 py-1 text-[9px] font-black text-bgray-600 disabled:opacity-40 dark:border-darkblack-400 dark:text-bgray-300"
                     >
                       ↓

@@ -233,22 +233,6 @@ function EditLot() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => navigate(-1)}
-                  className="px-6 py-3 rounded-xl border-2 border-bgray-200 dark:border-darkblack-400 text-bgray-600 dark:text-bgray-300 font-bold hover:bg-bgray-100 transition-all text-sm uppercase tracking-widest"
-                >
-                  {t("common.back")}
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving || user?.role !== 'admin'}
-                  className={`px-8 py-3 rounded-xl font-black text-white shadow-lg transition-all text-sm uppercase tracking-widest ${saving ? 'bg-bgray-400' : 'bg-success-300 hover:bg-success-400'}`}
-                >
-                  {saving ? t("common.saving") : t("common.saveChanges")}
-                </button>
-              </div>
             </div>
           </div>
 
@@ -523,7 +507,7 @@ function EditLot() {
               onClick={() => navigate(-1)}
               className="px-10 py-5 rounded-2xl border-2 border-bgray-200 dark:border-darkblack-400 text-bgray-600 dark:text-bgray-300 font-black hover:bg-white transition-all text-xs uppercase tracking-[0.2em]"
             >
-              {t("common.cancel")}
+              {t("common.back")}
             </button>
             <motion.button
               whileHover={{ scale: 1.02 }}

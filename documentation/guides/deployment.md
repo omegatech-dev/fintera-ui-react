@@ -48,9 +48,9 @@ locally, on Railway, and on other PaaS platforms that inject `PORT`.
 
 For Railway, point the service at the `Dockerfile`; Railway sets `PORT`
 automatically. Because Vite embeds `VITE_*` values at build time, configure
-`VITE_API_URL`, `VITE_APP_ENV`, `VITE_ROLLBAR_ACCESS_TOKEN`, and
-`VITE_APP_VERSION` as **build arguments** on the service (or pass `--build-arg`
-locally) and redeploy after changing them.
+`VITE_API_URL`, `VITE_PUBLIC_PORTAL_URL`, `VITE_APP_ENV`,
+`VITE_ROLLBAR_ACCESS_TOKEN`, and `VITE_APP_VERSION` as **build arguments** on the
+service (or pass `--build-arg` locally) and redeploy after changing them.
 
 `.dockerignore` keeps the build context small by excluding `node_modules`,
 `dist`, tests, docs, OpenSpec, and local `.env*` files.
@@ -62,6 +62,7 @@ Set these in the hosting provider:
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `VITE_API_URL` | Yes | Backend API base URL |
+| `VITE_PUBLIC_PORTAL_URL` | Optional | Customer portal base URL for project links |
 | `VITE_APP_ENV` | Recommended | Environment label |
 | `VITE_ROLLBAR_ACCESS_TOKEN` | Optional | Enables Rollbar error reporting |
 | `VITE_APP_VERSION` | Optional | Version reported to Rollbar |

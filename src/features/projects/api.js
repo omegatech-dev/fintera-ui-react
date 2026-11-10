@@ -9,6 +9,8 @@ export const projectsApi = {
     create: (data) => apiClient.post("/api/v1/projects", data),
     update: (id, data) => apiClient.put(`/api/v1/projects/${id}`, data),
     delete: (id) => apiClient.delete(`/api/v1/projects/${id}`),
+    publish: (id) => apiClient.post(`/api/v1/projects/${id}/publish`, {}),
+    unpublish: (id) => apiClient.post(`/api/v1/projects/${id}/unpublish`, {}),
     import: (formData) => apiClient.post("/api/v1/projects/import", formData), // apiClient handles FormData? Usually fetch handles it better if content-type is not set.
     // apiClient in src/lib/apiClient.js sets Content-Type: application/json by default.
     // I might need to handle FormData specially in apiClient or just pass specific headers.

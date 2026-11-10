@@ -1606,12 +1606,12 @@
     "draft": "Draft"
   },
   "media": {
-    "drawingsHint": "Plans accept DWG, DXF, PDF and SVG (max 50 MB each).",
+    "drawingsHint": "Plans accept SVG, PNG, JPG and PDF (max 50 MB each).",
     "photosHint": "Photos accept JPEG, PNG and WebP (max 10 MB each).",
     "dropPhotos": "Drag photos here or click to browse",
     "dropPhotosActive": "Drop the photos to upload",
     "drawingsTitle": "Project drawings",
-    "drawingsDescription": "Plans published in the customer portal's CAD tab.",
+    "drawingsDescription": "Plans published in the customer portal's Plans tab.",
     "uploadDrawings": "Upload drawings",
     "uploading": "Uploading...",
     "uploadPhotos": "Upload photos",

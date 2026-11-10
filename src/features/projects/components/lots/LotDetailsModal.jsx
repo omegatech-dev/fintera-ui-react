@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { getStatusLabel, getStatusBadgeClass } from "../../../../shared/utils/statusUtils";
 import { calculateLotAreas } from "../../../../shared/utils/areaUtils";
+import { areaUnitLabel, linearUnitLabel } from "../../../../shared/utils/units";
 
 function LotDetailsModal({ lot, onClose }) {
     const { t } = useLocale();
@@ -139,13 +140,13 @@ function LotDetailsModal({ lot, onClose }) {
                                         <div>
                                             <p className="text-[10px] uppercase font-bold text-bgray-400">Dimensions</p>
                                             <p className="text-xl font-black text-bgray-900 dark:text-white">
-                                                {width} x {length} <span className="text-sm text-bgray-500 font-medium">{measurement_unit}</span>
+                                                {width} x {length} <span className="text-sm text-bgray-500 font-medium">{linearUnitLabel(measurement_unit)}</span>
                                             </p>
                                         </div>
                                         <div>
                                             <p className="text-[10px] uppercase font-bold text-bgray-400">Base Area</p>
                                             <p className="text-xl font-black text-bgray-900 dark:text-white">
-                                                {displayArea} <span className="text-sm text-bgray-500 font-medium">{measurement_unit}</span>
+                                                {displayArea} <span className="text-sm text-bgray-500 font-medium">{areaUnitLabel(measurement_unit)}</span>
                                             </p>
                                         </div>
                                     </div>

@@ -311,6 +311,7 @@
     "lotsCountDisabledWhenReserved": "No se puede editar el número de lotes cuando hay lotes reservados o vendidos.",
     "enterLotsCount": "Ingrese número de lotes",
     "measurementUnit": "Unidad de Medida",
+    "measurementUnitChangeWarning": "Cambiar la unidad de medida convertirá las medidas y el precio por unidad de todos los lotes. ¿Deseas continuar?",
     "pricePerUnit": "Precio por Unidad",
     "enterPricePerUnit": "Ingrese precio por unidad",
     "interestRate": "Tasa de Interés Moratoria",

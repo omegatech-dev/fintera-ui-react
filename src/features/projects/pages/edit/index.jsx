@@ -101,6 +101,14 @@ function EditProject() {
     fetchProject();
   }, [id, t]);
 
+  const handleMeasurementUnitChange = (event) => {
+    const next = event.target.value;
+    if (next === measurementUnit) return;
+    if (window.confirm(t("projects.measurementUnitChangeWarning"))) {
+      setMeasurementUnit(next);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -450,7 +458,7 @@ function EditProject() {
                     </span>
                     <select
                       value={measurementUnit}
-                      onChange={(e) => setMeasurementUnit(e.target.value)}
+                      onChange={handleMeasurementUnitChange}
                       className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all dark:text-white appearance-none"
                     >
                       <option value="m2">{t('projects.squareMeters')}</option>

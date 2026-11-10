@@ -17,6 +17,7 @@ import {
     faCalculator
 } from "@fortawesome/free-solid-svg-icons";
 import CreditScoreCard from "../CreditScoreCard";
+import { areaUnitLabel } from "../../../../shared/utils/units";
 
 const PaymentSummary = ({
     summary,
@@ -150,7 +151,7 @@ const PaymentSummary = ({
                             <div className="flex flex-col">
                                 <span className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">{t('projects.area')}</span>
                                 <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">
-                                    {currentContract?.lot_area || "—"} m²
+                                    {currentContract?.lot_area || "—"} {areaUnitLabel(currentContract?.lot_measurement_unit)}
                                 </span>
                             </div>
                             <div className="w-px h-5 bg-gray-200 dark:bg-darkblack-400" />

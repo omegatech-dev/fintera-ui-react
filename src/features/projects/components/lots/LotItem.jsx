@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { getStatusLabel, getStatusBadgeClass } from "../../../../shared/utils/statusUtils";
 import { calculateLotAreas } from "../../../../shared/utils/areaUtils";
+import { areaUnitLabel, linearUnitLabel } from "../../../../shared/utils/units";
 import LotDetailsModal from "./LotDetailsModal";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -143,7 +144,7 @@ const LotItem = memo(function LotItem({ lot, userRole, index = 0, isHighlighted 
                 {dimensionsDisplay}
               </span>
               <span className="text-[10px] font-medium text-bgray-500 italic">
-                {measurement_unit}
+                {linearUnitLabel(measurement_unit)}
               </span>
             </div>
           </div>
@@ -169,7 +170,7 @@ const LotItem = memo(function LotItem({ lot, userRole, index = 0, isHighlighted 
                 {area || "—"}
               </span>
               <span className="text-[10px] font-medium text-bgray-500 italic">
-                {measurement_unit || "m²"}
+                {areaUnitLabel(measurement_unit)}
               </span>
             </div>
             {showDetailedArea && detailedAreas && (

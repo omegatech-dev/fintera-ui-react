@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AuthContext from "../../../../../contexts/AuthContext";
 import { projectsApi } from "../../../api";
 import { useLocale } from "../../../../../contexts/LocaleContext";
+import LotPhotosPanel from "../../../components/media/LotPhotosPanel";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ---- Area conversion factors (from m2) ----
@@ -534,6 +535,15 @@ function EditLot() {
             </motion.button>
           </div>
         </form>
+        {project_id && lot_id && (
+          <div className="mt-8">
+            <LotPhotosPanel
+              projectId={project_id}
+              lotId={lot_id}
+              canManage={user?.role === "admin"}
+            />
+          </div>
+        )}
       </motion.div>
     </main>
   );

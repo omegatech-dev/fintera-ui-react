@@ -93,7 +93,7 @@ const FinancialTab = ({ contract, displayContract, fullContract, isEditMode, set
                 ...(displayContract?.financing_type?.toLowerCase() === "bank"
                     ? {
                         bank_name: bankName.trim(),
-                        bank_credit_status: bankCreditStatus || null,
+                        bank_credit_status: bankCreditStatus || "",
                     }
                     : {}),
             };

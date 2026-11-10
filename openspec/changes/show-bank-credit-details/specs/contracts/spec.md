@@ -39,4 +39,4 @@ send them through the existing contract update endpoint.
 #### Scenario: Admin clears the credit status
 
 - **WHEN** an admin selects the empty option for the credit status
-- **THEN** the payload sends `null` and the field shows `—` afterwards
+- **THEN** the payload sends an empty value and the field shows `—` afterwards

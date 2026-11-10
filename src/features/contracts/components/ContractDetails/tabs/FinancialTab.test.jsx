@@ -133,4 +133,33 @@ describe("FinancialTab bank financing", () => {
       );
     });
   });
+
+  it("clears the bank details with empty values", async () => {
+    contractsApi.update.mockResolvedValue({
+      contract: { ...baseContract, bank_name: null, bank_credit_status: null },
+      message: "Contrato actualizado",
+    });
+
+    renderTab({}, { isEditMode: true });
+
+    fireEvent.change(screen.getByPlaceholderText("Nombre del banco o financiera"), {
+      target: { value: "" },
+    });
+    fireEvent.change(screen.getByLabelText("Estado del Crédito"), {
+      target: { value: "" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+
+    await waitFor(() => {
+      expect(contractsApi.update).toHaveBeenCalledWith(
+        1,
+        2,
+        3,
+        expect.objectContaining({
+          bank_name: "",
+          bank_credit_status: "",
+        })
+      );
+    });
+  });
 });

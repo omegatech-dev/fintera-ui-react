@@ -7,7 +7,7 @@
 
 - [x] 2.1 Read `bank_name` and `bank_credit_status` from the contract in `src/features/contracts/components/ContractDetails/tabs/FinancialTab.jsx`.
 - [x] 2.2 Render a bank block (bank input + status select) only for `financing_type === "bank"`.
-- [x] 2.3 Include both values in the update payload, mapping empty strings to `null`.
+- [x] 2.3 Include both values in the update payload, sending empty strings that the API stores as `null`.
 - [x] 2.4 Show `—` for unknown or missing values in the read-only summary.
 
 ## 3. Tests

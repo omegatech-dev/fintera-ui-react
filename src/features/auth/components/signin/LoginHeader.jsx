@@ -1,5 +1,4 @@
-import logo from "@/assets/images/logo/logo-color.svg";
-import logoW from "@/assets/images/logo/logo-white.svg";
+import { BrandingLogo } from "@/shared/branding";
 import { useLocale } from "@/contexts/LocaleContext";
 
 function LoginHeader() {
@@ -9,8 +8,8 @@ function LoginHeader() {
       {/* Plain Logo (subtle animation) */}
       <div className="flex justify-center mb-8">
         <div className="inline-block transform-gpu motion-reduce:transform-none animate-fade-in-up animate-float motion-reduce:animate-none hover:scale-105 transition-transform duration-500">
-          <img src={logo} className="block dark:hidden h-14 w-auto" alt="FinteraUI logo - light" />
-          <img src={logoW} className="hidden dark:block h-14 w-auto" alt="FinteraUI logo - dark" />
+          <BrandingLogo variant="light" className="block dark:hidden h-14 w-auto" alt="logo" />
+          <BrandingLogo variant="dark" className="hidden dark:block h-14 w-auto" alt="logo" />
         </div>
       </div>
 

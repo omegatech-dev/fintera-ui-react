@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 
-import logo from "../../assets/images/logo/logo-color.svg";
-import logoW from "../../assets/images/logo/logo-white.svg";
+import { BrandingLogo } from "../branding";
 
 import { Link, useLocation } from "react-router-dom";
 import { useLocale } from "../../contexts/LocaleContext";
@@ -25,13 +24,13 @@ function Sidebar({ handleActive, user, handleLogout }) {
       {/* Header */}
       <div className="sidebar-header relative z-30 flex h-[80px] sm:h-[108px] w-full items-center border-b border-r border-b-[#F7F7F7] border-r-[#F7F7F7] pl-[30px] sm:pl-[50px] dark:border-darkblack-400">
         <Link to={dashboardPath} className="flex items-center">
-          <img
-            src={logo}
+          <BrandingLogo
+            variant="light"
             className="block dark:hidden h-8 sm:h-auto"
             alt="logo"
           />
-          <img
-            src={logoW}
+          <BrandingLogo
+            variant="dark"
             className="hidden dark:block h-8 sm:h-auto"
             alt="logo"
           />
@@ -407,6 +406,45 @@ function Sidebar({ handleActive, user, handleLogout }) {
                       </svg>
                       <span className="item-text text-sm sm:text-base lg:text-lg font-medium leading-none min-w-0 truncate">
                         {t("dashboard.audits")}
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              )}
+
+              {/* Branding: Only Admin */}
+              {isAdmin && (
+                <li
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${location === "/settings/branding" ? "nav-active" : ""
+                    }`}
+                >
+                  <Link to="/settings/branding">
+                    <div className="flex items-center space-x-2 sm:space-x-2.5">
+                      <svg
+                        width="18"
+                        height="21"
+                        viewBox="0 0 18 21"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
+                      >
+                        <path
+                          d="M2 3.5C2 2.11929 3.11929 1 4.5 1H13.5C14.8807 1 16 2.11929 16 3.5V17.5C16 18.8807 14.8807 20 13.5 20H4.5C3.11929 20 2 18.8807 2 17.5V3.5Z"
+                          fill="#1A202C"
+                        />
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M6.75 7.5C7.57843 7.5 8.25 6.82843 8.25 6C8.25 5.17157 7.57843 4.5 6.75 4.5C5.92157 4.5 5.25 5.17157 5.25 6C5.25 6.82843 5.92157 7.5 6.75 7.5Z"
+                          fill="#22C55E"
+                        />
+                        <path
+                          d="M3 17.5L7.25 12L10.5 15L13 11.5L15.5 17.5H3Z"
+                          fill="#22C55E"
+                        />
+                      </svg>
+                      <span className="item-text text-sm sm:text-base lg:text-lg font-medium leading-none min-w-0 truncate">
+                        {t("branding.nav")}
                       </span>
                     </div>
                   </Link>

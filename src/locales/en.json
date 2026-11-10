@@ -1530,5 +1530,25 @@
       }
     },
     "restartTour": "Welcome Tour"
+  },
+  "branding": {
+    "nav": "Branding",
+    "title": "Branding",
+    "subtitle": "Configure the application name and logo",
+    "appName": "Application name",
+    "appNamePlaceholder": "e.g. Fintera",
+    "lightLogo": "Light logo",
+    "darkLogo": "Dark logo (optional)",
+    "darkLogoHint": "Used on dark backgrounds. If empty, the light logo is used.",
+    "upload": "Upload image",
+    "remove": "Remove",
+    "undo": "Undo",
+    "supportedFormats": "PNG, JPEG or WebP, up to 2 MB",
+    "save": "Save changes",
+    "saving": "Saving...",
+    "success": "Branding updated",
+    "errorNameRequired": "The application name is required",
+    "errorFile": "The file must be a PNG, JPEG or WebP image up to 2 MB",
+    "error": "Could not update branding"
   }
 }

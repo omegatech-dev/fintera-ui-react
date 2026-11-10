@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AuthContext from "../../../../../contexts/AuthContext";
 import { projectsApi } from "../../../api";
 import { useLocale } from "../../../../../contexts/LocaleContext";
+import { areaUnitLabel, linearUnitLabel } from "../../../../../shared/utils/units";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ---- Area conversion factors (from m2) ----
@@ -249,7 +250,7 @@ function CreateLot() {
                 <div className="space-y-2">
                   <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.measurementUnit")}</label>
                   <div className="w-full bg-bgray-100 dark:bg-darkblack-700 p-4 rounded-2xl border-2 border-transparent font-bold text-bgray-500 dark:text-bgray-400 italic">
-                    {measurementUnit}
+                    {areaUnitLabel(measurementUnit)}
                   </div>
                 </div>
 
@@ -291,7 +292,7 @@ function CreateLot() {
               <div className="grid md:grid-cols-3 gap-8 items-start">
                 <div className="space-y-6 md:col-span-1">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.length")} ({measurementUnit})</label>
+                    <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.length")} ({linearUnitLabel(measurementUnit)})</label>
                     <input
                       type="number"
                       value={length}
@@ -301,7 +302,7 @@ function CreateLot() {
                     {fieldErrors.length && <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider">{fieldErrors.length}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.width")} ({measurementUnit})</label>
+                    <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.width")} ({linearUnitLabel(measurementUnit)})</label>
                     <input
                       type="number"
                       value={width}
@@ -319,7 +320,7 @@ function CreateLot() {
                     <p className="text-[10px] font-black text-success-500 uppercase tracking-[0.2em] mb-2">{t("lots.calculatedArea")}</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-4xl font-black text-bgray-900 dark:text-white">{fmtNum(displayedArea)}</span>
-                      <span className="text-sm font-bold text-bgray-400">{measurementUnit}</span>
+                      <span className="text-sm font-bold text-bgray-400">{areaUnitLabel(measurementUnit)}</span>
                     </div>
                     {overrideArea && (
                       <motion.span

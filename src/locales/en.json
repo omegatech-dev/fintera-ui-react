@@ -309,6 +309,7 @@
     "lotsCountDisabledWhenReserved": "Number of lots cannot be edited when there are reserved or sold lots.",
     "enterLotsCount": "Enter number of lots",
     "measurementUnit": "Measurement Unit",
+    "measurementUnitChangeWarning": "Changing the measurement unit will convert the measurements and price per unit of every lot. Continue?",
     "pricePerUnit": "Price per Unit",
     "enterPricePerUnit": "Enter price per unit",
     "interestRate": "Interest Rate (%)",

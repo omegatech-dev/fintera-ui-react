@@ -28,6 +28,8 @@ const Project = memo(function Project({ project, user, onDeleted }) {
     price_per_square_unit,
     measurement_unit,
     address,
+    city,
+    code,
     delivery_date,
     created_at,
     guid
@@ -85,7 +87,9 @@ const Project = memo(function Project({ project, user, onDeleted }) {
           <div className="flex flex-col space-y-1">
             <div className="flex items-center text-sm text-bgray-600 dark:text-bgray-400">
               <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2 text-xs" />
-              <span className="truncate">{address || "Location not set"}</span>
+              <span className="truncate" title={address || undefined}>
+                {city || address || "Location not set"}
+              </span>
             </div>
             {delivery_date && (
               <div className="flex items-center text-xs text-bgray-500 dark:text-bgray-500">
@@ -111,6 +115,12 @@ const Project = memo(function Project({ project, user, onDeleted }) {
                 <span className="font-black mr-1 tracking-tighter uppercase">GUID:</span>
                 <span className="truncate max-w-[250px]">{guid}</span>
                 <FontAwesomeIcon icon={faCopy} className="ml-1.5 text-[8px] opacity-0 group-hover/guid:opacity-100 transition-opacity" />
+              </div>
+            )}
+            {code && (
+              <div className="flex items-center text-[10px] font-mono text-bgray-500 dark:text-bgray-400 mt-1 bg-gray-50 dark:bg-darkblack-500/50 px-2 py-0.5 rounded-md self-start border border-gray-100 dark:border-darkblack-400">
+                <span className="font-black mr-1 tracking-tighter uppercase">{t('projects.code')}:</span>
+                <span className="truncate max-w-[250px]">{code}</span>
               </div>
             )}
           </div>
@@ -218,6 +228,8 @@ Project.propTypes = {
     project_type: PropTypes.string,
     lot_count: PropTypes.number.isRequired,
     address: PropTypes.string,
+    city: PropTypes.string,
+    code: PropTypes.string,
     description: PropTypes.string,
     measurement_unit: PropTypes.string,
     price_per_square_unit: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),

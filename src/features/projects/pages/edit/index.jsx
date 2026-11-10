@@ -41,6 +41,8 @@ function EditProject() {
   const [guid, setGuid] = useState("");
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [code, setCode] = useState("");
   const [lotCount, setLotCount] = useState(0);
   const [pricePerSquareUnit, setPricePerSquareUnit] = useState(0);
   const [measurementUnit, setMeasurementUnit] = useState("m2");
@@ -73,6 +75,8 @@ function EditProject() {
         setGuid(pdata.guid || "");
         setDescription(pdata.description || "");
         setAddress(pdata.address || "");
+        setCity(pdata.city || "");
+        setCode(pdata.code || "");
         setLotCount(pdata.lot_count || 0);
         setPricePerSquareUnit(pdata.price_per_square_unit || 0);
         setMeasurementUnit(pdata.measurement_unit || "m2");
@@ -108,6 +112,8 @@ function EditProject() {
           guid,
           description,
           address,
+          city: city.trim() || null,
+          code: code.trim() || null,
           lot_count: Number(lotCount),
           price_per_square_unit: Number(pricePerSquareUnit),
           measurement_unit: measurementUnit,
@@ -364,6 +370,42 @@ function EditProject() {
                     onChange={(e) => setAddress(e.target.value)}
                     className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all dark:text-white"
                     placeholder={t('projects.enterAddress')}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
+                  {t('projects.city')}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
+                    <FontAwesomeIcon icon={faMapMarkerAlt} />
+                  </span>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all dark:text-white"
+                    placeholder={t('projects.enterCity')}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
+                  {t('projects.code')}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
+                    <FontAwesomeIcon icon={faFingerprint} />
+                  </span>
+                  <input
+                    type="text"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all dark:text-white"
+                    placeholder={t('projects.enterCode')}
                   />
                 </div>
               </div>

@@ -1638,12 +1638,12 @@
     "draft": "Borrador"
   },
   "media": {
-    "drawingsHint": "Los planos aceptan DWG, DXF, PDF y SVG (máx. 50 MB cada uno).",
+    "drawingsHint": "Los planos aceptan SVG, PNG, JPG y PDF (máx. 50 MB cada uno).",
     "photosHint": "Las fotos aceptan JPEG, PNG y WebP (máx. 10 MB cada una).",
     "dropPhotos": "Arrastra las fotos aquí o haz clic para buscar",
     "dropPhotosActive": "Suelta las fotos para subir",
     "drawingsTitle": "Planos del proyecto",
-    "drawingsDescription": "Planos publicados en la pestaña Planos CAD del portal.",
+    "drawingsDescription": "Planos publicados en la pestaña Planos del portal.",
     "uploadDrawings": "Subir planos",
     "uploading": "Subiendo...",
     "uploadPhotos": "Subir fotos",

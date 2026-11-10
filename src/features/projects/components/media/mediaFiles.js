@@ -1,11 +1,11 @@
 import { API_URL } from "@config";
 
-export const DRAWING_ACCEPT = ".dwg,.dxf,.pdf,.svg";
+export const DRAWING_ACCEPT = ".svg,.png,.jpg,.jpeg,.pdf";
 export const DRAWING_MAX_BYTES = 50 * 1024 * 1024;
 export const PHOTO_ACCEPT = ".jpg,.jpeg,.png,.webp";
 export const PHOTO_MAX_BYTES = 10 * 1024 * 1024;
 
-const DRAWING_EXTENSIONS = ["dwg", "dxf", "pdf", "svg"];
+const DRAWING_EXTENSIONS = ["svg", "png", "jpg", "jpeg", "pdf"];
 const PHOTO_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
 
 export function fileExtension(filename = "") {

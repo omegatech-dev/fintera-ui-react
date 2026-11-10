@@ -34,4 +34,10 @@ export const projectsApi = {
     uploadLotPhotos: (projectId, lotId, formData) => apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/photos`, formData),
     updateLotPhoto: (photoId, data) => apiClient.patch(`/api/v1/photos/${photoId}`, data),
     deleteLotPhoto: (photoId) => apiClient.delete(`/api/v1/photos/${photoId}`),
+
+    // Project payment instructions (bank accounts)
+    listPaymentInstructions: (projectId) => apiClient.get(`/api/v1/projects/${projectId}/payment-instructions`),
+    createPaymentInstruction: (projectId, data) => apiClient.post(`/api/v1/projects/${projectId}/payment-instructions`, data),
+    updatePaymentInstruction: (projectId, instructionId, data) => apiClient.patch(`/api/v1/projects/${projectId}/payment-instructions/${instructionId}`, data),
+    deletePaymentInstruction: (projectId, instructionId) => apiClient.delete(`/api/v1/projects/${projectId}/payment-instructions/${instructionId}`),
 };

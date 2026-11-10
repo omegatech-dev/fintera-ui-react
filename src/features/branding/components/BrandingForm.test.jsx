@@ -1,17 +1,16 @@
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
-import React from "react";
 
 import BrandingForm from "./BrandingForm";
-import { useBranding } from "../../../contexts/BrandingContext";
+import { useBranding } from "../../../contexts/branding";
 import { useToast } from "../../../contexts/ToastContext";
 import { brandingApi } from "../api";
 
 expect.extend(matchers);
 afterEach(cleanup);
 
-vi.mock("../../../contexts/BrandingContext", () => ({
+vi.mock("../../../contexts/branding", () => ({
   useBranding: vi.fn(),
 }));
 

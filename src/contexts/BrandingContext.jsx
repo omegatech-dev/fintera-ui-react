@@ -1,26 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { brandingApi } from "../features/branding/api";
-
-const STORAGE_KEY = "fintera_branding";
-
-// Bundled defaults: used before the first fetch, when the API is unreachable,
-// or when no custom branding is configured.
-export const DEFAULT_BRANDING = {
-  app_name: "Fintera",
-  logo_url: null,
-  logo_dark_url: null,
-};
-
-const BrandingContext = createContext();
-
-export const useBranding = () => {
-  const context = useContext(BrandingContext);
-  if (!context) {
-    // Outside the provider (e.g. during HMR), fall back to defaults.
-    return { branding: DEFAULT_BRANDING, loading: false, refresh: async () => DEFAULT_BRANDING };
-  }
-  return context;
-};
+import BrandingContext, { STORAGE_KEY, DEFAULT_BRANDING } from "./branding";
 
 const readCachedBranding = () => {
   try {
@@ -77,4 +57,4 @@ export const BrandingProvider = ({ children }) => {
   return <BrandingContext.Provider value={value}>{children}</BrandingContext.Provider>;
 };
 
-export default BrandingContext;
+export default BrandingProvider;

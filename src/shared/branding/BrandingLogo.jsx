@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
-import { useBranding } from "../../contexts/BrandingContext";
+import { useBranding } from "../../contexts/branding";
 import { getBundledLogo, resolveBrandingAssetUrl } from "./brandingUtils";
 
 /**

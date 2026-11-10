@@ -1,16 +1,15 @@
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
-import React from "react";
 
 import BrandingLogo from "./BrandingLogo";
-import { useBranding } from "../../contexts/BrandingContext";
+import { useBranding } from "../../contexts/branding";
 import { BUNDLED_LOGOS } from "./brandingUtils";
 
 expect.extend(matchers);
 afterEach(cleanup);
 
-vi.mock("../../contexts/BrandingContext", () => ({
+vi.mock("../../contexts/branding", () => ({
   useBranding: vi.fn(),
 }));
 

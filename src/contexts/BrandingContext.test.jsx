@@ -1,9 +1,9 @@
-import { render, waitFor, cleanup } from "@testing-library/react";
+import { render, screen, waitFor, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
-import React from "react";
 
-import { BrandingProvider, DEFAULT_BRANDING } from "./BrandingContext";
+import { BrandingProvider } from "./BrandingContext";
+import { DEFAULT_BRANDING, useBranding } from "./branding";
 import { brandingApi } from "../features/branding/api";
 
 expect.extend(matchers);
@@ -19,7 +19,8 @@ vi.mock("../features/branding/api", () => ({
 }));
 
 function Probe() {
-  return <div data-testid="probe">ready</div>;
+  const { branding } = useBranding();
+  return <div data-testid="app-name">{branding.app_name}</div>;
 }
 
 beforeEach(() => {
@@ -42,6 +43,11 @@ describe("BrandingProvider", () => {
 
     await waitFor(() => {
       expect(brandingApi.get).toHaveBeenCalledTimes(1);
+    });
+
+    // The configured name flows through the context
+    await waitFor(() => {
+      expect(screen.getByTestId("app-name")).toHaveTextContent("Acme");
     });
 
     // The tab title reflects the configured name

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale } from "../../../contexts/LocaleContext";
-import { useBranding } from "../../../contexts/BrandingContext";
+import { useBranding } from "../../../contexts/branding";
 import { useToast } from "../../../contexts/ToastContext";
 import { brandingApi } from "../api";
 import { getBundledLogo, resolveBrandingAssetUrl } from "../../../shared/branding/brandingUtils";

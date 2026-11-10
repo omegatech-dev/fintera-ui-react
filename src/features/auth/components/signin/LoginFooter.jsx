@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocale } from "../../../../contexts/LocaleContext";
-import { useBranding } from "../../../../contexts/BrandingContext";
+import { useBranding } from "../../../../contexts/branding";
 import LoginTermsModal from "@/shared/modals/LoginTermsModal";
 
 function LoginFooter() {

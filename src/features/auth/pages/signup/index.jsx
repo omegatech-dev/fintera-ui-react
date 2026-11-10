@@ -1,8 +1,7 @@
 import signupImg from "../../../../assets/images/illustration/signup.svg";
 import RightSide from "../../components/signin/RightSide";
 import SignUpForm from "../../components/signup/SignUpForm";
-import logoColor from "../../../../assets/images/logo/logo-color.svg";
-import logoWhite from "../../../../assets/images/logo/logo-white.svg";
+import { BrandingLogo } from "../../../../shared/branding";
 import { Link } from "react-router-dom";
 
 function SignUp() {
@@ -13,8 +12,8 @@ function SignUp() {
         <div className="lg:w-1/2 px-5 xl:pl-12 pt-10">
           <header>
             <Link to="/" className="">
-              <img src={logoColor} className="block dark:hidden" alt="Logo" />
-              <img src={logoWhite} className="hidden dark:block" alt="Logo" />
+              <BrandingLogo variant="light" className="block dark:hidden" alt="logo" />
+              <BrandingLogo variant="dark" className="hidden dark:block" alt="logo" />
             </Link>
           </header>
 

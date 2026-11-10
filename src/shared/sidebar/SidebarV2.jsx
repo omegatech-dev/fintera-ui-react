@@ -1,7 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useLocale } from "../../contexts/LocaleContext";
-import logo from "../../assets/images/logo/logo-short.svg";
-import logoW from "../../assets/images/logo/logo-short-white.svg";
+import { BrandingLogo } from "../branding";
 
 function SidebarV2({ user, handleLogout }) {
   const { pathname: location } = useLocation();
@@ -22,8 +21,8 @@ function SidebarV2({ user, handleLogout }) {
       <div className="sidebar-wrapper-collapse relative top-0 z-30 w-full">
         <div className="sidebar-header sticky top-0 z-20 flex h-[108px] w-full items-center justify-center border-b border-r border-b-[#F7F7F7] border-r-[#F7F7F7] bg-white dark:border-darkblack-500 dark:bg-darkblack-600">
           <Link to={dashboardPath}>
-            <img src={logo} className="block dark:hidden" alt="logo" />
-            <img src={logoW} className="hidden dark:block" alt="logo" />
+            <BrandingLogo variant="light" short className="block dark:hidden" alt="logo" />
+            <BrandingLogo variant="dark" short className="hidden dark:block" alt="logo" />
           </Link>
         </div>
         <div className="sidebar-body w-full pt-[14px]">
@@ -329,6 +328,44 @@ function SidebarV2({ user, handleLogout }) {
                               fillRule="evenodd"
                               clipRule="evenodd"
                               d="M9 7.25C9.41421 7.25 9.75 7.58579 9.75 8V12C9.75 12.4142 9.41421 12.75 9 12.75C8.58579 12.75 8.25 12.4142 8.25 12V8C8.25 7.58579 8.58579 7.25 9 7.25Z"
+                              fill="#22C55E"
+                              className="path-2"
+                            />
+                          </svg>
+                        </span>
+                      </Link>
+                    </li>
+                  )}
+
+                  {/* Branding: Only Admin */}
+                  {isAdmin && (
+                    <li className="item px-[43px] py-[11px]">
+                      <Link
+                        to="/settings/branding"
+                        className={`${location === "/settings/branding" ? "nav-active" : ""}`}
+                      >
+                        <span className="item-ico">
+                          <svg
+                            width="18"
+                            height="21"
+                            viewBox="0 0 18 21"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M2 3.5C2 2.11929 3.11929 1 4.5 1H13.5C14.8807 1 16 2.11929 16 3.5V17.5C16 18.8807 14.8807 20 13.5 20H4.5C3.11929 20 2 18.8807 2 17.5V3.5Z"
+                              fill="#1A202C"
+                              className="path-1"
+                            />
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M6.75 7.5C7.57843 7.5 8.25 6.82843 8.25 6C8.25 5.17157 7.57843 4.5 6.75 4.5C5.92157 4.5 5.25 5.17157 5.25 6C5.25 6.82843 5.92157 7.5 6.75 7.5Z"
+                              fill="#22C55E"
+                              className="path-2"
+                            />
+                            <path
+                              d="M3 17.5L7.25 12L10.5 15L13 11.5L15.5 17.5H3Z"
                               fill="#22C55E"
                               className="path-2"
                             />

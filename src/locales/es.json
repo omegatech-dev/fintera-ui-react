@@ -1550,5 +1550,25 @@
       }
     },
     "restartTour": "Tour de Bienvenida"
+  },
+  "branding": {
+    "nav": "Branding",
+    "title": "Branding",
+    "subtitle": "Configura el nombre y el logo de la aplicación",
+    "appName": "Nombre de la aplicación",
+    "appNamePlaceholder": "p. ej. Fintera",
+    "lightLogo": "Logo claro",
+    "darkLogo": "Logo oscuro (opcional)",
+    "darkLogoHint": "Se usa sobre fondos oscuros. Si está vacío, se usa el logo claro.",
+    "upload": "Subir imagen",
+    "remove": "Eliminar",
+    "undo": "Deshacer",
+    "supportedFormats": "PNG, JPEG o WebP, hasta 2 MB",
+    "save": "Guardar cambios",
+    "saving": "Guardando...",
+    "success": "Branding actualizado",
+    "errorNameRequired": "El nombre de la aplicación es obligatorio",
+    "errorFile": "El archivo debe ser una imagen PNG, JPEG o WebP de hasta 2 MB",
+    "error": "No se pudo actualizar el branding"
   }
 }

@@ -7,6 +7,7 @@ import "./assets/css/font-awesome-all.min.css";
 import "./index.css";
 // Swiper & Quill CSS loaded with their components (slider, editor) to reduce initial bundle egress
 import { AuthProvider } from './contexts/AuthContext.jsx';
+import { BrandingProvider } from './contexts/BrandingContext.jsx';
 import { registerSW } from "virtual:pwa-register";
 
 if (import.meta.env.MODE === "production") {
@@ -32,20 +33,22 @@ const rollbarConfig = rollbarAccessToken ? {
   }
 } : null;
 
+const appTree = (
+  <BrandingProvider>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </BrandingProvider>
+);
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     {rollbarConfig ? (
       <RollbarProvider config={rollbarConfig}>
-        <ErrorBoundary>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </ErrorBoundary>
+        <ErrorBoundary>{appTree}</ErrorBoundary>
       </RollbarProvider>
     ) : (
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      appTree
     )}
   </React.StrictMode>
 );

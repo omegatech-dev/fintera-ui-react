@@ -14,6 +14,7 @@ const Projects = lazy(() => import("./features/projects/pages"));
 const Users = lazy(() => import("./features/users/pages"));
 const Settings = lazy(() => import("./features/settings/pages"));
 const Audits = lazy(() => import("./features/audits/pages"));
+const Branding = lazy(() => import("./features/branding/pages"));
 const Analytics = lazy(() => import("./features/analytics/pages"));
 const Financing = lazy(() => import("./features/financing/pages"));
 const SignIn = lazy(() => import("./features/auth/pages/signin"));
@@ -124,6 +125,14 @@ const router = createBrowserRouter(
             <ProtectedRoute>
               <Audits />
             </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/settings/branding",
+          element: (
+            <AdminRoute>
+              <Branding />
+            </AdminRoute>
           ),
         },
         {

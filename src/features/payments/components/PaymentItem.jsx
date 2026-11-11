@@ -7,6 +7,7 @@ import { paymentsApi } from "../api";
 import { formatStatus } from "../../../shared/utils/formatStatus";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
+import { getDefaultCurrency } from "../../../shared/utils/formatSettings";
 
 function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobileCard = false }) {
   const { t } = useLocale();
@@ -24,7 +25,7 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
 
   const hasReceipt = Boolean(paymentInfo.has_receipt || paymentInfo.document_url);
 
-  const formatCurrency = (value, currency = "HNL") => {
+  const formatCurrency = (value, currency = getDefaultCurrency()) => {
     if (value === null || value === undefined) return "—";
     return `${currency} ${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
@@ -736,7 +737,7 @@ export function PaymentDetailModal({ payment, onClose }) {
   const { showToast } = useToast();
   // const token = getToken(); // Removed as we use apiClient now
 
-  const formatCurrency = (value, currency = "HNL") => {
+  const formatCurrency = (value, currency = getDefaultCurrency()) => {
     if (value === null || value === undefined) return "—";
     return `${currency} ${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };

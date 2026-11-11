@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import AuthContext from "@/contexts/AuthContext";
+import { CUSTOMER_PORTAL_URL } from "@config";
 
 /**
  * 403 screen shown when an authenticated user lacks access to a route.
@@ -10,7 +11,7 @@ import AuthContext from "@/contexts/AuthContext";
 function ForbiddenPage() {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const portalUrl = import.meta.env.VITE_CUSTOMER_PORTAL_URL;
+  const portalUrl = CUSTOMER_PORTAL_URL;
   const isCustomer = user?.role === "user";
 
   return (

@@ -4,6 +4,7 @@ import { format, isBefore, parseISO, startOfDay } from "date-fns";
 import { es, enUS } from 'date-fns/locale';
 import { useLocale } from '@/contexts/LocaleContext';
 import { useToast } from '@/contexts/ToastContext';
+import { getDefaultCurrency } from '@/shared/utils/formatSettings';
 
 import { paymentsApi } from "@/features/payments/api";
 
@@ -21,7 +22,7 @@ function TimelinePaymentCard({ payment, onPaymentSuccess, cardId }) {
     const isOverdue = isBefore(dueDate, startOfDay(new Date())) && statusLower !== 'paid' && statusLower !== 'rejected';
     const isRejected = statusLower === 'rejected';
     const rejectionReason = rejection_reason || rejection_reason_notes || reason || payment.rejection_note;
-    const currency = contract?.currency || 'HNL';
+    const currency = contract?.currency || getDefaultCurrency();
     const displayProject = project_name || contract?.lot?.project?.name || '';
     const displayLot = lot_name || contract?.lot?.name || '';
     const dateLocale = locale === 'es' ? es : enUS;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "../../../contexts/LocaleContext";
+import { formatCurrency } from "../../../shared/utils/formatters";
 
 import { dashboardApi } from "../api";
 
@@ -81,10 +82,6 @@ const CommissionsModal = ({ isActive, handleClose, initialDate }) => {
         const newDate = new Date(selectedDate);
         newDate.setMonth(newDate.getMonth() + offset);
         setSelectedDate(newDate);
-    };
-
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(amount);
     };
 
     const months = [

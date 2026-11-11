@@ -634,7 +634,7 @@
       "navLabel": "Configuración de la organización",
       "adminOnly": "Solo los administradores pueden ver y cambiar estos ajustes.",
       "general": "General",
-      "generalDescription": "Nombre de la aplicación y título del navegador",
+      "generalDescription": "Nombre, soporte, datos legales y valores regionales",
       "brandIdentity": "Identidad de marca",
       "brandIdentityDescription": "Logos usados en toda la aplicación"
     }
@@ -683,9 +683,11 @@
       "contactInformation": {
         "title": "Información de Contacto",
         "content": "Para cualquier pregunta o inquietud sobre estos Términos y Condiciones, por favor contáctenos en:",
-        "email": "Correo: support@securexapp.com",
-        "phone": "Teléfono: 31848112",
-        "address": "Dirección: [Insertar Dirección]"
+        "legalName": "Razón social",
+        "email": "Correo",
+        "phone": "Teléfono",
+        "address": "Dirección",
+        "website": "Sitio web"
       }
     },
     "footerNote": "Estos Términos y Condiciones constituyen el acuerdo completo entre usted y Fintera con respecto al uso de nuestra plataforma y servicios."
@@ -718,6 +720,8 @@
     "errorFetchingLot": "Error al cargar detalles del lote",
     "errorFetchingProject": "Error al cargar detalles del proyecto",
     "reserveAmountRequired": "El monto de reserva es requerido",
+    "minReserveAmount": "El monto mínimo de reserva es {amount} {currency}",
+    "minReserveHint": "Reserva mínima: {amount} {currency}",
     "paymentTermRequired": "El término de pago es requerido",
     "downPaymentRequired": "El pago inicial es requerido",
     "errorCreatingContract": "Error al crear contrato",
@@ -807,7 +811,7 @@
   "footer": {
     "copyright": "© 2025 Todos los Derechos Reservados",
     "madeBy": "Hecho por",
-    "securex": "SecureX"
+    "company": "Omegatech"
   },
   "signin": {
     "brandName": "Fintera",
@@ -1684,6 +1688,8 @@
     "general": {
       "title": "General",
       "subtitle": "Define el nombre que las personas ven en la aplicación.",
+      "appNameTitle": "Nombre de la aplicación",
+      "appNameSubtitle": "Este nombre aparece en la aplicación y en la pestaña del navegador.",
       "previewTitle": "Vista previa de la pestaña",
       "previewDescription": "Así se verá el nombre en la pestaña del navegador.",
       "appearsIn": "El nombre también aparece en la barra lateral, la pantalla de inicio de sesión y el pie de página.",
@@ -1692,6 +1698,75 @@
     "brandIdentity": {
       "title": "Identidad de marca",
       "subtitle": "Sube los logos que se usan en la aplicación y previsualízalos antes de guardar."
+    },
+    "supportReservations": {
+      "title": "Soporte y reservas",
+      "subtitle": "Canales de contacto y política de reservas para el portal de clientes.",
+      "whatsApp": "WhatsApp de soporte",
+      "whatsAppHint": "Incluye el código de país, por ejemplo +50499998888.",
+      "email": "Correo de soporte",
+      "reservationTitle": "Política de reservas",
+      "minAmount": "Monto mínimo de reserva",
+      "minAmountHint": "El monto más bajo que un cliente puede pagar para reservar un lote.",
+      "holdHours": "Bloqueo de reserva (horas)",
+      "holdHoursHint": "Tiempo que un lote queda apartado mientras el cliente paga. Entre 1 y 720 horas.",
+      "reservationDueDays": "Vencimiento del pago de reserva (días)",
+      "downPaymentDueDays": "Vencimiento de la prima (días)",
+      "downPaymentWithReservation": "Vencimiento de la prima con reserva (días)",
+      "errorWhatsApp": "El WhatsApp debe tener entre 8 y 20 dígitos",
+      "errorEmail": "El correo de soporte no es válido",
+      "errorHoldHours": "El bloqueo debe estar entre 1 y 720 horas",
+      "errorMinAmount": "El monto mínimo de reserva no puede ser negativo",
+      "errorDueDays": "Los vencimientos deben estar entre 1 y 365 días",
+      "errorDueOrder": "El vencimiento de la prima debe ser igual o mayor al de la reserva",
+      "saved": "Configuración de soporte y reservas actualizada",
+      "error": "No se pudo actualizar la configuración de soporte y reservas"
+    },
+    "legal": {
+      "title": "Legal y contacto",
+      "subtitle": "Datos que se muestran en los Términos y Condiciones y en los puntos de contacto.",
+      "name": "Razón social",
+      "nameHint": "El nombre registrado de la empresa usado en documentos legales.",
+      "taxId": "RTN / Identificación fiscal",
+      "taxIdHint": "RTN o identificador fiscal equivalente.",
+      "website": "Sitio web",
+      "address": "Dirección legal",
+      "addressHint": "Se muestra en la sección de contacto de los Términos y Condiciones.",
+      "effectiveDate": "Fecha de vigencia de los términos",
+      "effectiveDateHint": "Fecha que se muestra como última actualización de los Términos y Condiciones.",
+      "errorWebsite": "Ingresa un sitio web http(s) válido",
+      "errorDate": "Ingresa una fecha válida",
+      "saved": "Datos legales y de contacto actualizados",
+      "error": "No se pudieron actualizar los datos legales y de contacto"
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "subtitle": "Controla los correos de recordatorio y las notificaciones de mora.",
+      "emailEnabled": "Correos a clientes",
+      "emailEnabledHint": "Enviar correos de pagos, reservas y cuenta a los clientes.",
+      "overdueEnabled": "Recordatorios de mora",
+      "overdueEnabledHint": "Enviar correos por pagos vencidos.",
+      "upcomingDays": "Anticipación del recordatorio",
+      "upcomingDaysHint": "Días antes del vencimiento para enviar el recordatorio de pago (0–30).",
+      "deploymentHint": "La configuración de correo del despliegue aún puede desactivar todos los correos.",
+      "errorReminderDays": "La anticipación debe estar entre 0 y 30 días",
+      "saved": "Configuración de notificaciones actualizada",
+      "error": "No se pudo actualizar la configuración de notificaciones"
+    },
+    "regional": {
+      "title": "Regional",
+      "subtitle": "Moneda, idioma y zona horaria por defecto para nuevos registros y formatos.",
+      "currency": "Moneda por defecto",
+      "currencyHint": "Se usa cuando un contrato no especifica su propia moneda.",
+      "locale": "Idioma por defecto",
+      "localeHint": "Se usa cuando un usuario no ha seleccionado un idioma.",
+      "timezone": "Zona horaria",
+      "timezoneHint": "Zona horaria IANA usada para fechas en exportaciones y reportes.",
+      "errorCurrency": "Usa un código de moneda válido de tres letras",
+      "errorLocale": "Elige un idioma soportado",
+      "errorTimezone": "Ingresa una zona horaria IANA válida",
+      "saved": "Configuración regional actualizada",
+      "error": "No se pudo actualizar la configuración regional"
     },
     "appName": "Nombre de la aplicación",
     "appNamePlaceholder": "p. ej. Fintera",

@@ -8,6 +8,7 @@ import "./index.css";
 // Swiper & Quill CSS loaded with their components (slider, editor) to reduce initial bundle egress
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import { BrandingProvider } from './contexts/BrandingContext.jsx';
+import { GeneralSettingsProvider } from './contexts/GeneralSettingsContext.jsx';
 import { registerSW } from "virtual:pwa-register";
 
 if (import.meta.env.MODE === "production") {
@@ -36,7 +37,9 @@ const rollbarConfig = rollbarAccessToken ? {
 const appTree = (
   <BrandingProvider>
     <AuthProvider>
-      <App />
+      <GeneralSettingsProvider>
+        <App />
+      </GeneralSettingsProvider>
     </AuthProvider>
   </BrandingProvider>
 );

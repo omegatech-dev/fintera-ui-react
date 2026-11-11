@@ -5,6 +5,7 @@ import { useToast } from "../../../contexts/ToastContext";
 import { brandingApi } from "../api";
 import { BrandingLogo } from "../../../shared/branding";
 import { SettingsSaveBar } from "../../../shared/ui";
+import SettingsSection from "../../settings/components/SettingsSection";
 
 function AppNameForm() {
   const { t } = useLocale();
@@ -52,16 +53,11 @@ function AppNameForm() {
   };
 
   return (
-    <div className="w-full">
-      <header className="mb-6">
-        <h2 className="text-2xl font-bold text-bgray-900 dark:text-white">
-          {t("branding.general.title")}
-        </h2>
-        <p className="mt-1 text-bgray-500 dark:text-bgray-400 font-medium">
-          {t("branding.general.subtitle")}
-        </p>
-      </header>
-
+    <SettingsSection
+      title={t("branding.general.appNameTitle")}
+      description={t("branding.general.appNameSubtitle")}
+      divider={false}
+    >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label
@@ -162,7 +158,7 @@ function AppNameForm() {
           }}
         />
       </form>
-    </div>
+    </SettingsSection>
   );
 }
 

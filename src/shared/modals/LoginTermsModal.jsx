@@ -1,11 +1,14 @@
 import { useMemo } from "react";
 import PropTypes from "prop-types";
 import { useLocale } from "../../contexts/LocaleContext";
+import { useGeneralSettings } from "../../contexts/generalSettings";
+import { formatDate } from "../utils/formatters";
 import enTranslations from "../../locales/en.json";
 import esTranslations from "../../locales/es.json";
 
 function LoginTermsModal({ isActive, onClose }) {
   const { t, locale } = useLocale();
+  const { settings } = useGeneralSettings();
   const currentDate = useMemo(
     () =>
       new Date().toLocaleDateString(locale === "es" ? "es" : "en-US", {
@@ -15,6 +18,9 @@ function LoginTermsModal({ isActive, onClose }) {
       }),
     [locale]
   );
+  const effectiveDate = settings.terms_effective_date
+    ? formatDate(settings.terms_effective_date)
+    : currentDate;
 
   const getTranslationArray = (key) => {
     const keys = key.split(".");
@@ -60,7 +66,7 @@ function LoginTermsModal({ isActive, onClose }) {
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            {t("termsAndConditions.lastUpdated")}: {currentDate}
+            {t("termsAndConditions.lastUpdated")}: {effectiveDate}
           </div>
 
           {/* 1. Acceptance */}
@@ -184,9 +190,45 @@ function LoginTermsModal({ isActive, onClose }) {
             <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-2">
               {t("termsAndConditions.sections.contactInformation.content")}
             </p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">{t("termsAndConditions.sections.contactInformation.email")}</p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">{t("termsAndConditions.sections.contactInformation.phone")}</p>
-            <p className="text-xs text-gray-600 dark:text-gray-400">{t("termsAndConditions.sections.contactInformation.address")}</p>
+            <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+              {settings.legal_name && (
+                <p>
+                  {t("termsAndConditions.sections.contactInformation.legalName")}:{" "}
+                  {settings.legal_name}
+                </p>
+              )}
+              {settings.support_email && (
+                <p>
+                  {t("termsAndConditions.sections.contactInformation.email")}:{" "}
+                  {settings.support_email}
+                </p>
+              )}
+              {settings.support_whatsapp && (
+                <p>
+                  {t("termsAndConditions.sections.contactInformation.phone")}:{" "}
+                  {settings.support_whatsapp}
+                </p>
+              )}
+              {settings.legal_address && (
+                <p>
+                  {t("termsAndConditions.sections.contactInformation.address")}:{" "}
+                  {settings.legal_address}
+                </p>
+              )}
+              {settings.website && (
+                <p>
+                  {t("termsAndConditions.sections.contactInformation.website")}:{" "}
+                  <a
+                    href={settings.website}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+                  >
+                    {settings.website}
+                  </a>
+                </p>
+              )}
+            </div>
           </section>
 
           <p className="text-xs text-gray-500 dark:text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-700">

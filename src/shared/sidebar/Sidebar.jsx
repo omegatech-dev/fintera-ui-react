@@ -537,14 +537,14 @@ function Sidebar({ handleActive, user, handleLogout }) {
             {t("footer.copyright")}
           </p>
           <p className="text-xs sm:text-sm font-medium text-bgray-700">
-            {t("footer.madeBy")}
+            {t("footer.madeBy")}{" "}
             <a
-              href="http://www.securexapp.com"
+              href="https://omegatech.dev/"
               target="_blank"
               rel="noreferrer"
-              className="border-b font-semibold hover:text-blue-600 ml-1"
+              className="border-b font-semibold hover:text-blue-600"
             >
-              {t("footer.securex")}
+              {t("footer.company")}
             </a>
           </p>
         </div>

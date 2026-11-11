@@ -13,6 +13,7 @@ import {
     faCopy
 } from "@fortawesome/free-solid-svg-icons";
 import { formatStatus } from "../../../../shared/utils/formatStatus";
+import { formatCurrency } from "../../../../shared/utils/formatters";
 import { useToast } from "../../../../contexts/ToastContext";
 import { createPortal } from "react-dom";
 import PaymentScheduleModal from "../PaymentScheduleModal";
@@ -179,7 +180,7 @@ const ContractMobileCard = ({
                                     {t("contracts.balance")?.includes("contracts.balance") ? "Saldo Pendiente" : (t("contracts.balance") || "Saldo Pendiente")}
                                 </p>
                                 <p className="text-base font-extrabold text-bgray-900 dark:text-white">
-                                    {new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(contract.balance)}
+                                    {formatCurrency(contract.balance, contract.currency)}
                                 </p>
                             </div>
                             <div className="text-right">
@@ -187,7 +188,7 @@ const ContractMobileCard = ({
                                     {t("contracts.total") || "Total Deuda"}
                                 </p>
                                 <p className="text-xs font-bold text-bgray-700 dark:text-bgray-300">
-                                    {new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(contract.amount)}
+                                    {formatCurrency(contract.amount, contract.currency)}
                                 </p>
                             </div>
                         </div>
@@ -205,9 +206,10 @@ const ContractMobileCard = ({
                         </div>
                         <div className="flex justify-between mt-2">
                             <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
-                                {new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(
-                                    Number(contract.total_paid ?? (Number(contract.amount) - Number(contract.balance)))
-                                )} / {new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(contract.amount)}
+                                {formatCurrency(
+                                    Number(contract.total_paid ?? (Number(contract.amount) - Number(contract.balance))),
+                                    contract.currency
+                                )} / {formatCurrency(contract.amount, contract.currency)}
                             </p>
                         </div>
                     </div>

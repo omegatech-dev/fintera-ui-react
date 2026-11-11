@@ -621,7 +621,7 @@
       "navLabel": "Organization settings",
       "adminOnly": "Only administrators can view and change these settings.",
       "general": "General",
-      "generalDescription": "Application name and browser title",
+      "generalDescription": "Application name, support, legal and regional defaults",
       "brandIdentity": "Brand identity",
       "brandIdentityDescription": "Logos used across the app"
     }
@@ -670,9 +670,11 @@
       "contactInformation": {
         "title": "Contact Information",
         "content": "For any questions or concerns about these Terms and Conditions, please contact us at:",
-        "email": "Email: support@securexapp.com",
-        "phone": "Phone: 31848112",
-        "address": "Address: [Insert Address]"
+        "legalName": "Legal name",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "website": "Website"
       }
     },
     "footerNote": "These Terms and Conditions constitute the entire agreement between you and Fintera regarding your use of our platform and services."
@@ -705,6 +707,8 @@
     "errorFetchingLot": "Error fetching lot details",
     "errorFetchingProject": "Error fetching project details",
     "reserveAmountRequired": "Reservation amount is required",
+    "minReserveAmount": "The minimum reservation amount is {amount} {currency}",
+    "minReserveHint": "Minimum reservation: {amount} {currency}",
     "paymentTermRequired": "Payment term is required",
     "downPaymentRequired": "Down payment is required",
     "errorCreatingContract": "Error creating contract",
@@ -794,7 +798,7 @@
   "footer": {
     "copyright": "© 2025 All Rights Reserved",
     "madeBy": "Made by",
-    "securex": "SecureX"
+    "company": "Omegatech"
   },
   "signin": {
     "brandName": "Fintera",
@@ -1666,6 +1670,8 @@
     "general": {
       "title": "General",
       "subtitle": "Set the name people see across the app.",
+      "appNameTitle": "Application name",
+      "appNameSubtitle": "This name appears across the app and in the browser tab.",
       "previewTitle": "Browser tab preview",
       "previewDescription": "This is how the name appears in the browser tab.",
       "appearsIn": "The name also appears in the sidebar, sign-in screen and footer.",
@@ -1674,6 +1680,75 @@
     "brandIdentity": {
       "title": "Brand identity",
       "subtitle": "Upload the logos used across the app and preview them before saving."
+    },
+    "supportReservations": {
+      "title": "Support and reservations",
+      "subtitle": "Contact channels and reservation policy for the customer portal.",
+      "whatsApp": "Support WhatsApp",
+      "whatsAppHint": "Include the country code, e.g. +50499998888.",
+      "email": "Support email",
+      "reservationTitle": "Reservation policy",
+      "minAmount": "Minimum reservation amount",
+      "minAmountHint": "The lowest amount a customer can pay to reserve a lot.",
+      "holdHours": "Reservation hold (hours)",
+      "holdHoursHint": "How long a lot stays reserved while the customer pays. Between 1 and 720 hours.",
+      "reservationDueDays": "Reservation payment due (days)",
+      "downPaymentDueDays": "Down payment due (days)",
+      "downPaymentWithReservation": "Down payment due with reservation (days)",
+      "errorWhatsApp": "The WhatsApp number must have 8 to 20 digits",
+      "errorEmail": "The support email is not valid",
+      "errorHoldHours": "The hold must be between 1 and 720 hours",
+      "errorMinAmount": "The minimum reservation amount cannot be negative",
+      "errorDueDays": "Due windows must be between 1 and 365 days",
+      "errorDueOrder": "The down payment window must be at least the reservation window",
+      "saved": "Support and reservation settings updated",
+      "error": "Could not update the support and reservation settings"
+    },
+    "legal": {
+      "title": "Legal and contact",
+      "subtitle": "Details shown in the Terms and Conditions and customer contact points.",
+      "name": "Legal name",
+      "nameHint": "The registered company name used in legal documents.",
+      "taxId": "Tax ID",
+      "taxIdHint": "RTN or equivalent tax identifier.",
+      "website": "Website",
+      "address": "Legal address",
+      "addressHint": "Shown in the Terms and Conditions contact section.",
+      "effectiveDate": "Terms effective date",
+      "effectiveDateHint": "Date shown as the last update in the Terms and Conditions.",
+      "errorWebsite": "Enter a valid http(s) website",
+      "errorDate": "Enter a valid date",
+      "saved": "Legal and contact details updated",
+      "error": "Could not update the legal and contact details"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Control customer email reminders and overdue notifications.",
+      "emailEnabled": "Customer email notifications",
+      "emailEnabledHint": "Send payment, reservation and account emails to customers.",
+      "overdueEnabled": "Overdue reminders",
+      "overdueEnabledHint": "Email customers about payments that are past due.",
+      "upcomingDays": "Upcoming reminder lead time",
+      "upcomingDaysHint": "Days before the due date to send the upcoming payment reminder (0–30).",
+      "deploymentHint": "Deployment-level email settings can still disable all customer emails.",
+      "errorReminderDays": "The reminder lead time must be between 0 and 30 days",
+      "saved": "Notification settings updated",
+      "error": "Could not update the notification settings"
+    },
+    "regional": {
+      "title": "Regional",
+      "subtitle": "Default currency, language and timezone for new records and formatting.",
+      "currency": "Default currency",
+      "currencyHint": "Used when a contract does not specify its own currency.",
+      "locale": "Default language",
+      "localeHint": "Used when a user has not selected a language.",
+      "timezone": "Timezone",
+      "timezoneHint": "IANA timezone used for dates in exports and reports.",
+      "errorCurrency": "Use a supported three-letter currency code",
+      "errorLocale": "Choose a supported language",
+      "errorTimezone": "Enter a valid IANA timezone",
+      "saved": "Regional settings updated",
+      "error": "Could not update the regional settings"
     },
     "appName": "Application name",
     "appNamePlaceholder": "e.g. Fintera",

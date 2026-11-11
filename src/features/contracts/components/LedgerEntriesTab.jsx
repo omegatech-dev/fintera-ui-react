@@ -11,6 +11,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useLocale } from '../../../contexts/LocaleContext';
 import { formatStatus } from '../../../shared/utils/formatStatus';
+import { formatCurrency } from '../../../shared/utils/formatters';
 
 const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerEntries }) {
   const { t } = useLocale();
@@ -98,7 +99,7 @@ const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerE
             </div>
           </div>
           <div className="text-xl font-bold text-bgray-900 dark:text-white">
-            {totals.charges.toLocaleString('es-HN', { style: 'currency', currency: 'HNL' })}
+            {formatCurrency(totals.charges)}
           </div>
         </motion.div>
 
@@ -115,7 +116,7 @@ const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerE
             </div>
           </div>
           <div className="text-xl font-bold text-bgray-900 dark:text-white">
-            {totals.payments.toLocaleString('es-HN', { style: 'currency', currency: 'HNL' })}
+            {formatCurrency(totals.payments)}
           </div>
         </motion.div>
 
@@ -132,7 +133,7 @@ const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerE
             </div>
           </div>
           <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-            {totals.balance.toLocaleString('es-HN', { style: 'currency', currency: 'HNL' })}
+            {formatCurrency(totals.balance)}
           </div>
         </motion.div>
       </div>
@@ -213,13 +214,13 @@ const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerE
 
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className={`text-sm font-bold ${isCharge ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                        {isCharge ? '' : '+'}{amount.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} HNL
+                        {isCharge ? '' : '+'}{formatCurrency(amount)}
                       </div>
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <span className="text-sm font-semibold text-bgray-900 dark:text-white">
-                        {runningBalance.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} HNL
+                        {formatCurrency(runningBalance)}
                       </span>
                     </td>
                   </motion.tr>

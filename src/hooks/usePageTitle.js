@@ -72,9 +72,17 @@ export const usePageTitle = () => {
         title: t('header.pageTitle.audits'),
         subtitle: t('audits.viewSystemActivity')
       },
+      '/settings': {
+        title: t('settings.admin.title'),
+        subtitle: t('settings.admin.subtitle')
+      },
+      '/settings/general': {
+        title: t('settings.admin.title'),
+        subtitle: t('settings.admin.generalDescription')
+      },
       '/settings/branding': {
-        title: t('branding.title'),
-        subtitle: t('branding.subtitle')
+        title: t('settings.admin.title'),
+        subtitle: t('settings.admin.brandIdentityDescription')
       },
       '/balance': {
         title: t('header.pageTitle.balance'),

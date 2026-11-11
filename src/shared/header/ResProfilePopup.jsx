@@ -71,7 +71,7 @@ function ResProfilePopup({ isActive }) {
             <li className="w-full">
               <Link to={userId ? `/settings/user/${userId}` : "#"} onClick={(e) => !userId && e.preventDefault()}>
                 <div className="rounded-lg p-[14px] text-bgray-600 hover:bg-bgray-100 hover:text-bgray-900 dark:text-bgray-50 dark:hover:bg-darkblack-500">
-                  <span className="text-sm font-semibold">{t("profile.settings")}</span>
+                  <span className="text-sm font-semibold">{t("profile.accountSettings")}</span>
                 </div>
               </Link>
             </li>

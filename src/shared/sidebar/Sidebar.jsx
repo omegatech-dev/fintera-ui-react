@@ -14,6 +14,9 @@ function Sidebar({ handleActive, user, handleLogout }) {
   const isAdmin = user.role === "admin";
   const isSeller = user.role === "seller";
   const isUser = user.role === "user";
+  const isAdminSettingsActive =
+    location === "/settings" ||
+    (location.startsWith("/settings/") && !location.startsWith("/settings/user/"));
 
   // Dashboard path by role: admin/seller → home, regular user → financial summary
   const dashboardPath =
@@ -412,39 +415,32 @@ function Sidebar({ handleActive, user, handleLogout }) {
                 </li>
               )}
 
-              {/* Branding: Only Admin */}
+              {/* Settings: Only Admin */}
               {isAdmin && (
                 <li
-                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${location === "/settings/branding" ? "nav-active" : ""
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${isAdminSettingsActive ? "nav-active" : ""
                     }`}
                 >
-                  <Link to="/settings/branding">
+                  <Link to="/settings">
                     <div className="flex items-center space-x-2 sm:space-x-2.5">
-                      <svg
-                        width="18"
-                        height="21"
-                        viewBox="0 0 18 21"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
-                      >
-                        <path
-                          d="M2 3.5C2 2.11929 3.11929 1 4.5 1H13.5C14.8807 1 16 2.11929 16 3.5V17.5C16 18.8807 14.8807 20 13.5 20H4.5C3.11929 20 2 18.8807 2 17.5V3.5Z"
-                          fill="#1A202C"
-                        />
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M6.75 7.5C7.57843 7.5 8.25 6.82843 8.25 6C8.25 5.17157 7.57843 4.5 6.75 4.5C5.92157 4.5 5.25 5.17157 5.25 6C5.25 6.82843 5.92157 7.5 6.75 7.5Z"
-                          fill="#22C55E"
-                        />
-                        <path
-                          d="M3 17.5L7.25 12L10.5 15L13 11.5L15.5 17.5H3Z"
-                          fill="#22C55E"
-                        />
-                      </svg>
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
+                          aria-hidden="true"
+                        >
+                          <rect x="3" y="5.6" width="18" height="1.8" rx="0.9" fill="#1A202C" className="path-1" />
+                          <rect x="3" y="11.1" width="18" height="1.8" rx="0.9" fill="#1A202C" className="path-1" />
+                          <rect x="3" y="16.6" width="18" height="1.8" rx="0.9" fill="#1A202C" className="path-1" />
+                          <circle cx="15" cy="6.5" r="2.5" fill="#22C55E" className="path-2" />
+                          <circle cx="8" cy="12" r="2.5" fill="#22C55E" className="path-2" />
+                          <circle cx="12.5" cy="17.5" r="2.5" fill="#22C55E" className="path-2" />
+                        </svg>
                       <span className="item-text text-sm sm:text-base lg:text-lg font-medium leading-none min-w-0 truncate">
-                        {t("branding.nav")}
+                        {t("settings.admin.nav")}
                       </span>
                     </div>
                   </Link>

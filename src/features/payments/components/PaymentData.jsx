@@ -8,12 +8,13 @@ import { formatStatus } from "../../../shared/utils/formatStatus";
 import { paymentsApi } from "../api";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
+import { getDefaultCurrency } from "../../../shared/utils/formatSettings";
 
 // Normalize payment from API: user payments return flat shape (no nested contract); build a safe contract for display
 function normalizePayment(paymentData) {
   const paidAmount = Number(paymentData.paid_amount ?? 0);
   const contract = paymentData.contract ?? {
-    currency: paymentData.currency ?? "HNL",
+    currency: paymentData.currency ?? getDefaultCurrency(),
     lot: paymentData.lot_name
       ? { name: paymentData.lot_name, address: paymentData.lot_address ?? null }
       : null,
@@ -86,7 +87,7 @@ function PaymentData({ paymentData, onPaymentSuccess }) {
   };
 
   // Format currency function (contract may be missing when API returns flat PaymentResponse)
-  const currency = contract?.currency ?? "HNL";
+  const currency = contract?.currency ?? getDefaultCurrency();
   const fmt = (v) =>
     v === null || v === undefined || v === ""
       ? "—"

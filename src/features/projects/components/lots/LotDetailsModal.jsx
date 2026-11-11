@@ -5,6 +5,7 @@ import { useLocale } from "../../../../contexts/LocaleContext";
 import { getStatusLabel, getStatusBadgeClass } from "../../../../shared/utils/statusUtils";
 import { calculateLotAreas } from "../../../../shared/utils/areaUtils";
 import { areaUnitLabel, linearUnitLabel } from "../../../../shared/utils/units";
+import { getDefaultCurrency } from "../../../../shared/utils/formatSettings";
 
 function LotDetailsModal({ lot, onClose }) {
     const { t } = useLocale();
@@ -56,7 +57,7 @@ function LotDetailsModal({ lot, onClose }) {
 
     const formatPrice = (value) => {
         if (!value && value !== 0) return "N/A";
-        return `${Number(value).toLocaleString()} HNL`;
+        return `${Number(value).toLocaleString()} ${getDefaultCurrency()}`;
     };
 
     return (

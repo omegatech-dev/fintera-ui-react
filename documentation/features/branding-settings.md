@@ -19,10 +19,55 @@ navigation shows the forbidden page. The personal profile link is labeled
 
 ## General
 
-`src/features/branding/components/AppNameForm.jsx` updates `app_name` through
-`brandingApi.update()` and refreshes `BrandingContext`. The name is previewed in
-a browser tab, and an empty/whitespace name is blocked with inline feedback. A
-sticky save bar appears only when the name has changed.
+`/settings/general` is presented as open sections separated by dividers, with no
+nested cards:
+
+- **Application name** — `src/features/branding/components/AppNameForm.jsx`
+  updates `app_name` through `brandingApi.update()` and previews the browser tab.
+- **Support and reservations** — support WhatsApp/email, hold hours, minimum
+  reservation amount, and reservation/down-payment due windows.
+- **Legal and contact** — legal name, tax ID, address, website, and terms
+  effective date.
+- **Notifications** — email notifications, overdue reminders, and upcoming
+  reminder lead time.
+- **Regional** — default currency, locale, and timezone.
+
+Each section uses `SettingsSection` and its own save/discard bar. Saving a section
+updates only that section's values; `GeneralSettingsProvider` sends a merged
+settings snapshot so the rest of the row is preserved even before the API
+supports partial merges.
+
+`GeneralSettingsProvider` loads `GET /api/v1/settings` on startup, caches the
+result in `fintera_general_settings`, and exposes `useGeneralSettings()`.
+Formatting defaults are applied through `src/shared/utils/formatSettings.js`, so
+`formatCurrency`, `formatLargeNumber`, and `formatDate` use the configured
+currency/locale/timezone while record-specific values still win.
+
+The Terms page and login terms modal render support/legal contact details from
+the same settings context.
+
+### Settings contract
+
+| Group | Fields |
+| --- | --- |
+| Support/legal | `support_whatsapp`, `support_email`, `legal_name`, `legal_tax_id`, `legal_address`, `website`, `terms_effective_date` |
+| Reservations | `reservation_hold_hours`, `reservation_min_amount`, `reservation_due_days`, `down_payment_due_days`, `down_payment_due_days_with_reservation` |
+| Notifications | `email_notifications_enabled`, `upcoming_reminder_days`, `overdue_reminders_enabled` |
+| Regional | `default_currency`, `default_locale`, `timezone` |
+
+Defaults preserve the previous behavior: 48 hold hours, 5,000 minimum reserve,
+7/14/21 due days, one upcoming reminder day, notifications enabled, HNL, `es`,
+and `America/Tegucigalpa`. Empty contact/legal values fall back to the current
+hardcoded details: `support@omegatech.dev`, `+50431848112`, “Omegatech S. de
+R.L.” and `https://omegatech.dev/`.
+
+### External dependency
+
+The extended settings require an additive FinteraAPI migration that adds these
+columns and makes `PUT /api/v1/settings` merge provided fields. FinteraUI falls
+back to defaults if the API does not return the new fields. FinteraWeb is the
+follow-up consumer for the reservation minimum, currency/locale formatting, and
+dynamic hold copy.
 
 ## Brand identity
 
@@ -61,14 +106,22 @@ uses `aria-live`, and the upload zone is keyboard operable.
 ## Internationalization
 
 New strings use `settings.admin.*`, `branding.general.*`,
-`branding.brandIdentity.*`, `branding.guidance.*`, `branding.preview.*`, and
-`branding.upload.*` keys in `src/locales/en.json` and `src/locales/es.json`.
+`branding.brandIdentity.*`, `branding.supportReservations.*`,
+`branding.legal.*`, `branding.notifications.*`, `branding.regional.*`,
+`branding.guidance.*`, `branding.preview.*`, and `branding.upload.*` keys in
+`src/locales/en.json` and `src/locales/es.json`.
 
 ## Tests
 
 - `src/features/branding/logoRules.test.js`
 - `src/features/branding/components/AppNameForm.test.jsx`
 - `src/features/branding/components/BrandIdentityForm.test.jsx`
+- `src/features/settings/components/GeneralSettingsForm.test.jsx`
+- `src/contexts/GeneralSettingsContext.test.jsx`
+- `src/shared/utils/formatters.test.js`
+- `src/features/projects/pages/reserve/reserveRules.test.js`
+- `src/shared/modals/LoginTermsModal.test.jsx`
+- `src/contexts/__tests__/LocaleContext.test.jsx`
 - `src/shared/sidebar/Sidebar.test.jsx`
 - `src/Router.test.jsx`
 - `src/contexts/BrandingContext.test.jsx`

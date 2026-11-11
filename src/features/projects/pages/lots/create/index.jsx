@@ -4,6 +4,7 @@ import AuthContext from "../../../../../contexts/AuthContext";
 import { projectsApi } from "../../../api";
 import { useLocale } from "../../../../../contexts/LocaleContext";
 import { areaUnitLabel, linearUnitLabel } from "../../../../../shared/utils/units";
+import { getDefaultCurrency } from "../../../../../shared/utils/formatSettings";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ---- Area conversion factors (from m2) ----
@@ -322,7 +323,7 @@ function CreateLot() {
                     <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-2">{t("lots.estimatedPrice")}</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-4xl font-black text-bgray-900 dark:text-white">{fmtNum(effectivePricePreview)}</span>
-                      <span className="text-sm font-bold text-bgray-400">HNL</span>
+                      <span className="text-sm font-bold text-bgray-400">{getDefaultCurrency()}</span>
                     </div>
                     {overridePrice && (
                       <motion.span

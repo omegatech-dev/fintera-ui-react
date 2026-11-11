@@ -73,7 +73,7 @@ Crear un archivo `.env` en la raíz del proyecto (hay una plantilla en
 | --- | --- | --- |
 | `VITE_API_URL` | Sí | Origen de FinteraAPI incluyendo `/api/v1` (ej. `http://localhost:8081/api/v1`). |
 | `VITE_APP_ENV` | No | Entorno de la app (`development`, `staging`, `production`). |
-| `VITE_CUSTOMER_PORTAL_URL` | No | Origen público del portal de clientes (FinteraWeb). Los usuarios con rol `user` son redirigidos aquí tras iniciar sesión y la pantalla de registro enlaza aquí. Sin valor, se muestra la pantalla 403 local. Dev: `http://localhost:5173`; staging: `https://portal.staging.fintera.app`; prod: `https://portal.fintera.app`. |
+| `VITE_CUSTOMER_PORTAL_URL` | No | Origen público del portal de clientes. Los usuarios con rol `user` son redirigidos aquí tras iniciar sesión y la pantalla de registro enlaza aquí. Por defecto: `https://omegatech.dev/`. |
 | `VITE_DEFAULT_EMAIL` | No | Prellena el correo en el login durante desarrollo/staging. |
 | `VITE_DEFAULT_PASSWORD` | No | Prellena la contraseña en el login durante desarrollo/staging. |
 | `VITE_ROLLBAR_ACCESS_TOKEN` | No | Token de Rollbar para reporte de errores. |
@@ -81,12 +81,12 @@ Crear un archivo `.env` en la raíz del proyecto (hay una plantilla en
 ```env
 VITE_API_URL=http://localhost:8081/api/v1
 VITE_APP_ENV=development
-VITE_CUSTOMER_PORTAL_URL=http://localhost:5173
+VITE_CUSTOMER_PORTAL_URL=https://omegatech.dev/
 ```
 
 `VITE_CUSTOMER_PORTAL_URL` points customer (`user` role) accounts to the
-FinteraWeb customer portal; the admin app shows a redirect notice instead of the
-customer screens.
+customer portal at `https://omegatech.dev/` by default; the admin app shows a
+redirect notice instead of the customer screens.
 
 ### 4. Ejecutar en Modo Desarrollo
 ```bash

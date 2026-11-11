@@ -5,6 +5,7 @@ import { useLocale } from "../../../../contexts/LocaleContext";
 import { getStatusLabel, getStatusBadgeClass } from "../../../../shared/utils/statusUtils";
 import { calculateLotAreas } from "../../../../shared/utils/areaUtils";
 import { areaUnitLabel, linearUnitLabel } from "../../../../shared/utils/units";
+import { getDefaultCurrency } from "../../../../shared/utils/formatSettings";
 import LotDetailsModal from "./LotDetailsModal";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -67,7 +68,7 @@ const LotItem = memo(function LotItem({ lot, userRole, index = 0, isHighlighted 
 
   const formatPrice = (value) => {
     if (!value && value !== 0) return "N/A";
-    return `${Number(value).toLocaleString()} HNL`;
+    return `${Number(value).toLocaleString()} ${getDefaultCurrency()}`;
   };
 
   return (

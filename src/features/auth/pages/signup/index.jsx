@@ -3,9 +3,10 @@ import RightSide from "../../components/signin/RightSide";
 import SignUpForm from "../../components/signup/SignUpForm";
 import { BrandingLogo } from "../../../../shared/branding";
 import { Link } from "react-router-dom";
+import { CUSTOMER_PORTAL_URL } from "@config";
 
 function SignUp() {
-  const portalUrl = import.meta.env.VITE_CUSTOMER_PORTAL_URL;
+  const portalUrl = CUSTOMER_PORTAL_URL;
 
   return (
     <section className="bg-white dark:bg-darkblack-500">

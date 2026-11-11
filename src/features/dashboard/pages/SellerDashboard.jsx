@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLocale } from "../../../contexts/LocaleContext";
+import { formatCurrency } from "../../../shared/utils/formatters";
 
 import { dashboardApi } from "../api";
 import { Line } from "react-chartjs-2";
@@ -54,10 +55,7 @@ const SellerDashboard = ({ user }) => {
         fetchDashboardData();
     }, []);
 
-    // Format currency helper
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(amount);
-    };
+    // Currency formatting uses the deployment default or a record-specific currency.
 
     // Calculate stats based on API data
     const stats = useMemo(() => {
@@ -143,7 +141,7 @@ const SellerDashboard = ({ user }) => {
                             label += ': ';
                         }
                         if (context.parsed.y !== null) {
-                            label += new Intl.NumberFormat('es-HN', { style: 'currency', currency: 'HNL' }).format(context.parsed.y);
+                            label += formatCurrency(context.parsed.y);
                         }
                         return label;
                     }

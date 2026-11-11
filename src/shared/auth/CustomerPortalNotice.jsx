@@ -1,10 +1,8 @@
 import { useLocale } from "../../contexts/LocaleContext";
-
-const CUSTOMER_PORTAL_URL =
-  import.meta.env.VITE_CUSTOMER_PORTAL_URL || "http://localhost:5174";
+import { CUSTOMER_PORTAL_URL } from "@config";
 
 /**
- * Customer accounts now live in the FinteraWeb customer portal. Admin/seller
+ * Customer accounts now live in the Omegatech customer portal. Admin/seller
  * users keep using this app; `user`-role accounts are redirected here.
  */
 export default function CustomerPortalNotice() {

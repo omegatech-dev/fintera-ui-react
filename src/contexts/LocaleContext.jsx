@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import enTranslations from '../locales/en.json';
 import esTranslations from '../locales/es.json';
 import AuthContext from './AuthContext';
+import { useGeneralSettings } from './generalSettings';
 
 // Constants
 const STORAGE_KEY = 'userLocale';
@@ -64,17 +65,35 @@ export const useLocale = () => {
 };
 
 export const LocaleProvider = ({ children }) => {
+  const { settings: generalSettings } = useGeneralSettings();
+  const regionalDefault = generalSettings?.default_locale;
   // Initialize from localStorage directly to avoid flicker
   const [locale, setLocale] = useState(() => {
     try {
       const savedLocale = localStorage.getItem(STORAGE_KEY);
-      return (savedLocale && translations[savedLocale]) ? savedLocale : DEFAULT_LOCALE;
+      if (savedLocale && translations[savedLocale]) return savedLocale;
+      if (regionalDefault && translations[regionalDefault]) return regionalDefault;
+      return DEFAULT_LOCALE;
     } catch {
       return DEFAULT_LOCALE;
     }
   });
 
   const { user } = useContext(AuthContext);
+  const userSelectedRef = useRef(false);
+
+  // Follow the deployment default only when the user has not chosen a locale.
+  useEffect(() => {
+    try {
+      const savedLocale = localStorage.getItem(STORAGE_KEY);
+      if (!savedLocale && regionalDefault && translations[regionalDefault] && regionalDefault !== locale) {
+        setLocale(regionalDefault);
+      }
+    } catch {
+      // Storage unavailable: keep the current locale.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regionalDefault]);
 
   // Sync with AuthContext user locale if available.
   // Depend on user?.locale so this only fires when the locale property
@@ -83,13 +102,16 @@ export const LocaleProvider = ({ children }) => {
   const userLocale = user?.locale;
   useEffect(() => {
     if (userLocale && translations[userLocale] && userLocale !== locale) {
+      userSelectedRef.current = true;
       setLocale(userLocale);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLocale]);
 
-  // Save locale to localStorage whenever it changes
+  // Save locale to localStorage only after an explicit user choice. This keeps
+  // the deployment default usable until the user picks a language.
   useEffect(() => {
+    if (!userSelectedRef.current) return;
     try {
       localStorage.setItem(STORAGE_KEY, locale);
     } catch (error) {
@@ -118,6 +140,7 @@ export const LocaleProvider = ({ children }) => {
 
   const changeLocale = useCallback((newLocale) => {
     if (SUPPORTED_LOCALES[newLocale]) {
+      userSelectedRef.current = true;
       setLocale(newLocale);
     } else {
       console.warn(`Locale "${newLocale}" is not supported. Supported locales:`, Object.keys(SUPPORTED_LOCALES));

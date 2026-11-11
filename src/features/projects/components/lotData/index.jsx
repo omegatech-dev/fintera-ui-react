@@ -2,9 +2,11 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { areaUnitLabel, linearUnitLabel } from "../../../../shared/utils/units";
+import { getDefaultCurrency } from "../../../../shared/utils/formatSettings";
 
 function LotData({ lotInfo, index }) {
   const { t } = useLocale();
+  const currency = getDefaultCurrency();
   const {
     id,
     project_id,
@@ -37,10 +39,10 @@ function LotData({ lotInfo, index }) {
                 {t('lots.width')}: {width} {linearUnitLabel(measurement_unit)}
               </span>•{" "}
               <span className="font-medium text-base text-bgray-700 dark:text-bgray-50">
-                {t('lots.price')}: {price} HNL
+                {t('lots.price')}: {price} {currency}
               </span>•{" "}
               <span className="font-medium text-base text-bgray-700 dark:text-bgray-50">
-                {t('contracts.balance')}: {balance} HNL
+                {t('contracts.balance')}: {balance} {currency}
               </span>•{" "}
             </div>
           </div>

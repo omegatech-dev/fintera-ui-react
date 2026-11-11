@@ -1,157 +1,390 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
-import { settingsApi } from "../api";
+import { SettingsSaveBar } from "../../../shared/ui";
+import SettingsSection from "./SettingsSection";
+import { useSettingsDraft } from "../hooks/useSettingsDraft";
+import {
+  settingsErrorClass,
+  settingsGridClass,
+  settingsHelperClass,
+  settingsInputClass,
+  settingsInputDefaultClass,
+  settingsInputErrorClass,
+  settingsLabelClass,
+} from "./settingsFormStyles";
 
-const inputClass =
-  "w-full rounded-xl border border-bgray-200 dark:border-darkblack-400 bg-white dark:bg-darkblack-500 px-3.5 py-2.5 text-sm font-semibold text-bgray-900 dark:text-white outline-none focus:border-indigo-500";
-const labelClass =
-  "mb-1 block text-xs font-bold text-bgray-700 dark:text-bgray-300";
+const FIELDS = [
+  "support_whatsapp",
+  "support_email",
+  "reservation_hold_hours",
+  "reservation_min_amount",
+  "reservation_due_days",
+  "down_payment_due_days",
+  "down_payment_due_days_with_reservation",
+];
 
-function isValidWhatsApp(value) {
-  return value === "" || /^\+?[0-9]{8,20}$/.test(value);
-}
+const inputClass = (hasError) =>
+  `${settingsInputClass} ${hasError ? settingsInputErrorClass : settingsInputDefaultClass}`;
 
-function isValidEmail(value) {
-  return value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
+const isValidWhatsApp = (value) =>
+  value === "" || /^\+?[0-9]{8,20}$/.test(value);
+const isValidEmail = (value) =>
+  value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-export default function GeneralSettingsForm() {
+function GeneralSettingsForm() {
   const { t } = useLocale();
   const { showToast } = useToast();
-  const [whatsapp, setWhatsapp] = useState("");
-  const [email, setEmail] = useState("");
-  const [holdHours, setHoldHours] = useState(48);
-  const [loading, setLoading] = useState(true);
+  const { draft, setField, reset, dirty, save, loading } = useSettingsDraft(FIELDS);
+  const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    settingsApi
-      .get()
-      .then((data) => {
-        if (!active) return;
-        const settings = data?.settings || data || {};
-        setWhatsapp(settings.support_whatsapp || "");
-        setEmail(settings.support_email || "");
-        setHoldHours(settings.reservation_hold_hours || 48);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const handleDiscard = () => {
+    reset();
+    setErrors({});
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!isValidWhatsApp(whatsapp.trim())) {
-      showToast(t("branding.errorWhatsApp"), "error");
-      return;
+    const nextErrors = {};
+    const whatsapp = String(draft.support_whatsapp || "").trim();
+    const email = String(draft.support_email || "").trim();
+    const holdHours = Number(draft.reservation_hold_hours);
+    const minAmount = Number(draft.reservation_min_amount);
+    const reservationDueDays = Number(draft.reservation_due_days);
+    const downPaymentDueDays = Number(draft.down_payment_due_days);
+    const downPaymentWithReservation = Number(
+      draft.down_payment_due_days_with_reservation
+    );
+
+    if (!isValidWhatsApp(whatsapp)) {
+      nextErrors.support_whatsapp = t("branding.supportReservations.errorWhatsApp");
     }
-    if (!isValidEmail(email.trim())) {
-      showToast(t("branding.errorEmail"), "error");
-      return;
+    if (!isValidEmail(email)) {
+      nextErrors.support_email = t("branding.supportReservations.errorEmail");
     }
-    const hours = Number(holdHours);
-    if (!Number.isFinite(hours) || hours < 1 || hours > 720) {
-      showToast(t("branding.errorHoldHours"), "error");
+    if (!Number.isFinite(holdHours) || holdHours < 1 || holdHours > 720) {
+      nextErrors.reservation_hold_hours = t(
+        "branding.supportReservations.errorHoldHours"
+      );
+    }
+    if (!Number.isFinite(minAmount) || minAmount < 0) {
+      nextErrors.reservation_min_amount = t(
+        "branding.supportReservations.errorMinAmount"
+      );
+    }
+    if (
+      !Number.isFinite(reservationDueDays) ||
+      reservationDueDays < 1 ||
+      reservationDueDays > 365
+    ) {
+      nextErrors.reservation_due_days = t(
+        "branding.supportReservations.errorDueDays"
+      );
+    }
+    if (
+      !Number.isFinite(downPaymentDueDays) ||
+      downPaymentDueDays < 1 ||
+      downPaymentDueDays > 365
+    ) {
+      nextErrors.down_payment_due_days = t(
+        "branding.supportReservations.errorDueDays"
+      );
+    } else if (
+      Number.isFinite(reservationDueDays) &&
+      downPaymentDueDays < reservationDueDays
+    ) {
+      nextErrors.down_payment_due_days = t(
+        "branding.supportReservations.errorDueOrder"
+      );
+    }
+    if (
+      !Number.isFinite(downPaymentWithReservation) ||
+      downPaymentWithReservation < 1 ||
+      downPaymentWithReservation > 365
+    ) {
+      nextErrors.down_payment_due_days_with_reservation = t(
+        "branding.supportReservations.errorDueDays"
+      );
+    } else if (
+      Number.isFinite(downPaymentDueDays) &&
+      downPaymentWithReservation < downPaymentDueDays
+    ) {
+      nextErrors.down_payment_due_days_with_reservation = t(
+        "branding.supportReservations.errorDueOrder"
+      );
+    }
+
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
       return;
     }
 
+    setErrors({});
     setSaving(true);
     try {
-      const data = await settingsApi.update({
-        support_whatsapp: whatsapp.trim(),
-        support_email: email.trim(),
-        reservation_hold_hours: Math.round(hours),
+      await save({
+        support_whatsapp: whatsapp,
+        support_email: email,
+        reservation_hold_hours: Math.round(holdHours),
+        reservation_min_amount: minAmount,
+        reservation_due_days: Math.round(reservationDueDays),
+        down_payment_due_days: Math.round(downPaymentDueDays),
+        down_payment_due_days_with_reservation: Math.round(
+          downPaymentWithReservation
+        ),
       });
-      const settings = data?.settings || data || {};
-      setWhatsapp(settings.support_whatsapp || "");
-      setEmail(settings.support_email || "");
-      setHoldHours(settings.reservation_hold_hours || Math.round(hours));
-      showToast(t("branding.generalSaved"), "success");
-    } catch (err) {
-      showToast(err?.message || t("branding.generalError"), "error");
+      showToast(t("branding.supportReservations.saved"), "success");
+    } catch (requestError) {
+      showToast(
+        requestError?.message || t("branding.supportReservations.error"),
+        "error"
+      );
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <section className="mt-8 rounded-[2rem] border border-bgray-200 bg-white p-6 sm:p-8 shadow-sm dark:border-darkblack-400 dark:bg-darkblack-600">
-      <header className="mb-5">
-        <h3 className="text-lg font-black text-bgray-900 dark:text-white">
-          {t("branding.generalTitle")}
-        </h3>
-        <p className="mt-1 text-xs font-semibold text-bgray-500">
-          {t("branding.generalSubtitle")}
-        </p>
-      </header>
-
+    <SettingsSection
+      title={t("branding.supportReservations.title")}
+      description={t("branding.supportReservations.subtitle")}
+    >
       {loading ? (
-        <p className="text-sm font-semibold text-bgray-500">
-          {t("common.loading")}
-        </p>
+        <div className="space-y-3" aria-live="polite">
+          <div className="h-12 animate-pulse rounded-xl bg-bgray-100 dark:bg-darkblack-500" />
+          <div className="h-12 animate-pulse rounded-xl bg-bgray-100 dark:bg-darkblack-500" />
+          <div className="h-12 animate-pulse rounded-xl bg-bgray-100 dark:bg-darkblack-500" />
+        </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block">
-              <span className={labelClass}>
-                {t("branding.supportWhatsApp")}
-              </span>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className={settingsGridClass}>
+            <div>
+              <label htmlFor="support-whatsapp" className={settingsLabelClass}>
+                {t("branding.supportReservations.whatsApp")}
+              </label>
               <input
-                aria-label={t("branding.supportWhatsApp")}
-                className={inputClass}
+                id="support-whatsapp"
+                className={inputClass(errors.support_whatsapp)}
                 placeholder="+50499998888"
-                value={whatsapp}
-                onChange={(event) => setWhatsapp(event.target.value)}
+                value={draft.support_whatsapp || ""}
+                onChange={(event) => {
+                  setField("support_whatsapp", event.target.value);
+                  if (errors.support_whatsapp) {
+                    setErrors((previous) => ({ ...previous, support_whatsapp: "" }));
+                  }
+                }}
+                aria-invalid={Boolean(errors.support_whatsapp)}
+                aria-describedby="support-whatsapp-help support-whatsapp-error"
               />
-              <span className="mt-1 block text-[11px] text-bgray-500">
-                {t("branding.supportWhatsAppHint")}
-              </span>
-            </label>
+              <p id="support-whatsapp-help" className={settingsHelperClass}>
+                {t("branding.supportReservations.whatsAppHint")}
+              </p>
+              {errors.support_whatsapp && (
+                <p id="support-whatsapp-error" role="alert" className={settingsErrorClass}>
+                  {errors.support_whatsapp}
+                </p>
+              )}
+            </div>
 
-            <label className="block">
-              <span className={labelClass}>{t("branding.supportEmail")}</span>
+            <div>
+              <label htmlFor="support-email" className={settingsLabelClass}>
+                {t("branding.supportReservations.email")}
+              </label>
               <input
-                aria-label={t("branding.supportEmail")}
+                id="support-email"
                 type="email"
-                className={inputClass}
+                className={inputClass(errors.support_email)}
                 placeholder="soporte@fintera.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                value={draft.support_email || ""}
+                onChange={(event) => {
+                  setField("support_email", event.target.value);
+                  if (errors.support_email) {
+                    setErrors((previous) => ({ ...previous, support_email: "" }));
+                  }
+                }}
+                aria-invalid={Boolean(errors.support_email)}
+                aria-describedby="support-email-error"
               />
-            </label>
-
-            <label className="block">
-              <span className={labelClass}>{t("branding.holdHours")}</span>
-              <input
-                aria-label={t("branding.holdHours")}
-                type="number"
-                min="1"
-                max="720"
-                className={inputClass}
-                value={holdHours}
-                onChange={(event) => setHoldHours(event.target.value)}
-              />
-              <span className="mt-1 block text-[11px] text-bgray-500">
-                {t("branding.holdHoursHint")}
-              </span>
-            </label>
+              {errors.support_email && (
+                <p id="support-email-error" role="alert" className={settingsErrorClass}>
+                  {errors.support_email}
+                </p>
+              )}
+            </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-xl bg-indigo-600 px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {saving ? t("branding.saving") : t("branding.save")}
-          </button>
+          <div className="rounded-2xl bg-bgray-50 p-5 dark:bg-darkblack-500/50">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-bgray-500 dark:text-bgray-400">
+              {t("branding.supportReservations.reservationTitle")}
+            </h3>
+            <div className={`mt-4 ${settingsGridClass}`}>
+              <div>
+                <label htmlFor="reservation-min-amount" className={settingsLabelClass}>
+                  {t("branding.supportReservations.minAmount")}
+                </label>
+                <input
+                  id="reservation-min-amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className={inputClass(errors.reservation_min_amount)}
+                  value={draft.reservation_min_amount ?? 0}
+                  onChange={(event) => {
+                    setField("reservation_min_amount", event.target.value);
+                    if (errors.reservation_min_amount) {
+                      setErrors((previous) => ({ ...previous, reservation_min_amount: "" }));
+                    }
+                  }}
+                  aria-invalid={Boolean(errors.reservation_min_amount)}
+                  aria-describedby="reservation-min-amount-help reservation-min-amount-error"
+                />
+                <p id="reservation-min-amount-help" className={settingsHelperClass}>
+                  {t("branding.supportReservations.minAmountHint")}
+                </p>
+                {errors.reservation_min_amount && (
+                  <p id="reservation-min-amount-error" role="alert" className={settingsErrorClass}>
+                    {errors.reservation_min_amount}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="reservation-hold-hours" className={settingsLabelClass}>
+                  {t("branding.supportReservations.holdHours")}
+                </label>
+                <input
+                  id="reservation-hold-hours"
+                  type="number"
+                  min="1"
+                  max="720"
+                  className={inputClass(errors.reservation_hold_hours)}
+                  value={draft.reservation_hold_hours ?? 48}
+                  onChange={(event) => {
+                    setField("reservation_hold_hours", event.target.value);
+                    if (errors.reservation_hold_hours) {
+                      setErrors((previous) => ({ ...previous, reservation_hold_hours: "" }));
+                    }
+                  }}
+                  aria-invalid={Boolean(errors.reservation_hold_hours)}
+                  aria-describedby="reservation-hold-hours-help reservation-hold-hours-error"
+                />
+                <p id="reservation-hold-hours-help" className={settingsHelperClass}>
+                  {t("branding.supportReservations.holdHoursHint")}
+                </p>
+                {errors.reservation_hold_hours && (
+                  <p id="reservation-hold-hours-error" role="alert" className={settingsErrorClass}>
+                    {errors.reservation_hold_hours}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="reservation-due-days" className={settingsLabelClass}>
+                  {t("branding.supportReservations.reservationDueDays")}
+                </label>
+                <input
+                  id="reservation-due-days"
+                  type="number"
+                  min="1"
+                  max="365"
+                  className={inputClass(errors.reservation_due_days)}
+                  value={draft.reservation_due_days ?? 7}
+                  onChange={(event) => {
+                    setField("reservation_due_days", event.target.value);
+                    if (errors.reservation_due_days) {
+                      setErrors((previous) => ({ ...previous, reservation_due_days: "" }));
+                    }
+                  }}
+                  aria-invalid={Boolean(errors.reservation_due_days)}
+                  aria-describedby="reservation-due-days-error"
+                />
+                {errors.reservation_due_days && (
+                  <p id="reservation-due-days-error" role="alert" className={settingsErrorClass}>
+                    {errors.reservation_due_days}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="down-payment-due-days" className={settingsLabelClass}>
+                  {t("branding.supportReservations.downPaymentDueDays")}
+                </label>
+                <input
+                  id="down-payment-due-days"
+                  type="number"
+                  min="1"
+                  max="365"
+                  className={inputClass(errors.down_payment_due_days)}
+                  value={draft.down_payment_due_days ?? 14}
+                  onChange={(event) => {
+                    setField("down_payment_due_days", event.target.value);
+                    if (errors.down_payment_due_days) {
+                      setErrors((previous) => ({ ...previous, down_payment_due_days: "" }));
+                    }
+                  }}
+                  aria-invalid={Boolean(errors.down_payment_due_days)}
+                  aria-describedby="down-payment-due-days-error"
+                />
+                {errors.down_payment_due_days && (
+                  <p id="down-payment-due-days-error" role="alert" className={settingsErrorClass}>
+                    {errors.down_payment_due_days}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="down-payment-with-reservation" className={settingsLabelClass}>
+                  {t("branding.supportReservations.downPaymentWithReservation")}
+                </label>
+                <input
+                  id="down-payment-with-reservation"
+                  type="number"
+                  min="1"
+                  max="365"
+                  className={inputClass(errors.down_payment_due_days_with_reservation)}
+                  value={draft.down_payment_due_days_with_reservation ?? 21}
+                  onChange={(event) => {
+                    setField("down_payment_due_days_with_reservation", event.target.value);
+                    if (errors.down_payment_due_days_with_reservation) {
+                      setErrors((previous) => ({
+                        ...previous,
+                        down_payment_due_days_with_reservation: "",
+                      }));
+                    }
+                  }}
+                  aria-invalid={Boolean(errors.down_payment_due_days_with_reservation)}
+                  aria-describedby="down-payment-with-reservation-error"
+                />
+                {errors.down_payment_due_days_with_reservation && (
+                  <p
+                    id="down-payment-with-reservation-error"
+                    role="alert"
+                    className={settingsErrorClass}
+                  >
+                    {errors.down_payment_due_days_with_reservation}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <SettingsSaveBar
+            visible={dirty}
+            saving={saving}
+            disabled={saving || loading}
+            onDiscard={handleDiscard}
+            labels={{
+              unsaved: t("branding.saveBar.unsaved"),
+              discard: t("branding.saveBar.discard"),
+              save: t("branding.save"),
+              saving: t("branding.saving"),
+            }}
+          />
         </form>
       )}
-    </section>
+    </SettingsSection>
   );
 }
+
+export default GeneralSettingsForm;

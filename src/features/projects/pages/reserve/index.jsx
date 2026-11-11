@@ -7,12 +7,19 @@ import AuthContext from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import debounce from "lodash.debounce";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useGeneralSettings } from "@/contexts/generalSettings";
+import { getDefaultCurrency } from "@/shared/utils/formatSettings";
 import { motion, AnimatePresence } from "framer-motion";
 import CreditScoreCard from "../../../contracts/components/CreditScoreCard";
+import { validateReserveAmount } from "./reserveRules";
 
 function Reserve() {
   const { t } = useLocale();
+  const { settings: generalSettings } = useGeneralSettings();
   const { id, lot_id } = useParams();
+  const minReserveAmount = Number(generalSettings.reservation_min_amount) || 0;
+  const defaultCurrency =
+    generalSettings.default_currency || getDefaultCurrency();
   const [paymentTerm, setPaymentTerm] = useState(12);
   const [financingType, setFinancingType] = useState("direct");
   const [reserveAmount, setReserveAmount] = useState("");
@@ -230,8 +237,14 @@ function Reserve() {
 
     // Basic client-side validation per financing type
     const errors = [];
-    if (!reserveAmount || Number(reserveAmount) <= 0) {
-      errors.push(t("reservations.reserveAmountRequired"));
+    const reserveAmountError = validateReserveAmount(
+      reserveAmount,
+      minReserveAmount,
+      t,
+      defaultCurrency
+    );
+    if (reserveAmountError) {
+      errors.push(reserveAmountError);
     }
 
     if (financingType === "direct") {
@@ -359,7 +372,7 @@ function Reserve() {
     if (v === null || v === undefined || isNaN(v)) return "—";
     return Number(v).toLocaleString(undefined, {
       style: "currency",
-      currency: "HNL",
+      currency: defaultCurrency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -527,11 +540,11 @@ function Reserve() {
                     <div className="flex flex-col">
                       {lotOriginalPrice > lotPrice && (
                         <span className="text-[10px] text-bgray-400 line-through">
-                          {fmtNum(lotOriginalPrice)} HNL
+                          {fmtNum(lotOriginalPrice)} {defaultCurrency}
                         </span>
                       )}
                       <span className={`font-bold text-sm tabular-nums tracking-tight ${lotOriginalPrice > lotPrice ? 'text-success-500' : 'text-bgray-900 dark:text-white'}`}>
-                        {lotPrice != null ? `${fmtNum(lotPrice)} HNL` : "—"}
+                        {lotPrice != null ? `${fmtNum(lotPrice)} ${defaultCurrency}` : "—"}
                       </span>
                     </div>
                   ),
@@ -651,10 +664,18 @@ function Reserve() {
                           onChange={(e) => setReserveAmount(e.target.value)}
                           className="bg-bgray-50 dark:bg-darkblack-500 dark:text-white p-4 pl-12 rounded-2xl h-16 w-full border-2 border-transparent focus:border-success-300 focus:ring-0 transition-all font-semibold text-lg"
                           required
-                          min={1}
+                          min={minReserveAmount || 1}
                         />
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400 font-bold">L</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400 font-bold">{defaultCurrency}</span>
                       </div>
+                      {minReserveAmount > 0 && (
+                        <p className="text-xs font-medium text-bgray-500 dark:text-bgray-400">
+                          {t("reservations.minReserveHint", {
+                            amount: minReserveAmount,
+                            currency: defaultCurrency,
+                          })}
+                        </p>
+                      )}
                     </div>
 
                     <AnimatePresence>
@@ -678,7 +699,7 @@ function Reserve() {
                               required
                               min={0}
                             />
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400 font-bold">L</span>
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400 font-bold">{defaultCurrency}</span>
                           </div>
                         </motion.div>
                       )}

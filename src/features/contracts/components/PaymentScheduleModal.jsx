@@ -5,6 +5,7 @@ import AuthContext from "@/contexts/AuthContext";
 import PaymentScheduleTab from "./PaymentScheduleTab";
 import LedgerEntriesTab from "./LedgerEntriesTab";
 import ContractNotesTab from "./ContractNotesTab";
+import { formatCurrency } from "../../../shared/utils/formatters";
 
 // New sub-components and hooks
 import { useContractPayments } from "../hooks/useContractPayments";
@@ -16,13 +17,7 @@ import PaymentModalHeader from "./PaymentSchedule/PaymentModalHeader";
 import PaymentModalFooter from "./PaymentSchedule/PaymentModalFooter";
 
 // Moved outside component to prevent recreation on every render
-const fmt = (v) =>
-  v === null || v === undefined || v === ""
-    ? "—"
-    : Number(v).toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }) + " HNL";
+const fmt = (v) => formatCurrency(v);
 
 // Moved outside component as it's a pure function
 const calculateMoratoryDays = (dueDate) => {

@@ -534,6 +534,7 @@
   "profile": {
     "myProfile": "My Profile",
     "settings": "Settings",
+    "accountSettings": "Account settings",
     "users": "Users",
     "logout": "Log Out"
   },
@@ -610,7 +611,20 @@
     "securityDescription": "Manage your password",
     "terms": "Terms and Conditions",
     "termsDescription": "Legal information about platform usage terms",
-    "addWallet": "Add wallet"
+    "addWallet": "Add wallet",
+    "admin": {
+      "nav": "Settings",
+      "title": "Settings",
+      "subtitle": "Manage your organization's identity and workspace defaults.",
+      "badge": "Admin only",
+      "organization": "Organization",
+      "navLabel": "Organization settings",
+      "adminOnly": "Only administrators can view and change these settings.",
+      "general": "General",
+      "generalDescription": "Application name and browser title",
+      "brandIdentity": "Brand identity",
+      "brandIdentityDescription": "Logos used across the app"
+    }
   },
   "termsAndConditions": {
     "title": "Terms and Conditions",
@@ -1646,23 +1660,78 @@
     "errorSize": "exceeds {size}"
   },
   "branding": {
-    "nav": "Branding",
-    "title": "Branding",
-    "subtitle": "Configure the application name and logo",
+    "nav": "Settings",
+    "title": "Settings",
+    "subtitle": "Configure your organization's identity",
+    "general": {
+      "title": "General",
+      "subtitle": "Set the name people see across the app.",
+      "previewTitle": "Browser tab preview",
+      "previewDescription": "This is how the name appears in the browser tab.",
+      "appearsIn": "The name also appears in the sidebar, sign-in screen and footer.",
+      "characters": "{count}/60 characters"
+    },
+    "brandIdentity": {
+      "title": "Brand identity",
+      "subtitle": "Upload the logos used across the app and preview them before saving."
+    },
     "appName": "Application name",
     "appNamePlaceholder": "e.g. Fintera",
+    "appNameHint": "Shown in the sidebar, browser tab and sign-in screen.",
     "lightLogo": "Light logo",
+    "lightLogoHint": "Used on light backgrounds.",
     "darkLogo": "Dark logo (optional)",
     "darkLogoHint": "Used on dark backgrounds. If empty, the light logo is used.",
-    "upload": "Upload image",
+    "upload": {
+      "drop": "Drag and drop a logo",
+      "dropActive": "Drop the image to upload",
+      "dropHint": "or click to browse",
+      "qualityGood": "Looks good",
+      "qualitySmall": "Below recommended size",
+      "qualityRatio": "Unusual shape"
+    },
+    "guidance": {
+      "title": "Logo guidelines",
+      "description": "A few specs help your logo stay sharp in every part of the app.",
+      "recommendedLabel": "Recommended size",
+      "recommendedValue": "640 × 160 px (4:1)",
+      "minimumLabel": "Minimum size",
+      "minimumValue": "320 × 80 px",
+      "maxSizeLabel": "Maximum file size",
+      "maxSizeValue": "2 MB",
+      "formatsLabel": "Accepted formats",
+      "formatsValue": "PNG, WebP or JPEG",
+      "tipWordmark": "Use a horizontal wordmark that stays legible at 32 px tall.",
+      "tipBackground": "Prefer a transparent background so the logo works on light and dark surfaces.",
+      "tipDarkVariant": "Add a dark variant if your logo uses dark colors."
+    },
+    "preview": {
+      "title": "Live preview",
+      "description": "See how the logo and name will look before saving.",
+      "themeLabel": "Preview theme",
+      "light": "Light",
+      "dark": "Dark",
+      "sidebar": "Sidebar",
+      "sidebarAlt": "Sidebar logo preview",
+      "signIn": "Sign-in screen",
+      "signInAlt": "Sign-in logo preview",
+      "browserTab": "Browser tab",
+      "darkFallback": "No dark logo yet. The light logo is used on dark backgrounds."
+    },
+    "saveBar": {
+      "unsaved": "You have unsaved changes",
+      "discard": "Discard"
+    },
     "remove": "Remove",
     "undo": "Undo",
     "supportedFormats": "PNG, JPEG or WebP, up to 2 MB",
     "save": "Save changes",
     "saving": "Saving...",
-    "success": "Branding updated",
+    "success": "Settings updated",
     "errorNameRequired": "The application name is required",
+    "errorFileType": "Choose a PNG, JPEG or WebP image.",
+    "errorFileSize": "The image must be 2 MB or smaller.",
     "errorFile": "The file must be a PNG, JPEG or WebP image up to 2 MB",
-    "error": "Could not update branding"
+    "error": "Could not update settings"
   }
 }

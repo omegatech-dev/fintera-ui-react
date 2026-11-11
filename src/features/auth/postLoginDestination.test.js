@@ -55,7 +55,7 @@ describe("resolvePostLoginDestination", () => {
       type: "internal",
       path: CUSTOMER_PORTAL_FALLBACK,
     });
-    expect(resolvePostLoginDestination({ id: 4, role: "user" }, undefined)).toEqual({
+    expect(resolvePostLoginDestination({ id: 4, role: "user" }, null)).toEqual({
       type: "internal",
       path: CUSTOMER_PORTAL_FALLBACK,
     });

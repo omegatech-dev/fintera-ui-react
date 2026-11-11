@@ -540,6 +540,7 @@
   "profile": {
     "myProfile": "Mi Perfil",
     "settings": "Configuración",
+    "accountSettings": "Configuración de la cuenta",
     "users": "Usuarios",
     "logout": "Salir"
   },
@@ -623,7 +624,20 @@
     "securityDescription": "Gestiona tu contraseña",
     "terms": "Términos y Condiciones",
     "termsDescription": "Información Legal de las condiciones de uso de la plataforma",
-    "addWallet": "Agregar billetera"
+    "addWallet": "Agregar billetera",
+    "admin": {
+      "nav": "Configuración",
+      "title": "Configuración",
+      "subtitle": "Administra la identidad de tu organización y los valores del espacio de trabajo.",
+      "badge": "Solo administradores",
+      "organization": "Organización",
+      "navLabel": "Configuración de la organización",
+      "adminOnly": "Solo los administradores pueden ver y cambiar estos ajustes.",
+      "general": "General",
+      "generalDescription": "Nombre de la aplicación y título del navegador",
+      "brandIdentity": "Identidad de marca",
+      "brandIdentityDescription": "Logos usados en toda la aplicación"
+    }
   },
   "termsAndConditions": {
     "title": "Términos y Condiciones",
@@ -1664,23 +1678,78 @@
     "errorSize": "supera {size}"
   },
   "branding": {
-    "nav": "Branding",
-    "title": "Branding",
-    "subtitle": "Configura el nombre y el logo de la aplicación",
+    "nav": "Configuración",
+    "title": "Configuración",
+    "subtitle": "Configura la identidad de tu organización",
+    "general": {
+      "title": "General",
+      "subtitle": "Define el nombre que las personas ven en la aplicación.",
+      "previewTitle": "Vista previa de la pestaña",
+      "previewDescription": "Así se verá el nombre en la pestaña del navegador.",
+      "appearsIn": "El nombre también aparece en la barra lateral, la pantalla de inicio de sesión y el pie de página.",
+      "characters": "{count}/60 caracteres"
+    },
+    "brandIdentity": {
+      "title": "Identidad de marca",
+      "subtitle": "Sube los logos que se usan en la aplicación y previsualízalos antes de guardar."
+    },
     "appName": "Nombre de la aplicación",
     "appNamePlaceholder": "p. ej. Fintera",
+    "appNameHint": "Se muestra en la barra lateral, la pestaña del navegador y la pantalla de inicio de sesión.",
     "lightLogo": "Logo claro",
+    "lightLogoHint": "Se usa sobre fondos claros.",
     "darkLogo": "Logo oscuro (opcional)",
     "darkLogoHint": "Se usa sobre fondos oscuros. Si está vacío, se usa el logo claro.",
-    "upload": "Subir imagen",
+    "upload": {
+      "drop": "Arrastra y suelta un logo",
+      "dropActive": "Suelta la imagen para subirla",
+      "dropHint": "o haz clic para buscar",
+      "qualityGood": "Se ve bien",
+      "qualitySmall": "Menor al tamaño recomendado",
+      "qualityRatio": "Forma poco habitual"
+    },
+    "guidance": {
+      "title": "Guía del logo",
+      "description": "Estas medidas ayudan a que tu logo se vea nítido en toda la aplicación.",
+      "recommendedLabel": "Tamaño recomendado",
+      "recommendedValue": "640 × 160 px (4:1)",
+      "minimumLabel": "Tamaño mínimo",
+      "minimumValue": "320 × 80 px",
+      "maxSizeLabel": "Tamaño máximo",
+      "maxSizeValue": "2 MB",
+      "formatsLabel": "Formatos aceptados",
+      "formatsValue": "PNG, WebP o JPEG",
+      "tipWordmark": "Usa un logo horizontal que siga siendo legible a 32 px de alto.",
+      "tipBackground": "Prefiere un fondo transparente para que funcione sobre superficies claras y oscuras.",
+      "tipDarkVariant": "Agrega una variante oscura si tu logo usa colores oscuros."
+    },
+    "preview": {
+      "title": "Vista previa en vivo",
+      "description": "Así se verán el logo y el nombre antes de guardar.",
+      "themeLabel": "Tema de vista previa",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "sidebar": "Barra lateral",
+      "sidebarAlt": "Vista previa del logo en la barra lateral",
+      "signIn": "Pantalla de inicio de sesión",
+      "signInAlt": "Vista previa del logo en el inicio de sesión",
+      "browserTab": "Pestaña del navegador",
+      "darkFallback": "Aún no hay un logo oscuro. Se usa el logo claro sobre fondos oscuros."
+    },
+    "saveBar": {
+      "unsaved": "Tienes cambios sin guardar",
+      "discard": "Descartar"
+    },
     "remove": "Eliminar",
     "undo": "Deshacer",
     "supportedFormats": "PNG, JPEG o WebP, hasta 2 MB",
     "save": "Guardar cambios",
     "saving": "Guardando...",
-    "success": "Branding actualizado",
+    "success": "Configuración actualizada",
     "errorNameRequired": "El nombre de la aplicación es obligatorio",
+    "errorFileType": "Elige una imagen PNG, JPEG o WebP.",
+    "errorFileSize": "La imagen debe pesar 2 MB o menos.",
     "errorFile": "El archivo debe ser una imagen PNG, JPEG o WebP de hasta 2 MB",
-    "error": "No se pudo actualizar el branding"
+    "error": "No se pudo actualizar la configuración"
   }
 }

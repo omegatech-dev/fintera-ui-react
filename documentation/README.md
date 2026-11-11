@@ -28,6 +28,7 @@ Technical documentation for the FinteraUI frontend.
 - [Project media](features/project-media.md)
 - [Project publishing](features/project-publishing.md)
 - [Project cards](features/project-cards.md)
+- [Admin settings and brand identity](features/branding-settings.md)
 
 ## QA
 

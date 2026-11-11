@@ -43,19 +43,37 @@ Relative `/uploads/...` paths are resolved against the API origin. The existing
 resolver that strips a trailing `/api/v1` so it works with either
 configuration.
 
-### Route `/settings/branding` with `AdminRoute`
+### Admin Settings hub at `/settings` with `AdminRoute`
 
-The existing settings route is user-scoped (`/settings/user/:userId`), so global
-branding gets its own top-level route, lazy-loaded and wrapped in `AdminRoute`
-like `/projects/create`. Sidebar entries are added to both `Sidebar` and
-`SidebarV2` behind `isAdmin`, mirroring the Analytics/Audits pattern.
+The existing settings route is user-scoped (`/settings/user/:userId`), so the
+organization settings hub gets its own route tree. `/settings` is lazy-loaded
+and wrapped in `AdminRoute`; it renders a section navigation with General
+(`/settings/general`) and Brand identity (`/settings/branding`), and redirects
+the index route to General. The old `/settings/branding` URL keeps working.
+Sidebar entries are added to both `Sidebar` and `SidebarV2` behind `isAdmin`,
+mirroring the Analytics/Audits pattern, with an active state that excludes the
+personal `/settings/user/*` routes. The personal settings link in the profile
+popup is renamed "Account settings" to avoid ambiguity.
+
+### Brand identity guidance and previews
+
+The Brand identity section keeps logo guidance visible: recommended
+640 × 160 px (4:1), minimum 320 × 80 px, 2 MB limit, PNG/JPEG/WebP, transparent
+background, and a horizontal wordmark legible at 32 px. Upload cards support
+drag-and-drop, click, keyboard activation, inline metadata, and non-blocking
+warnings for images below the recommended size or far from a horizontal ratio.
+A live preview shows the logo in the sidebar, sign-in screen, and browser tab,
+with a light/dark toggle and the name taken from branding state. File type and
+size are hard validation rules; dimension and ratio checks are advisory.
 
 ### Save flow
 
-The form keeps `app_name` plus pending files/removals in local state and calls
-the API in sequence (remove → upload → name update), then `refresh()`es the
-context and shows a toast. Previews use `URL.createObjectURL` and revoke on
-change/unmount. Accepted types mirror the API: PNG/JPEG/WebP, 2 MB.
+The General form updates only `app_name`; the Brand identity form manages pending
+files and removals. Both call the API in sequence (remove → upload → name
+update where applicable), then `refresh()` the context and show a toast. A
+sticky save bar appears only when there are unsaved changes and offers Discard.
+Previews use `URL.createObjectURL` and revoke on change/unmount. Accepted types
+mirror the API: PNG/JPEG/WebP, 2 MB.
 
 ### Internationalization
 

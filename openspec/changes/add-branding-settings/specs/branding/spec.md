@@ -1,51 +1,95 @@
 ## Purpose
 
 Let an administrator configure the application name and logo used across the
-app, and make every screen reflect the configured branding.
+app from a dedicated admin Settings area, and make every screen reflect the
+configured branding.
 
 ## ADDED Requirements
 
-### Requirement: Admin-only branding page
+### Requirement: Admin-only settings hub
 
-The application SHALL provide a branding page at `/settings/branding` that only
-admins can open, and SHALL NOT show a link to it for non-admin users.
+The application SHALL provide an admin-only Settings area at `/settings` that
+only admins can open, and SHALL NOT show the Settings entry to non-admin users.
+The hub SHALL contain a General section (`/settings/general`) and a Brand
+identity section (`/settings/branding`), and `/settings` SHALL redirect to
+General.
 
-#### Scenario: Admin opens branding
+#### Scenario: Admin opens Settings
 
-- **WHEN** an admin navigates to `/settings/branding`
-- **THEN** the branding form is shown with the current name and logos
+- **WHEN** an admin opens `/settings`
+- **THEN** they are redirected to `/settings/general`, and the Settings entry is
+  active in both sidebar variants
 
-#### Scenario: Non-admin opens branding
+#### Scenario: Admin opens brand identity
 
-- **WHEN** a seller or regular user opens `/settings/branding`
-- **THEN** they are redirected away, and no Branding entry appears in either
+- **WHEN** an admin opens `/settings/branding`
+- **THEN** the brand identity form is shown with the current logos
+
+#### Scenario: Non-admin opens Settings
+
+- **WHEN** a seller or regular user opens `/settings` or `/settings/branding`
+- **THEN** they see the forbidden page, and no Settings entry appears in either
   sidebar variant
 
-### Requirement: Update name and logos
+#### Scenario: Personal settings stay available
 
-The branding page SHALL let an admin save a new application name, upload a
-light logo, upload an optional dark logo, and remove either logo.
+- **WHEN** an allowed user opens `/settings/user/:userId`
+- **THEN** the per-user personal settings page is shown as before
 
-#### Scenario: Save name and logos
+### Requirement: General settings
 
-- **WHEN** an admin enters a name, selects a light logo image, and saves
-- **THEN** the name and logo are sent to the API, and a success toast confirms
-  the update
+The General section SHALL let an admin update the application name and SHALL
+show a browser-tab preview of that name.
+
+#### Scenario: Save the application name
+
+- **WHEN** an admin enters a new name and saves
+- **THEN** the name is sent to the API, branding is refreshed, and a success
+  toast confirms the update
+
+#### Scenario: Empty name
+
+- **WHEN** an admin submits an empty or whitespace-only name
+- **THEN** saving is blocked and an inline error explains that the name is
+  required
+
+### Requirement: Brand identity and logo guidance
+
+The Brand identity section SHALL let an admin upload a light logo, upload an
+optional dark logo, and remove either logo. It SHALL show logo guidance:
+recommended size 640 × 160 px (4:1), minimum 320 × 80 px, maximum file size
+2 MB, accepted formats PNG/JPEG/WebP, and a preference for transparent,
+horizontal wordmarks. It SHALL preview the logo in the sidebar, sign-in screen,
+and browser tab before saving.
+
+#### Scenario: Save logos
+
+- **WHEN** an admin selects a logo and saves
+- **THEN** the logo is uploaded, branding is refreshed, and a success toast
+  confirms the update
 
 #### Scenario: Dark logo is optional
 
-- **WHEN** an admin saves only a light logo and name
-- **THEN** the dark logo stays unchanged
+- **WHEN** an admin saves only a light logo
+- **THEN** the dark logo stays unchanged, and dark-mode previews use the light
+  logo as fallback
 
 #### Scenario: Remove a logo
 
 - **WHEN** an admin removes the light logo and saves
 - **THEN** the light logo is cleared and the app falls back to the bundled logo
 
-#### Scenario: Validation feedback
+#### Scenario: Invalid file is blocked
 
-- **WHEN** the name is empty or a selected file is not a supported image
-- **THEN** the save is blocked or an error toast explains the problem
+- **WHEN** an admin selects a file that is not PNG/JPEG/WebP or is larger than
+  2 MB
+- **THEN** the file is rejected with inline feedback and an error toast
+
+#### Scenario: Size warnings are advisory
+
+- **WHEN** an admin selects a supported image below the recommended size or with
+  an unusual aspect ratio
+- **THEN** a warning is shown, but the admin can still save the logo
 
 ### Requirement: Branding applied across the app
 

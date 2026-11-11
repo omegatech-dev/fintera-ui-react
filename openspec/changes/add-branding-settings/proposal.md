@@ -19,10 +19,13 @@ configured branding.
   sidebar, login header, signup page.
 - Replace the hardcoded "Fintera" copyright in the login footer with the
   configured `app_name`, and set the browser tab title from it.
-- Add an admin-only Branding page at `/settings/branding` (route guarded by
-  `AdminRoute`, sidebar entry visible to admins only) with a simple form:
-  application name, light logo upload with preview and remove, optional dark
-  logo upload with preview and remove.
+- Add an admin-only Settings hub at `/settings` (route guarded by `AdminRoute`,
+  sidebar entry visible to admins only) with a General section for the
+  application name and a Brand identity section for light/dark logo uploads,
+  previews, and removal.
+- Add human-centered logo guidance (recommended/minimum dimensions, file size,
+  formats, transparent horizontal wordmark) and non-blocking warnings for
+  images that fall outside the recommended shape.
 - After saving, refresh the context so the change is visible immediately
   without a reload.
 - Add `branding.*` keys to `src/locales/en.json` and `src/locales/es.json`.

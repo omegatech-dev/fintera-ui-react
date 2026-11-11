@@ -83,6 +83,7 @@ Guards render a loading state while `AuthContext.loading` is true.
 | `VITE_API_URL` | Backend API base URL |
 | `VITE_APP_ENV` | Environment label |
 | `VITE_ROLLBAR_ACCESS_TOKEN` | Optional Rollbar token; enables error reporting when set |
+| `VITE_ROLLBAR_ENVIRONMENT` | Optional Rollbar environment label; falls back to `VITE_APP_ENV`, then the Vite mode |
 | `VITE_APP_VERSION` | Optional version reported to Rollbar |
 
 `.env` is ignored by git. Never print or commit its values.

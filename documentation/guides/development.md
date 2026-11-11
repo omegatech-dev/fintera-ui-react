@@ -21,6 +21,7 @@ VITE_API_URL=http://localhost:3001/api/v1
 VITE_APP_ENV=development
 # Optional
 # VITE_ROLLBAR_ACCESS_TOKEN=
+# VITE_ROLLBAR_ENVIRONMENT=development
 # VITE_APP_VERSION=
 ```
 

@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider as RollbarProvider, ErrorBoundary } from "@rollbar/react";
+import Rollbar from "rollbar/replay";
 import App from "./App.jsx";
 import "./assets/css/style.css";
 import "./assets/css/font-awesome-all.min.css";
@@ -9,6 +10,7 @@ import "./index.css";
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import { BrandingProvider } from './contexts/BrandingContext.jsx';
 import { GeneralSettingsProvider } from './contexts/GeneralSettingsContext.jsx';
+import { buildRollbarConfig } from './lib/rollbarConfig';
 import { registerSW } from "virtual:pwa-register";
 
 if (import.meta.env.MODE === "production") {
@@ -17,22 +19,8 @@ if (import.meta.env.MODE === "production") {
 
 // Initialize Rollbar only when an access token is provided to avoid noisy errors in
 // non-production or local environments.
-const rollbarAccessToken = import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN;
-
-const rollbarConfig = rollbarAccessToken ? {
-  accessToken: rollbarAccessToken,
-  captureUncaught: true,
-  captureUnhandledRejections: true,
-  environment: import.meta.env.MODE ?? "development",
-  payload: {
-    client: {
-      javascript: {
-        code_version: import.meta.env.VITE_APP_VERSION ?? undefined,
-        source_map_enabled: true,
-      }
-    }
-  }
-} : null;
+const rollbarConfig = buildRollbarConfig();
+const rollbar = rollbarConfig ? new Rollbar(rollbarConfig) : null;
 
 const appTree = (
   <BrandingProvider>
@@ -46,8 +34,8 @@ const appTree = (
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    {rollbarConfig ? (
-      <RollbarProvider config={rollbarConfig}>
+    {rollbar ? (
+      <RollbarProvider instance={rollbar}>
         <ErrorBoundary>{appTree}</ErrorBoundary>
       </RollbarProvider>
     ) : (

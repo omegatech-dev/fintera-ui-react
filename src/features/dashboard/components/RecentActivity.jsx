@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLocale } from "@/contexts/LocaleContext";
 import { auditsApi } from "../../audits/api";
+import { formatAuditEvent } from "../../audits/modelLabels";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faPen, faTrash, faInfo } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faPen, faTrash, faInfo, faBan, faUser, faFingerprint } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 
 export const formatTimeAgo = (dateString, now, t) => {
@@ -14,9 +15,26 @@ export const formatTimeAgo = (dateString, now, t) => {
     const days = Math.floor(hours / 24);
 
     if (minutes < 1) return t("common.justNow") || "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
+    if (minutes < 60) return t("common.timeAgo.minutes", { count: minutes });
+    if (hours < 24) return t("common.timeAgo.hours", { count: hours });
+    return t("common.timeAgo.days", { count: days });
+};
+
+export const resolveActivityUser = (activity, t) => {
+    const nested = activity?.user && typeof activity.user === "object" ? activity.user : null;
+
+    const name = activity?.user_full_name || activity?.user_name || nested?.full_name || nested?.name;
+    if (name) return name;
+
+    const email = activity?.user_email || nested?.email;
+    if (email) return email;
+
+    const rawId = activity?.user_id ?? nested?.id;
+    if (rawId !== undefined && rawId !== null && String(rawId).trim() !== "") {
+        return t("dashboard.activityUserNumber", { id: rawId });
+    }
+
+    return t("audits.system");
 };
 
 function RecentActivity() {
@@ -58,6 +76,15 @@ function RecentActivity() {
         } else if (lowerAction.includes("delete") || lowerAction.includes("destroy")) {
             icon = faTrash;
             colorClass = "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400";
+        } else if (lowerAction.includes("approve")) {
+            icon = faFingerprint;
+            colorClass = "bg-teal-100 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400";
+        } else if (lowerAction.includes("reject") || lowerAction.includes("cancel")) {
+            icon = faBan;
+            colorClass = "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400";
+        } else if (lowerAction.includes("login")) {
+            icon = faUser;
+            colorClass = "bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400";
         }
 
         return (
@@ -129,16 +156,19 @@ function RecentActivity() {
                                         </div>
                                         <div className="flex-1 min-w-0 pt-1.5 pr-4">
                                             <div className="flex items-center justify-between mb-1">
-                                                <p className="text-sm font-bold text-gray-800 dark:text-white truncate">
-                                                    {activity.user_email || activity.user_id || "System"}
+                                                <p
+                                                    className="text-sm font-bold text-gray-800 dark:text-white truncate"
+                                                    title={resolveActivityUser(activity, t)}
+                                                >
+                                                    {resolveActivityUser(activity, t)}
                                                 </p>
                                                 <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap ml-2">
                                                     {formatTimeAgo(activity.created_at, now, t)}
                                                 </span>
                                             </div>
                                             <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
-                                                <span className="font-semibold text-blue-600 dark:text-blue-400 capitalize">
-                                                    {activity.action?.replace(/_/g, " ")}
+                                                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                                                    {formatAuditEvent(activity.action, t)}
                                                 </span>
                                                 <span className="mx-1 text-gray-300 dark:text-gray-600">•</span>
                                                 {activity.details || activity.entity_type}

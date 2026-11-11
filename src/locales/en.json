@@ -65,6 +65,11 @@
       "dec": "Dec"
     },
     "justNow": "Just now",
+    "timeAgo": {
+      "minutes": "{count}m ago",
+      "hours": "{count}h ago",
+      "days": "{count}d ago"
+    },
     "viewAll": "View All",
     "viewMore": "View More",
     "view": "View",
@@ -250,6 +255,7 @@
     "recentActivity": "Recent Activity",
     "recentActivityDesc": "Latest system events and updates",
     "noActivity": "No recent activity found",
+    "activityUserNumber": "User #{id}",
     "overview": "General Overview"
   },
   "sidebar": {},

@@ -626,6 +626,18 @@
       "brandIdentityDescription": "Logos used across the app"
     }
   },
+  "docs": {
+    "title": "User Guide",
+    "subtitle": "Learn how the system works and what each term means.",
+    "badge": "Staff guide",
+    "searchPlaceholder": "Search the guide...",
+    "noResults": "No articles match your search.",
+    "onThisPage": "On this page",
+    "sections": "Guide sections",
+    "articleCount": "{count} articles",
+    "empty": "No documentation is available for your role.",
+    "selectArticle": "Select an article to read."
+  },
   "termsAndConditions": {
     "title": "Terms and Conditions",
     "lastUpdated": "Last Updated",

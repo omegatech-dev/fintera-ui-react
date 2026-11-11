@@ -340,6 +340,42 @@ function SidebarV2({ user, handleLogout }) {
                     </li>
                   )}
 
+                  {/* User guide: Admin or Seller */}
+                  {(isAdmin || isSeller) && (
+                    <li className="item px-[43px] py-[11px]">
+                      <Link
+                        to="/docs"
+                        title={t("docs.title")}
+                        aria-label={t("docs.title")}
+                        className={`${location.startsWith("/docs") ? "nav-active" : ""}`}
+                      >
+                        <span className="item-ico">
+                          <svg
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M4 5.5A1.5 1.5 0 015.5 4H11v16H5.5A1.5 1.5 0 014 18.5v-13z"
+                              stroke="#1A202C"
+                              strokeWidth="1.5"
+                              strokeLinejoin="round"
+                              className="path-1"
+                            />
+                            <path
+                              d="M13 4h5.5A1.5 1.5 0 0120 5.5v13a1.5 1.5 0 01-1.5 1.5H13V4z"
+                              fill="#22C55E"
+                              className="path-2"
+                            />
+                          </svg>
+                        </span>
+                      </Link>
+                    </li>
+                  )}
+
                   {/* Settings: Only Admin */}
                   {isAdmin && (
                     <li className="item px-[43px] py-[11px]">

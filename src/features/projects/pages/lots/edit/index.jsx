@@ -212,7 +212,7 @@ function EditLot() {
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-success-300/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
 
-        <form onSubmit={handleSubmit}>
+        <form id="lot-edit-form" onSubmit={handleSubmit}>
           {/* Header Section */}
           <div className="p-8 lg:p-12 border-b border-bgray-100 dark:border-darkblack-400 bg-bgray-50/50 dark:bg-darkblack-500/50">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -332,6 +332,7 @@ function EditLot() {
                       onChange={(e) => setLength(Number(e.target.value))}
                       className="w-full bg-bgray-50 dark:bg-darkblack-500 p-4 rounded-2xl border-2 border-transparent focus:border-success-400 focus:ring-0 transition-all font-black text-xl text-bgray-900 dark:text-white"
                     />
+                    {fieldErrors.length && <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider">{fieldErrors.length}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.width")} ({linearUnitLabel(measurementUnit)})</label>
@@ -341,6 +342,7 @@ function EditLot() {
                       onChange={(e) => setWidth(Number(e.target.value))}
                       className="w-full bg-bgray-50 dark:bg-darkblack-500 p-4 rounded-2xl border-2 border-transparent focus:border-success-400 focus:ring-0 transition-all font-black text-xl text-bgray-900 dark:text-white"
                     />
+                    {fieldErrors.width && <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider">{fieldErrors.width}</p>}
                   </div>
                 </div>
 
@@ -414,6 +416,7 @@ function EditLot() {
                           className="w-full bg-bgray-50 dark:bg-darkblack-700 p-4 rounded-xl border-2 border-success-100 dark:border-success-900 font-bold"
                           placeholder={t("lots.enterManualArea")}
                         />
+                        {fieldErrors.override_area && <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider">{fieldErrors.override_area}</p>}
                         <p className="text-[10px] text-bgray-400 italic">{t("lots.areaOverrideWarning")}</p>
                       </motion.div>
                     )}
@@ -447,6 +450,7 @@ function EditLot() {
                           className="w-full bg-bgray-50 dark:bg-darkblack-700 p-4 rounded-xl border-2 border-blue-100 dark:border-blue-900 font-bold"
                           placeholder={t("lots.enterManualPrice")}
                         />
+                        {fieldErrors.override_price && <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider">{fieldErrors.override_price}</p>}
                         <p className="text-[10px] text-bgray-400 italic">{t("lots.priceOverrideWarning")}</p>
                       </motion.div>
                     )}
@@ -502,27 +506,10 @@ function EditLot() {
             </section>
           </div>
 
-          <div className="p-8 lg:p-12 bg-bgray-50/50 dark:bg-darkblack-500/50 flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="px-10 py-5 rounded-2xl border-2 border-bgray-200 dark:border-darkblack-400 text-bgray-600 dark:text-bgray-300 font-black hover:bg-white transition-all text-xs uppercase tracking-[0.2em]"
-            >
-              {t("common.back")}
-            </button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={saving || user?.role !== 'admin'}
-              className={`px-12 py-5 rounded-2xl font-black text-white shadow-xl shadow-success-300/30 transition-all text-xs uppercase tracking-[0.2em] ${saving ? 'bg-bgray-400 cursor-not-allowed' : 'bg-success-300 hover:bg-success-400'}`}
-            >
-              {saving ? t("common.saving") : t("common.saveChanges")}
-            </motion.button>
-          </div>
         </form>
+
         {project_id && lot_id && (
-          <div className="mt-8">
+          <div className="px-8 lg:px-12 pb-8 lg:pb-12">
             <LotPhotosPanel
               projectId={project_id}
               lotId={lot_id}
@@ -530,6 +517,28 @@ function EditLot() {
             />
           </div>
         )}
+
+        <div className="p-8 lg:p-12 border-t border-bgray-100 dark:border-darkblack-400 bg-bgray-50/50 dark:bg-darkblack-500/50">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="w-full sm:w-auto px-10 py-5 rounded-2xl border-2 border-bgray-200 dark:border-darkblack-400 text-bgray-600 dark:text-bgray-300 font-black hover:bg-white dark:hover:bg-darkblack-600 transition-all text-xs uppercase tracking-[0.2em]"
+            >
+              {t("common.back")}
+            </button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              form="lot-edit-form"
+              disabled={saving || user?.role !== 'admin'}
+              className={`w-full sm:w-auto px-12 py-5 rounded-2xl font-black text-white shadow-xl shadow-success-300/30 transition-all text-xs uppercase tracking-[0.2em] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none ${!saving && user?.role === 'admin' ? 'bg-success-300 hover:bg-success-400' : 'bg-bgray-400'}`}
+            >
+              {saving ? t("common.saving") : t("common.saveChanges")}
+            </motion.button>
+          </div>
+        </div>
       </motion.div>
     </main>
   );

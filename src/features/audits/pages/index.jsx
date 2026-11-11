@@ -4,6 +4,7 @@ import AuditTimeline from "../components/AuditTimeline";
 import PaginationV2 from "@/shared/ui/PaginationV2";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { auditsApi } from "../api";
+import { AUDIT_MODELS, formatAuditModel } from "../modelLabels";
 
 /**
  * Audits page component that displays audit logs using a Timeline layout
@@ -30,11 +31,10 @@ function Audits() {
 
   const modelFilterOptions = [
     { value: "", label: t("audits.filterByModel") },
-    { value: "Contract", label: t("audits.models.Contract") },
-    { value: "Lot", label: t("audits.models.Lot") },
-    { value: "User", label: t("audits.models.User") },
-    { value: "Project", label: t("audits.models.Project") },
-    { value: "Payment", label: t("audits.models.Payment") },
+    ...AUDIT_MODELS.map((model) => ({
+      value: model,
+      label: formatAuditModel(model, t),
+    })),
   ];
 
   const fetchAudits = useCallback(async (pageNum) => {

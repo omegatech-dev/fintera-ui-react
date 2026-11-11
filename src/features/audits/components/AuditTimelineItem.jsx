@@ -2,6 +2,7 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "../../../contexts/LocaleContext";
+import { formatAuditEvent, formatAuditModel } from "../modelLabels";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faPlus,
@@ -45,15 +46,15 @@ const formatEvent = (event, t) => {
             return { text: t("audits.events.capital_repayment"), icon: faPlus, color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" };
         default:
             return {
-                text: t("audits.events." + lower) || (event.charAt(0).toUpperCase() + event.slice(1)),
+                text: formatAuditEvent(event, t),
                 icon: faInfo,
                 color: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
             };
     }
 };
 
-const renderValue = (v) => {
-    if (v === null || v === undefined) return <span className="text-gray-400 italic">Empty</span>;
+const renderValue = (v, t) => {
+    if (v === null || v === undefined) return <span className="text-gray-400 italic">{t("audits.empty")}</span>;
     if (typeof v === "string") return v;
     if (typeof v === "number" || typeof v === "boolean") return String(v);
     try {
@@ -92,7 +93,7 @@ function AuditTimelineItem({ audit, isLast }) {
         hour12: true
     });
     const eventInfo = formatEvent(event, t);
-    const userName = userObj ? (userObj.full_name || userObj.email || "System") : "System";
+    const userName = userObj ? (userObj.full_name || userObj.email || t("audits.system")) : t("audits.system");
 
     const changedKeys = parsed ? Object.keys(parsed) : [];
 
@@ -120,8 +121,8 @@ function AuditTimelineItem({ audit, isLast }) {
                         <div className="flex-1">
                             <h4 className="text-gray-900 dark:text-white font-bold text-sm sm:text-base flex items-center gap-2 flex-wrap">
                                 <span>{eventInfo.text}</span>
-                                <span className="text-gray-400 dark:text-gray-500 font-normal">in</span>
-                                <span className="bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-lg text-xs font-semibold">{t("audits.models." + model) || model}</span>
+                                <span className="text-gray-400 dark:text-gray-500 font-normal">{t("audits.in")}</span>
+                                <span className="bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-lg text-xs font-semibold">{formatAuditModel(model, t)}</span>
                                 <span className="text-gray-400 dark:text-gray-500 text-xs">#{itemId}</span>
                             </h4>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
@@ -145,7 +146,7 @@ function AuditTimelineItem({ audit, isLast }) {
                 {/* Change Preview */}
                 {!expanded && changedKeys.length > 0 && (
                     <div className="text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-black/20 rounded-lg px-3 py-2 border border-gray-100 dark:border-white/5">
-                        <span className="text-gray-400 mr-2">Changed:</span>
+                        <span className="text-gray-400 mr-2">{t("audits.changed")}:</span>
                         {changedKeys.slice(0, 3).join(", ")}
                         {changedKeys.length > 3 && <span className="ml-1 opacity-60">+{changedKeys.length - 3} more</span>}
                     </div>
@@ -166,11 +167,11 @@ function AuditTimelineItem({ audit, isLast }) {
                                 <div className="flex flex-wrap gap-4 text-xs text-gray-400">
                                     <div className="flex items-center gap-1.5" title="IP Address">
                                         <FontAwesomeIcon icon={faLaptopCode} />
-                                        {ipAddress || "N/A"}
+                                        {ipAddress || t("common.notAvailable")}
                                     </div>
                                     <div className="flex items-center gap-1.5 max-w-[200px] truncate" title={userAgent}>
                                         <FontAwesomeIcon icon={faInfo} />
-                                        {userAgent || "N/A"}
+                                        {userAgent || t("common.notAvailable")}
                                     </div>
                                 </div>
 
@@ -182,13 +183,13 @@ function AuditTimelineItem({ audit, isLast }) {
                                                 <li key={key} className="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-1 sm:gap-4">
                                                     <span className="font-semibold text-gray-700 dark:text-gray-300 break-words">{key}</span>
                                                     <div className="text-gray-600 dark:text-gray-400 break-words">
-                                                        {renderValue(parsed[key])}
+                                                        {renderValue(parsed[key], t)}
                                                     </div>
                                                 </li>
                                             ))}
                                         </ul>
                                     ) : (
-                                        <p className="text-sm text-gray-500 italic">{changes || "No details provided"}</p>
+                                        <p className="text-sm text-gray-500 italic">{changes || t("audits.noDetails")}</p>
                                     )}
                                 </div>
                             </div>

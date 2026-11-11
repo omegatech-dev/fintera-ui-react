@@ -415,6 +415,42 @@ function Sidebar({ handleActive, user, handleLogout }) {
                 </li>
               )}
 
+              {/* User guide: Admin or Seller */}
+              {(isAdmin || isSeller) && (
+                <li
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${location.startsWith("/docs") ? "nav-active" : ""
+                    }`}
+                >
+                  <Link to="/docs">
+                    <div className="flex items-center space-x-2 sm:space-x-2.5">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M4 5.5A1.5 1.5 0 015.5 4H11v16H5.5A1.5 1.5 0 014 18.5v-13z"
+                          stroke="#1A202C"
+                          strokeWidth="1.5"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M13 4h5.5A1.5 1.5 0 0120 5.5v13a1.5 1.5 0 01-1.5 1.5H13V4z"
+                          fill="#22C55E"
+                        />
+                      </svg>
+                      <span className="item-text text-sm sm:text-base lg:text-lg font-medium leading-none min-w-0 truncate">
+                        {t("docs.title")}
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              )}
+
               {/* Settings: Only Admin */}
               {isAdmin && (
                 <li

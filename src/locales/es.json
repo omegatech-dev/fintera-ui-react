@@ -639,6 +639,18 @@
       "brandIdentityDescription": "Logos usados en toda la aplicación"
     }
   },
+  "docs": {
+    "title": "Guía de usuario",
+    "subtitle": "Aprende cómo funciona el sistema y qué significa cada término.",
+    "badge": "Guía para el personal",
+    "searchPlaceholder": "Buscar en la guía...",
+    "noResults": "Ningún artículo coincide con tu búsqueda.",
+    "onThisPage": "En esta página",
+    "sections": "Secciones de la guía",
+    "articleCount": "{count} artículos",
+    "empty": "No hay documentación disponible para tu rol.",
+    "selectArticle": "Selecciona un artículo para leer."
+  },
   "termsAndConditions": {
     "title": "Términos y Condiciones",
     "lastUpdated": "Última Actualización",

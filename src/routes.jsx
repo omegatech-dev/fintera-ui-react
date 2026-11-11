@@ -37,6 +37,7 @@ const Reserve = lazy(() => import("./features/projects/pages/reserve"));
 const CreateUser = lazy(() => import("./features/users/pages/create"));
 const Upload = lazy(() => import("./features/financing/pages/upload"));
 const Summary = lazy(() => import("./features/financing/pages/summary"));
+const Documentation = lazy(() => import("./features/docs/pages"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center w-full h-[calc(100vh-64px)]">
@@ -136,6 +137,22 @@ export const appRoutes = [
             <AdminRoute>
               <Audits />
             </AdminRoute>
+          ),
+        },
+        {
+          path: "/docs",
+          element: (
+            <AdminOrOwnerRoute>
+              <Documentation />
+            </AdminOrOwnerRoute>
+          ),
+        },
+        {
+          path: "/docs/:slug",
+          element: (
+            <AdminOrOwnerRoute>
+              <Documentation />
+            </AdminOrOwnerRoute>
           ),
         },
         {

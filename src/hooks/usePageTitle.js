@@ -99,6 +99,13 @@ export const usePageTitle = () => {
       return routes[path];
     }
 
+    if (path.startsWith('/docs')) {
+      return {
+        title: t('docs.title'),
+        subtitle: t('docs.subtitle')
+      };
+    }
+
     // Check for dynamic routes (settings, edit, etc.)
     if (path.startsWith('/settings/user/')) {
       const segments = path.split('/');

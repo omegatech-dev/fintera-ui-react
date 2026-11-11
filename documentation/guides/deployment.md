@@ -49,8 +49,9 @@ locally, on Railway, and on other PaaS platforms that inject `PORT`.
 For Railway, point the service at the `Dockerfile`; Railway sets `PORT`
 automatically. Because Vite embeds `VITE_*` values at build time, configure
 `VITE_API_URL`, `VITE_PUBLIC_PORTAL_URL`, `VITE_APP_ENV`,
-`VITE_ROLLBAR_ACCESS_TOKEN`, and `VITE_APP_VERSION` as **build arguments** on the
-service (or pass `--build-arg` locally) and redeploy after changing them.
+`VITE_ROLLBAR_ACCESS_TOKEN`, `VITE_ROLLBAR_ENVIRONMENT`, and `VITE_APP_VERSION`
+as **build arguments** on the service (or pass `--build-arg` locally) and
+redeploy after changing them.
 
 `.dockerignore` keeps the build context small by excluding `node_modules`,
 `dist`, tests, docs, OpenSpec, and local `.env*` files.
@@ -65,6 +66,7 @@ Set these in the hosting provider:
 | `VITE_PUBLIC_PORTAL_URL` | Optional | Customer portal base URL for project links |
 | `VITE_APP_ENV` | Recommended | Environment label |
 | `VITE_ROLLBAR_ACCESS_TOKEN` | Optional | Enables Rollbar error reporting |
+| `VITE_ROLLBAR_ENVIRONMENT` | Optional | Rollbar environment label; falls back to `VITE_APP_ENV`, then the Vite mode |
 | `VITE_APP_VERSION` | Optional | Version reported to Rollbar |
 
 Vite embeds `VITE_*` variables at build time, so rebuild after changing them.
@@ -79,9 +81,16 @@ Vite embeds `VITE_*` variables at build time, so rebuild after changing them.
 
 ## Error monitoring
 
-Rollbar is initialized in `src/main.jsx` only when
-`VITE_ROLLBAR_ACCESS_TOKEN` is set. Uncaught errors and unhandled rejections are
-reported in production.
+Rollbar is initialized in `src/main.jsx` through `src/lib/rollbarConfig.js`
+only when `VITE_ROLLBAR_ACCESS_TOKEN` is set. Uncaught errors and unhandled
+rejections are reported, and the environment label comes from
+`VITE_ROLLBAR_ENVIRONMENT` (falling back to `VITE_APP_ENV`, then the Vite
+mode).
+
+Session Replay uses `rollbar/replay` and is limited to the contracts, payments,
+financing and contract-creation flows. A replay is captured only when a
+warning/error/critical occurrence happens while one of those sections is open.
+Password inputs are masked; other typed values are visible in replays.
 
 ## Post-deploy checks
 

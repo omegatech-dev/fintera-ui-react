@@ -16,10 +16,12 @@ ARG VITE_APP_ENV=production
 # Rollbar's browser access token is public by design (it ships in the bundle),
 # so BuildKit's secret-in-ARG warning is expected here.
 ARG VITE_ROLLBAR_ACCESS_TOKEN
+ARG VITE_ROLLBAR_ENVIRONMENT
 ARG VITE_APP_VERSION
 ENV VITE_API_URL=${VITE_API_URL} \
     VITE_APP_ENV=${VITE_APP_ENV} \
     VITE_ROLLBAR_ACCESS_TOKEN=${VITE_ROLLBAR_ACCESS_TOKEN} \
+    VITE_ROLLBAR_ENVIRONMENT=${VITE_ROLLBAR_ENVIRONMENT} \
     VITE_APP_VERSION=${VITE_APP_VERSION}
 
 RUN npm run build

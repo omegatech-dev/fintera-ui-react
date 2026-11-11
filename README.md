@@ -77,6 +77,7 @@ Crear un archivo `.env` en la raíz del proyecto (hay una plantilla en
 | `VITE_DEFAULT_EMAIL` | No | Prellena el correo en el login durante desarrollo/staging. |
 | `VITE_DEFAULT_PASSWORD` | No | Prellena la contraseña en el login durante desarrollo/staging. |
 | `VITE_ROLLBAR_ACCESS_TOKEN` | No | Token de Rollbar para reporte de errores. |
+| `VITE_ROLLBAR_ENVIRONMENT` | No | Etiqueta de entorno para Rollbar. Si falta, usa `VITE_APP_ENV` y luego el modo de Vite. |
 
 ```env
 VITE_API_URL=http://localhost:8081/api/v1

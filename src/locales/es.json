@@ -69,6 +69,11 @@
     "saving": "Guardando...",
     "creating": "Creando...",
     "justNow": "Justo ahora",
+    "timeAgo": {
+      "minutes": "hace {count} min",
+      "hours": "hace {count} h",
+      "days": "hace {count} días"
+    },
     "viewAll": "Ver Todo",
     "viewMore": "Ver Más",
     "export": "Exportar",
@@ -233,6 +238,7 @@
     "recentActivity": "Actividad Reciente",
     "recentActivityDesc": "Últimos eventos y actualizaciones del sistema",
     "noActivity": "No se encontró actividad reciente",
+    "activityUserNumber": "Usuario #{id}",
     "overview": "Resumen General"
   },
   "sidebar": {},

@@ -1638,12 +1638,12 @@
     "draft": "Borrador"
   },
   "media": {
-    "drawingsHint": "Los planos aceptan DWG, DXF, PDF y SVG (máx. 50 MB cada uno).",
+    "drawingsHint": "Los planos aceptan SVG, PNG, JPG y PDF (máx. 50 MB cada uno).",
     "photosHint": "Las fotos aceptan JPEG, PNG y WebP (máx. 10 MB cada una).",
     "dropPhotos": "Arrastra las fotos aquí o haz clic para buscar",
     "dropPhotosActive": "Suelta las fotos para subir",
     "drawingsTitle": "Planos del proyecto",
-    "drawingsDescription": "Planos publicados en la pestaña Planos CAD del portal.",
+    "drawingsDescription": "Planos publicados en la pestaña Planos del portal.",
     "uploadDrawings": "Subir planos",
     "uploading": "Subiendo...",
     "uploadPhotos": "Subir fotos",
@@ -1750,6 +1750,23 @@
     "errorFileType": "Elige una imagen PNG, JPEG o WebP.",
     "errorFileSize": "La imagen debe pesar 2 MB o menos.",
     "errorFile": "El archivo debe ser una imagen PNG, JPEG o WebP de hasta 2 MB",
-    "error": "No se pudo actualizar la configuración"
+    "error": "No se pudo actualizar la configuración",
+    "generalTitle": "Soporte y reservas",
+    "generalSubtitle": "Número de contacto y duración del bloqueo de lotes para el portal de clientes.",
+    "supportWhatsApp": "WhatsApp de soporte",
+    "supportWhatsAppHint": "Incluye el código de país, por ejemplo +50499998888.",
+    "supportEmail": "Correo de soporte",
+    "holdHours": "Bloqueo de reserva (horas)",
+    "holdHoursHint": "Tiempo que un lote queda apartado mientras el cliente paga. Entre 1 y 720 horas.",
+    "errorWhatsApp": "El WhatsApp debe tener entre 8 y 20 dígitos",
+    "errorEmail": "El correo de soporte no es válido",
+    "errorHoldHours": "El bloqueo debe estar entre 1 y 720 horas",
+    "generalSaved": "Configuración general actualizada",
+    "generalError": "No se pudo actualizar la configuración general"
+  },
+  "customerPortal": {
+    "title": "Tu cuenta de cliente está en el portal de clientes",
+    "description": "Las reservas, pagos y el seguimiento ahora se gestionan en el portal de clientes de Fintera.",
+    "action": "Ir al portal de clientes"
   }
 }

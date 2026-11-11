@@ -1285,6 +1285,11 @@
     "filterByModel": "Filter by Model",
     "showDetails": "Show details",
     "hideDetails": "Hide details",
+    "in": "in",
+    "changed": "Changed",
+    "empty": "Empty",
+    "noDetails": "No details provided",
+    "system": "System",
     "table": {
       "event": "Event",
       "model": "Model",
@@ -1314,7 +1319,14 @@
       "Lot": "Lot",
       "User": "User",
       "Project": "Project",
-      "Payment": "Payment"
+      "Payment": "Payment",
+      "ProjectPhoto": "Project Photo",
+      "LotPhoto": "Lot Photo",
+      "ProjectDrawing": "Project Drawing",
+      "PaymentInstruction": "Payment Instruction",
+      "GeneralSettings": "General Settings",
+      "Branding": "Branding",
+      "Notification": "Notification"
     }
   },
   "paymentHistory": {

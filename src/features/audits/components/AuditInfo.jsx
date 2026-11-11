@@ -3,20 +3,14 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { useLocale } from "../../../contexts/LocaleContext";
+import { formatAuditEvent, formatAuditModel } from "../modelLabels";
 
 /**
  * Utility function to format event names
  * @param {string} event - The event type
  * @returns {string} - Formatted event name
  */
-const formatEvent = (event, t) => {
-  if (!event) return event;
-  const lower = event.toLowerCase();
-  const key = "audits.events." + lower;
-  const translated = t(key);
-  if (translated !== key) return translated;
-  return event.charAt(0).toUpperCase() + event.slice(1);
-};
+const formatEvent = (event, t) => formatAuditEvent(event, t);
 
 /**
  * Utility function to format date strings
@@ -55,13 +49,13 @@ function AuditInfo({
     user_agent: userAgent,
   } = audit;
 
-  const user = userObj ? (userObj.full_name || userObj.email || "System") : "System";
+  const user = userObj ? (userObj.full_name || userObj.email || t("audits.system")) : t("audits.system");
 
   const parsed = audit.parsed_changes;
   const changedKeys = parsed ? Object.keys(parsed) : [];
 
   const renderValue = (v) => {
-    if (v === null || v === undefined) return "N/A";
+    if (v === null || v === undefined) return t("audits.empty");
     if (typeof v === "string") return v;
     if (typeof v === "number" || typeof v === "boolean") return String(v);
     try {
@@ -83,7 +77,7 @@ function AuditInfo({
                 {formatEvent(event, t)}
               </span>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {t("audits.models." + model) || model}
+                {formatAuditModel(model, t)}
               </span>
             </div>
             <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -145,7 +139,7 @@ function AuditInfo({
                       ))}
                     </ul>
                   ) : (
-                    <pre className="text-xs whitespace-pre-wrap">{changes || "N/A"}</pre>
+                    <pre className="text-xs whitespace-pre-wrap">{changes || t("common.notAvailable")}</pre>
                   )}
                 </div>
               )}
@@ -155,10 +149,10 @@ function AuditInfo({
           {/* IP and User Agent */}
           <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
             <div>
-              <span className="font-medium">{t("audits.table.ipAddress")}:</span> {ipAddress || "N/A"}
+              <span className="font-medium">{t("audits.table.ipAddress")}:</span> {ipAddress || t("common.notAvailable")}
             </div>
             <div>
-              <span className="font-medium">{t("audits.table.userAgent")}:</span> {userAgent || "N/A"}
+              <span className="font-medium">{t("audits.table.userAgent")}:</span> {userAgent || t("common.notAvailable")}
             </div>
           </div>
         </div>
@@ -179,7 +173,7 @@ function AuditInfo({
       {/* Model */}
       <td className="px-6 py-4">
         <span className="text-base font-medium text-bgray-900 dark:text-white">
-          {t("audits.models." + model) || model}
+          {formatAuditModel(model, t)}
         </span>
       </td>
 
@@ -230,7 +224,7 @@ function AuditInfo({
                   ))}
                 </ul>
               ) : (
-                <pre className="text-xs whitespace-pre-wrap">{changes || "N/A"}</pre>
+                <pre className="text-xs whitespace-pre-wrap">{changes || t("common.notAvailable")}</pre>
               )}
             </div>
           )}
@@ -247,14 +241,14 @@ function AuditInfo({
       {/* IP Address */}
       <td className="px-6 py-4">
         <span className="text-base font-medium text-bgray-900 dark:text-white">
-          {ipAddress || "N/A"}
+          {ipAddress || t("common.notAvailable")}
         </span>
       </td>
 
       {/* User Agent */}
       <td className="px-6 py-4">
         <span className="text-base font-medium text-bgray-900 dark:text-white">
-          {userAgent || "N/A"}
+          {userAgent || t("common.notAvailable")}
         </span>
       </td>
     </>

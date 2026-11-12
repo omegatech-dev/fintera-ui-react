@@ -54,7 +54,7 @@ describe("PaymentItem reservation approval gate", () => {
   });
 
   it("disables approval and explains why when the contract is pending", () => {
-    renderItem({ ...basePayment, contract: { status: "pending" } });
+    renderItem({ ...basePayment, contract_status: "pending" });
 
     expect(screen.getByRole("button", { name: /aprobar/i })).toBeDisabled();
     expect(
@@ -62,8 +62,9 @@ describe("PaymentItem reservation approval gate", () => {
     ).toBeInTheDocument();
   });
 
-  it("allows approval when the contract is approved", () => {
-    renderItem({ ...basePayment, contract: { status: "approved" } });
+  it("allows approval when the list reports an approved contract", () => {
+    // The payments list returns the contract state as `contract_status`.
+    renderItem({ ...basePayment, contract_status: "approved" });
 
     expect(screen.getByRole("button", { name: /aprobar/i })).toBeEnabled();
     expect(
@@ -71,11 +72,17 @@ describe("PaymentItem reservation approval gate", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("allows approval when a nested contract is approved", () => {
+    renderItem({ ...basePayment, contract: { status: "approved" } });
+
+    expect(screen.getByRole("button", { name: /aprobar/i })).toBeEnabled();
+  });
+
   it("does not gate non-reservation payments", () => {
     renderItem({
       ...basePayment,
       payment_type: "installment",
-      contract: { status: "pending" },
+      contract_status: "pending",
     });
 
     expect(screen.getByRole("button", { name: /aprobar/i })).toBeEnabled();

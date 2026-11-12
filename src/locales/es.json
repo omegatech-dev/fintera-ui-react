@@ -488,6 +488,8 @@
     "paymentId": "ID del Pago",
     "lateInterest": "Interés Moratorio",
     "paymentVerification": "Verificación de Pago",
+    "referenceNumber": "Número de referencia",
+    "payerAccount": "Cuenta de origen",
     "authorizeTransaction": "Autorizar Transacción",
     "totalReceivableValue": "Valor Total a Recibir",
     "amountToApprove": "Monto a aprobar",

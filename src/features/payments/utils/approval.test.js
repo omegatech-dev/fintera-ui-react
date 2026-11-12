@@ -6,7 +6,7 @@ describe("reservationApprovalBlocked", () => {
     expect(
       reservationApprovalBlocked({
         payment_type: "reservation",
-        contract: { status: "pending" },
+        contract_status: "pending",
       })
     ).toBe(true);
   });
@@ -15,12 +15,23 @@ describe("reservationApprovalBlocked", () => {
     expect(
       reservationApprovalBlocked({
         payment_type: "reservation",
-        contract: { status: "submitted" },
+        contract_status: "submitted",
       })
     ).toBe(true);
   });
 
-  it("allows a reservation payment when the contract is approved", () => {
+  it("allows a reservation payment when the flat contract_status is approved", () => {
+    // Shape returned by the payments list endpoint.
+    expect(
+      reservationApprovalBlocked({
+        payment_type: "reservation",
+        contract_status: "approved",
+      })
+    ).toBe(false);
+  });
+
+  it("allows a reservation payment when a nested contract is approved", () => {
+    // Shape used by contract-scoped payloads.
     expect(
       reservationApprovalBlocked({
         payment_type: "reservation",
@@ -29,11 +40,21 @@ describe("reservationApprovalBlocked", () => {
     ).toBe(false);
   });
 
+  it("prefers the flat contract_status over a nested contract", () => {
+    expect(
+      reservationApprovalBlocked({
+        payment_type: "reservation",
+        contract_status: "approved",
+        contract: { status: "pending" },
+      })
+    ).toBe(false);
+  });
+
   it("does not block non-reservation payments", () => {
     expect(
       reservationApprovalBlocked({
         payment_type: "installment",
-        contract: { status: "pending" },
+        contract_status: "pending",
       })
     ).toBe(false);
   });

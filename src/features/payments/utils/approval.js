@@ -7,6 +7,10 @@ export function reservationApprovalBlocked(payment) {
     String(payment?.payment_type || "").toLowerCase() === "reservation";
   if (!isReservation) return false;
 
-  const contractStatus = String(payment?.contract?.status || "").toLowerCase();
+  // The payments list returns the contract state as a flat `contract_status`
+  // field; other payloads may nest the contract, so accept both shapes.
+  const contractStatus = String(
+    payment?.contract_status || payment?.contract?.status || ""
+  ).toLowerCase();
   return contractStatus !== "approved";
 }

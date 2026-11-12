@@ -569,6 +569,31 @@ function ApproveModal({
                 </button>
               </div>
 
+              {(paymentInfo.authorization_number || paymentInfo.payer_account_name) && (
+                <div className="grid grid-cols-1 gap-2 rounded-xl border border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] p-3">
+                  {paymentInfo.authorization_number && (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+                        {t('payments.referenceNumber')}
+                      </span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white text-right truncate">
+                        {paymentInfo.authorization_number}
+                      </span>
+                    </div>
+                  )}
+                  {paymentInfo.payer_account_name && (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+                        {t('payments.payerAccount')}
+                      </span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white text-right truncate">
+                        {paymentInfo.payer_account_name}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-4 sm:gap-5">
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('payments.amount')}</label>
@@ -975,6 +1000,18 @@ export function PaymentDetailModal({ payment, onClose }) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
                       </svg>
                     </div>
+                  </div>
+                )}
+                {payment.authorization_number && (
+                  <div className="p-3 bg-slate-50 dark:bg-white/[0.02] rounded-xl border border-slate-100 dark:border-white/5">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">{t('payments.referenceNumber')}</span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white uppercase">{payment.authorization_number}</span>
+                  </div>
+                )}
+                {payment.payer_account_name && (
+                  <div className="p-3 bg-slate-50 dark:bg-white/[0.02] rounded-xl border border-slate-100 dark:border-white/5">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">{t('payments.payerAccount')}</span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white uppercase">{payment.payer_account_name}</span>
                   </div>
                 )}
                 {(payment.approver || payment.approved_by_name) && (

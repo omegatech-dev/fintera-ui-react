@@ -487,6 +487,8 @@
     "paymentId": "Payment ID",
     "lateInterest": "Late Interest",
     "paymentVerification": "Payment Verification",
+    "referenceNumber": "Reference number",
+    "payerAccount": "Origin account",
     "authorizeTransaction": "Authorize Transaction",
     "totalReceivableValue": "Total Receivable Value",
     "amountToApprove": "Amount to approve",

@@ -4,9 +4,9 @@ See `proposal.md` for motivation. Relevant current state:
 
 - `src/features/payments/components/PaymentItem.jsx` renders an approve button
   for every `submitted` payment when the user is an admin, in both the desktop
-  row (around line 355) and the mobile card (around line 239). It already reads
-  `paymentInfo.contract` for currency, lot and applicant data, so the contract
-  status is available without a new request.
+  row and the mobile card. The payments list response exposes the contract state
+  as the flat `contract_status` field; contract-scoped payloads may nest the
+  contract, so the gate accepts both shapes.
 - `handleApprove` uploads an optional receipt and calls
   `paymentsApi.approve(id, { paid_amount })`; errors are shown with a toast.
 - `src/features/contracts/api.js` sends `{ amount }` to the capital repayment

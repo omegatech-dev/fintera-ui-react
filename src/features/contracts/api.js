@@ -24,5 +24,5 @@ export const contractsApi = {
     approvePayment: (paymentId, data) => apiClient.post(`/api/v1/payments/${paymentId}/approve`, data),
 
     capitalRepayment: (projectId, lotId, contractId, amount) =>
-        apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/contracts/${contractId}/capital_repayment`, { amount }),
+        apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/contracts/${contractId}/capital_repayment`, { capital_repayment_amount: amount }),
 };

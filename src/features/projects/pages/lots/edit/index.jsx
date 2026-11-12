@@ -24,6 +24,7 @@ function EditLot() {
   const { t } = useLocale();
 
   const [name, setName] = useState("");
+  const [guid, setGuid] = useState("");
   const [length, setLength] = useState(0);
   const [width, setWidth] = useState(0);
   const [measurementUnit, setMeasurementUnit] = useState("m2");
@@ -59,6 +60,7 @@ function EditLot() {
         const data = rawData.lot || rawData.data || rawData;
 
         setName(data.name || "");
+        setGuid(data.guid || "");
         setLength(data.length ?? 0);
         setWidth(data.width ?? 0);
         setMeasurementUnit(data.measurement_unit || data.unit || "m2");
@@ -166,6 +168,7 @@ function EditLot() {
       await projectsApi.updateLot(project_id, lot_id, {
         lot: {
           name,
+          guid,
           length: Number(length),
           width: Number(width),
           price: calculatedPrice,

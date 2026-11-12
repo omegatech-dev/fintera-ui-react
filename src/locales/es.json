@@ -498,6 +498,7 @@
     "clickToUploadReceipt": "Haz clic para subir el recibo",
     "acceptedFormats": "PDF, JPG, PNG",
     "approve": "Aprobar",
+    "reservationRequiresContract": "No se puede aprobar la reserva sin antes aprobar el contrato.",
     "attachedDocument": "Documento Adjunto",
     "previewNotAvailable": "Vista previa no disponible",
     "approveSuccess": "¡Pago aprobado exitosamente!",

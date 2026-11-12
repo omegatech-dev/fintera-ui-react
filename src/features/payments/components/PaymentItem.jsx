@@ -8,6 +8,7 @@ import { formatStatus } from "../../../shared/utils/formatStatus";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
 import { getDefaultCurrency } from "../../../shared/utils/formatSettings";
+import { reservationApprovalBlocked } from "../utils/approval";
 
 function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobileCard = false }) {
   const { t } = useLocale();
@@ -51,6 +52,7 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
 
   const totalAmount = Number(paymentInfo.amount || 0) + Number(paymentInfo.interest_amount || 0);
   const statusLower = (paymentInfo.status || "").toLowerCase();
+  const approvalBlocked = reservationApprovalBlocked(paymentInfo);
   const paidAmount = Number(paymentInfo.paid_amount ?? 0);
   const isOverpayment = statusLower === "paid" && paidAmount > totalAmount && totalAmount > 0;
   const overpaymentAmount = isOverpayment ? paidAmount - totalAmount : 0;
@@ -94,6 +96,10 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
         : formatStatus(paymentInfo.status, t);
 
   const handleApprove = async (fileToUpload = null) => {
+    if (reservationApprovalBlocked(paymentInfo)) {
+      setApprovalResult({ type: 'error', message: t('payments.reservationRequiresContract') });
+      return;
+    }
     setApproveLoading(true);
     setApprovalResult(null);
     try {
@@ -235,14 +241,17 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {statusLower === "submitted" && userRole === "admin" && (
                 <>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={(e) => { e.stopPropagation(); setShowApproveModal(true); }}
-                    className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-xs hover:bg-slate-800 transition-all flex items-center justify-center"
+                    whileHover={approvalBlocked ? undefined : { scale: 1.05 }}
+                    whileTap={approvalBlocked ? undefined : { scale: 0.95 }}
+                    onClick={(e) => { e.stopPropagation(); if (approvalBlocked) return; setShowApproveModal(true); }}
+                    disabled={approvalBlocked}
+                    aria-disabled={approvalBlocked}
+                    title={approvalBlocked ? t('payments.reservationRequiresContract') : undefined}
+                    className={`px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-xs transition-all flex items-center justify-center ${approvalBlocked ? "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed" : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800"}`}
                   >
                     {t('payments.approve')}
                   </motion.button>
@@ -254,6 +263,11 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
                   >
                     {t('payments.reject')}
                   </motion.button>
+                  {approvalBlocked && (
+                    <p className="w-full text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                      {t('payments.reservationRequiresContract')}
+                    </p>
+                  )}
                 </>
               )}
               {statusLower === "paid" && (
@@ -351,14 +365,17 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
         </div>
       </td>
       <td className="px-6 py-4">
-        <div className="flex justify-end gap-3 transition-opacity duration-300">
+        <div className="flex flex-wrap justify-end gap-3 transition-opacity duration-300">
           {statusLower === "submitted" && userRole === "admin" && (
             <>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => { e.stopPropagation(); setShowApproveModal(true); }}
-                className="px-5 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-md hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 transition-all"
+                whileHover={approvalBlocked ? undefined : { scale: 1.05 }}
+                whileTap={approvalBlocked ? undefined : { scale: 0.95 }}
+                onClick={(e) => { e.stopPropagation(); if (approvalBlocked) return; setShowApproveModal(true); }}
+                disabled={approvalBlocked}
+                aria-disabled={approvalBlocked}
+                title={approvalBlocked ? t('payments.reservationRequiresContract') : undefined}
+                className={`px-5 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-md transition-all ${approvalBlocked ? "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed" : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95"}`}
               >
                 {t('payments.approve')}
               </motion.button>
@@ -370,6 +387,11 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
               >
                 {t('payments.reject')}
               </motion.button>
+              {approvalBlocked && (
+                <p className="w-full text-right text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                  {t('payments.reservationRequiresContract')}
+                </p>
+              )}
             </>
           )}
           {statusLower === "paid" && (

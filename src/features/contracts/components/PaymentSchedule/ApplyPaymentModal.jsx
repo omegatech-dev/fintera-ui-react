@@ -29,11 +29,11 @@ const ApplyPaymentModal = ({
     const handleApplyPayment = async () => {
         setActionLoading(true);
         try {
-            const paymentAmount = parseFloat(editableAmount) || 0;
+            const paymentAmount = Number(editableAmount);
 
             if (selectedPayment?.isCapitalPayment) {
                 // Handle capital payment (abono a capital)
-                if (paymentAmount <= 0) {
+                if (!Number.isFinite(paymentAmount) || paymentAmount <= 0) {
                     showToast(t('contracts.capitalPaymentAmountRequired'), "error");
                     setActionLoading(false);
                     return;

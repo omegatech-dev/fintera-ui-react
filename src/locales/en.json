@@ -498,6 +498,7 @@
     "clickToUploadReceipt": "Click to upload receipt",
     "acceptedFormats": "PDF, JPG, PNG",
     "approve": "Approve",
+    "reservationRequiresContract": "The reservation cannot be approved until the contract is approved.",
     "attachedDocument": "Attached Document",
     "previewNotAvailable": "Preview not available",
     "approveSuccess": "Payment approved successfully!",

@@ -1,4 +1,4 @@
-import React, { memo, useState, useRef, useEffect } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";

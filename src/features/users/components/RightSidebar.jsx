@@ -105,14 +105,28 @@ function RightSidebar({ user, onClose }) {
         <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-transparent"></div>
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl"></div>
 
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/50 dark:bg-darkblack-500/50 text-bgray-500 dark:text-bgray-400 hover:text-bgray-900 dark:hover:text-white transition-all backdrop-blur-md"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          <Link
+            to={`/users/${user.id}/edit`}
+            title={t("common.edit")}
+            aria-label={t("users.editUser")}
+            className="rounded-full bg-white/50 p-2 text-bgray-500 backdrop-blur-md transition-all hover:text-bgray-900 dark:bg-darkblack-500/50 dark:text-bgray-400 dark:hover:text-white"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </Link>
+
+          <button
+            onClick={onClose}
+            aria-label={t("common.close")}
+            className="rounded-full bg-white/50 p-2 text-bgray-500 backdrop-blur-md transition-all hover:text-bgray-900 dark:bg-darkblack-500/50 dark:text-bgray-400 dark:hover:text-white"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
         <div className="relative z-10 flex flex-col items-center">
           <motion.div

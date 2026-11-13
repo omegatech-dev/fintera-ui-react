@@ -1,12 +1,15 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import AuthContext from "@/contexts/AuthContext";
+import { useLocale } from "@/contexts/LocaleContext";
 import { useToast } from "@/contexts/ToastContext";
 import { commissionsApi } from "../api";
+import CommissionRulesSheet from "../components/CommissionRulesSheet";
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import {
   Button,
   Card,
   Chip,
+  Dialog,
   EmptyState,
   ErrorState,
   Select,
@@ -16,6 +19,22 @@ import {
 
 const money = (value) =>
   `L ${Number(value || 0).toLocaleString("es-HN", { maximumFractionDigits: 0 })}`;
+
+const rateFor = (row) => {
+  const stored =
+    row?.commission_rate ?? row?.rate ?? row?.commission_percentage;
+  if (stored !== undefined && stored !== null && stored !== "") {
+    return Number(stored);
+  }
+  const amount = Number(row?.amount || 0);
+  if (!amount) return null;
+  return (Number(row?.commission || 0) / amount) * 100;
+};
+
+const formatRate = (rate) =>
+  rate === null || rate === undefined || Number.isNaN(Number(rate))
+    ? "—"
+    : `${Number(rate).toFixed(1)}%`;
 
 const monthStart = () => {
   const now = new Date();
@@ -33,6 +52,7 @@ const monthEnd = () => {
 
 function Commissions() {
   const { user } = useContext(AuthContext);
+  const { t } = useLocale();
   const { showToast } = useToast();
   const isAdmin = user?.role === "admin";
   const [paying, setPaying] = useState(null);
@@ -43,6 +63,8 @@ function Commissions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [exporting, setExporting] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  const [viewing, setViewing] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -140,6 +162,11 @@ function Commissions() {
     }
   };
 
+  const handleRulesSaved = () => {
+    setRulesOpen(false);
+    showToast(t("commissions.rulesSaved"));
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -150,23 +177,26 @@ function Commissions() {
       {
         key: "contract_id",
         header: "Contrato",
-        render: (row) => `#${row.contract_id}`,
-      },
-      {
-        key: "client_name",
-        header: "Cliente",
-        render: (row) => row.client_name || "—",
-      },
-      {
-        key: "project",
-        header: "Proyecto / lote",
-        render: (row) => `${row.project || "—"} · ${row.lot || "—"}`,
+        render: (row) => (
+          <div className="min-w-0">
+            <p className="font-semibold text-ink">#{row.contract_id}</p>
+            <p className="truncate text-micro text-ink-3">
+              {row.client_name || "—"}
+            </p>
+          </div>
+        ),
       },
       {
         key: "amount",
         header: "Monto",
         align: "right",
         render: (row) => money(row.amount),
+      },
+      {
+        key: "rate",
+        header: "%",
+        align: "right",
+        render: (row) => formatRate(rateFor(row)),
       },
       {
         key: "commission",
@@ -177,11 +207,6 @@ function Commissions() {
             {money(row.commission)}
           </span>
         ),
-      },
-      {
-        key: "date",
-        header: "Fecha",
-        render: (row) => row.date || "—",
       },
       {
         key: "commission_paid_at",
@@ -201,9 +226,13 @@ function Commissions() {
               align: "right",
               render: (row) =>
                 row.commission_paid_at ? (
-                  <span className="text-micro text-ink-3">
-                    {new Date(row.commission_paid_at).toLocaleDateString("es-HN")}
-                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setViewing(row)}
+                  >
+                    {t("common.view")}
+                  </Button>
                 ) : (
                   <Button
                     size="sm"
@@ -212,14 +241,14 @@ function Commissions() {
                     disabled={!row.contract_guid}
                     onClick={() => handlePay(row)}
                   >
-                    Marcar pagada
+                    {t("commissions.pay")}
                   </Button>
                 ),
             },
           ]
         : []),
     ],
-    [handlePay, isAdmin, paying]
+    [handlePay, isAdmin, paying, t]
   );
 
   return (
@@ -232,9 +261,19 @@ function Commissions() {
               Comisiones de vendedores para el periodo seleccionado.
             </p>
           </div>
-          <Button variant="secondary" onClick={handleExport} loading={exporting}>
-            Exportar CSV
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {isAdmin && (
+              <Button
+                variant="secondary"
+                onClick={() => setRulesOpen(true)}
+              >
+                {t("commissions.configureRates")}
+              </Button>
+            )}
+            <Button variant="secondary" onClick={handleExport} loading={exporting}>
+              Exportar CSV
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-end gap-3">
@@ -286,8 +325,8 @@ function Commissions() {
               ))
             : [
                 { label: "Comisiones del periodo", value: money(totals.commission) },
-                { label: "Pagadas", value: money(totals.paid) },
-                { label: "Pendientes", value: money(totals.pending) },
+                { label: "Pagado", value: money(totals.paid) },
+                { label: "Por pagar", value: money(totals.pending) },
                 { label: "Tasa promedio", value: `${averageRate}%` },
               ].map((kpi) => (
                 <Card key={kpi.label} title={kpi.label}>
@@ -319,6 +358,9 @@ function Commissions() {
                     <p className="text-micro text-ink-3">
                       {row.seller} · {row.project} · {row.date}
                     </p>
+                    <p className="text-micro text-ink-3">
+                      {money(row.amount)} · {formatRate(rateFor(row))}
+                    </p>
                   </div>
                   <p className="text-body font-bold text-brand-strong">
                     {money(row.commission)}
@@ -330,23 +372,107 @@ function Commissions() {
                   ) : (
                     <Chip tone="warning">Pendiente</Chip>
                   )}
-                  {isAdmin && !row.commission_paid_at && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      loading={paying === row.contract_guid}
-                      disabled={!row.contract_guid}
-                      onClick={() => handlePay(row)}
-                    >
-                      Marcar pagada
-                    </Button>
-                  )}
+                  {isAdmin &&
+                    (row.commission_paid_at ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setViewing(row)}
+                      >
+                        {t("common.view")}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        loading={paying === row.contract_guid}
+                        disabled={!row.contract_guid}
+                        onClick={() => handlePay(row)}
+                      >
+                        {t("commissions.pay")}
+                      </Button>
+                    ))}
                 </div>
               </div>
             )}
           />
         </Card>
       </div>
+
+      <CommissionRulesSheet
+        open={rulesOpen}
+        sellers={sellers}
+        onClose={() => setRulesOpen(false)}
+        onSaved={handleRulesSaved}
+      />
+
+      <Dialog
+        open={Boolean(viewing)}
+        onClose={() => setViewing(null)}
+        title={viewing ? `Comisión #${viewing.contract_id}` : ""}
+        size="sm"
+        footer={
+          <Button variant="secondary" onClick={() => setViewing(null)}>
+            {t("common.close")}
+          </Button>
+        }
+      >
+        {viewing && (
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-body">
+            <div>
+              <dt className="text-micro text-ink-3">Vendedor</dt>
+              <dd className="font-semibold text-ink">{viewing.seller || "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-micro text-ink-3">Cliente</dt>
+              <dd className="font-semibold text-ink">
+                {viewing.client_name || "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-micro text-ink-3">Proyecto / lote</dt>
+              <dd className="font-semibold text-ink">
+                {viewing.project || "—"} · {viewing.lot || "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-micro text-ink-3">Fecha</dt>
+              <dd className="font-semibold text-ink">{viewing.date || "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-micro text-ink-3">Monto</dt>
+              <dd className="font-semibold text-ink">{money(viewing.amount)}</dd>
+            </div>
+            <div>
+              <dt className="text-micro text-ink-3">Tasa</dt>
+              <dd className="font-semibold text-ink">
+                {formatRate(rateFor(viewing))}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-micro text-ink-3">Comisión</dt>
+              <dd className="font-semibold text-brand-strong">
+                {money(viewing.commission)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-micro text-ink-3">Estado</dt>
+              <dd>
+                {viewing.commission_paid_at ? (
+                  <Chip tone="success">
+                    Pagada ·{" "}
+                    {new Date(viewing.commission_paid_at).toLocaleDateString(
+                      "es-HN"
+                    )}
+                  </Chip>
+                ) : (
+                  <Chip tone="warning">Pendiente</Chip>
+                )}
+              </dd>
+            </div>
+          </dl>
+        )}
+      </Dialog>
     </main>
   );
 }

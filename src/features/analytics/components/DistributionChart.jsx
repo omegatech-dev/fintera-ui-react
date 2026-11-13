@@ -1,7 +1,8 @@
-import React, { memo, useMemo } from "react";
+import { memo, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Doughnut } from "react-chartjs-2";
 import PropTypes from "prop-types";
+import ChartDataTable from "./ChartDataTable";
 
 const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -45,22 +46,28 @@ const DistributionChart = memo(({ distribution, doughnutOptions, t, formatPercen
     }, [distribution, t]);
 
     const legendItems = useMemo(() => [
-        { label: t("analytics.financed") || "Financed", value: formatPercent(distribution?.financed_percentage), color: "bg-indigo-500" },
-        { label: t("analytics.reserved"), value: formatPercent(distribution?.reserved_percentage), color: "bg-orange-500" },
-        { label: t("analytics.available"), value: formatPercent(distribution?.available_percentage), color: "bg-green-500/40" },
-        { label: t("analytics.fully_paid") || "Fully Paid", value: formatPercent(distribution?.fully_paid_percentage), color: "bg-blue-500" },
+        { label: t("analytics.financed") || "Financed", count: distribution?.financed || 0, value: formatPercent(distribution?.financed_percentage), color: "bg-indigo-500" },
+        { label: t("analytics.reserved"), count: distribution?.reserved || 0, value: formatPercent(distribution?.reserved_percentage), color: "bg-orange-500" },
+        { label: t("analytics.available"), count: distribution?.available || 0, value: formatPercent(distribution?.available_percentage), color: "bg-green-500/40" },
+        { label: t("analytics.fully_paid") || "Fully Paid", count: distribution?.fully_paid || 0, value: formatPercent(distribution?.fully_paid_percentage), color: "bg-blue-500" },
     ], [distribution, t, formatPercent]);
 
     return (
         <motion.div
             variants={itemVariants}
+            role="region"
+            aria-label={t("analytics.lotsAvailability")}
             className="bg-white dark:bg-darkblack-600 p-6 rounded-3xl shadow-2xl border border-gray-100 dark:border-darkblack-500 text-gray-900 dark:text-white"
         >
             <h3 className="text-xl font-bold mb-8 flex items-center space-x-2 text-gray-900 dark:text-white">
                 <span className="w-2 h-6 bg-purple-600 rounded-full"></span>
                 <span>{t("analytics.lotsAvailability")}</span>
             </h3>
-            <div className="h-[300px] relative">
+            <div
+                className="h-[300px] relative"
+                role="img"
+                aria-label={t("analytics.lotsAvailability")}
+            >
                 <Doughnut data={distributionData} options={doughnutOptions} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <span className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -80,6 +87,19 @@ const DistributionChart = memo(({ distribution, doughnutOptions, t, formatPercen
                     </div>
                 ))}
             </div>
+            <ChartDataTable
+                caption={t("analytics.lotsAvailability")}
+                columns={[
+                    t("common.status"),
+                    t("projects.lots"),
+                    t("analytics.percentageLabel"),
+                ]}
+                rows={legendItems.map((item) => [
+                    item.label,
+                    item.count,
+                    item.value,
+                ])}
+            />
         </motion.div>
     );
 });

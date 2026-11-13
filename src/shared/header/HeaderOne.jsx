@@ -1,15 +1,13 @@
 // src/components/header/HeaderOne.jsx
 
 import PropTypes from "prop-types";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../../contexts/AuthContext";
 import Author from "./Author";
-import NotificationPopup from "./NotificationPopup";
+import NotificationsBell from "./NotificationsBell";
 import ProfilePopup from "./ProfilePopup";
-import ToggleBtn from "./ToggleBtn";
 import ModeToggler from "./ModeToggler";
-import { notificationsApi } from "@/shared/api/notifications";
 import { usePageTitle } from "../../hooks/usePageTitle";
 
 function HeaderOne({ handleSidebar }) {
@@ -18,67 +16,11 @@ function HeaderOne({ handleSidebar }) {
 
   // Get dynamic page title and subtitle
   const { title, subtitle } = usePageTitle();
-
-  // Notifications state
-  const [loading, setLoading] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-
-  // Extract user, logout from AuthContext
-  const { user, logout, token, loading: authLoading } = useContext(AuthContext);
-
-  // Wait for auth hydration/refresh before fetching. Firing earlier can use an
-  // expired token and produce a spurious 401.
-  useEffect(() => {
-    if (!authLoading && user && token) {
-      fetchNotifications();
-    }
-  }, [user, token, authLoading]);
-
-  const fetchNotifications = async (status = "unread") => {
-    setLoading(true);
-    try {
-      const data = await notificationsApi.list({ status });
-      // Expect data.notifications to be an array
-      setNotifications(data.notifications || []);
-    } catch (error) {
-      if (error?.status !== 401) {
-        console.error("Error fetching notifications:", error);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleMarkAllAsRead = async () => {
-    try {
-      await notificationsApi.markAllAsRead();
-      // After success, re-fetch the notifications to update the UI
-      fetchNotifications("unread");
-    } catch (err) {
-      console.error("Error marking all as read:", err);
-    }
-  };
-
-  const handleMarkAsRead = async (id) => {
-    try {
-      await notificationsApi.markAsRead(id);
-      // Remove the notification from the list (we only show unread)
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    } catch (err) {
-      console.error("Error marking notification as read:", err);
-    }
-  };
+  const { user, logout } = useContext(AuthContext);
 
   const handlePopup = (name) => {
     setPopup((prevPopup) => ({
       [name]: !prevPopup?.[name],
-    }));
-  };
-
-  const handleCloseNotification = () => {
-    setPopup((prevPopup) => ({
-      ...prevPopup,
-      notification: false,
     }));
   };
 
@@ -138,48 +80,11 @@ function HeaderOne({ handleSidebar }) {
         <div className="quick-access-wrapper relative shrink-0">
           <div className="flex items-center space-x-[43px]">
             {/* Some hidden items + Toggles */}
-            <div className="hidden items-center space-x-5 xl:flex">
-              <div
-                onClick={() => setPopup(false)}
-                id="noti-outside"
-                className={`fixed left-0 top-0 h-full w-full z-[15] ${popup?.notification ? "block" : "hidden"
-                  }`}
-              ></div>
-
-              <ModeToggler />
-
-              {/* Notification Toggle Button */}
-              <div className="relative">
-                <ToggleBtn
-                  name="notification"
-                  clickHandler={handlePopup}
-                  active={notifications?.length > 0}
-                  icon={
-                    <svg
-                      className="stroke-bgray-900 dark:stroke-white"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M2 12V7C2 4.79086 3.79086 3 6 3H18C20.2091 3 22 4.79086 22 7V17C22 19.2091 20.2091 21 18 21H8M6 8L9.7812 10.5208C11.1248 11.4165 12.8752 11.4165 14.2188 10.5208L18 8M2 15H8M2 18H8"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      ></path>
-                    </svg>
-                  }
-                />
-                <NotificationPopup
-                  loading={loading}
-                  active={popup?.notification}
-                  notifications={notifications}
-                  onMarkAllAsRead={handleMarkAllAsRead}
-                  onMarkAsRead={handleMarkAsRead}
-                  onClose={handleCloseNotification}
-                />
+            <div className="flex items-center space-x-3">
+              <div className="hidden xl:block">
+                <ModeToggler />
               </div>
+              <NotificationsBell />
             </div>
 
             {/* Vertical Divider */}

@@ -7,9 +7,18 @@ function Table({
   sort,
   onSortChange,
   mobileCard,
+  onRowClick,
   empty = null,
 }) {
   if (!rows?.length) return empty;
+
+  const handleRowKeyDown = (event, row) => {
+    if (!onRowClick) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onRowClick(row);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -54,7 +63,14 @@ function Table({
           {rows.map((row) => (
             <tr
               key={getRowKey(row)}
-              className="border-b border-line/70 last:border-0"
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              onKeyDown={
+                onRowClick ? (event) => handleRowKeyDown(event, row) : undefined
+              }
+              tabIndex={onRowClick ? 0 : undefined}
+              className={`border-b border-line/70 last:border-0 ${
+                onRowClick ? "cursor-pointer hover:bg-surface-2" : ""
+              }`}
             >
               {columns.map((column) => (
                 <td
@@ -73,7 +89,13 @@ function Table({
 
       <div className="flex flex-col gap-2 md:hidden">
         {rows.map((row) => (
-          <div key={getRowKey(row)}>{mobileCard ? mobileCard(row) : null}</div>
+          <div
+            key={getRowKey(row)}
+            onClick={onRowClick ? () => onRowClick(row) : undefined}
+            className={onRowClick ? "cursor-pointer" : undefined}
+          >
+            {mobileCard ? mobileCard(row) : null}
+          </div>
         ))}
       </div>
     </div>
@@ -98,6 +120,7 @@ Table.propTypes = {
   }),
   onSortChange: PropTypes.func,
   mobileCard: PropTypes.func,
+  onRowClick: PropTypes.func,
   empty: PropTypes.node,
 };
 

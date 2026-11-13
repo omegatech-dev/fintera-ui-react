@@ -1,7 +1,8 @@
-import React, { memo, useRef, useEffect, useMemo } from "react";
+import { memo, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Line } from "react-chartjs-2";
 import PropTypes from "prop-types";
+import ChartDataTable from "./ChartDataTable";
 
 const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -56,14 +57,18 @@ const RevenueTrendChart = memo(({
         ],
     }), [t]);
 
+    const sortedData = useMemo(
+        () =>
+            [...(trendData || [])].sort((a, b) => {
+                return (monthOrder[a.label] ?? 99) - (monthOrder[b.label] ?? 99);
+            }),
+        [trendData]
+    );
+
     // Manual chart update to avoid canvas destruction/recreation
     useEffect(() => {
         const chart = chartRef.current;
-        if (chart && trendData) {
-            const sortedData = [...trendData].sort((a, b) => {
-                return (monthOrder[a.label] ?? 99) - (monthOrder[b.label] ?? 99);
-            });
-
+        if (chart) {
             const labels = sortedData.map(point => point.label);
             const realData = sortedData.map(point => point.real);
             const projectedData = sortedData.map(point => point.projected);
@@ -76,12 +81,14 @@ const RevenueTrendChart = memo(({
 
             chart.update();
         }
-    }, [trendData, t]);
+    }, [sortedData, t]);
 
     return (
         <motion.div
             id="revenue-chart"
             variants={itemVariants}
+            role="region"
+            aria-label={t("analytics.revenueTrend")}
             className="xl:col-span-2 bg-white/80 dark:bg-darkblack-600/80 backdrop-blur p-6 rounded-3xl shadow-2xl border border-gray-100 dark:border-darkblack-500 overflow-hidden text-gray-900 dark:text-white"
         >
             <div className="flex items-center justify-between mb-8">
@@ -145,7 +152,11 @@ const RevenueTrendChart = memo(({
                     </div>
                 </div>
             </div>
-            <div className="h-[400px] relative">
+            <div
+                className="h-[400px] relative"
+                role="img"
+                aria-label={t("analytics.revenueTrend")}
+            >
                 <AnimatePresence>
                     {isFiltering && (
                         <motion.div
@@ -160,6 +171,19 @@ const RevenueTrendChart = memo(({
                 </AnimatePresence>
                 <Line ref={chartRef} data={initialData} options={chartOptions} />
             </div>
+            <ChartDataTable
+                caption={t("analytics.revenueTrend")}
+                columns={[
+                    t("analytics.monthLabel"),
+                    t("analytics.realData"),
+                    t("analytics.projections"),
+                ]}
+                rows={sortedData.map((point) => [
+                    point.label,
+                    point.real ?? "—",
+                    point.projected ?? "—",
+                ])}
+            />
         </motion.div>
     );
 });

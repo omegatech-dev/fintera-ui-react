@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import { projectsApi } from "@/features/projects/api";
 
 const periodQuery = (startDate, endDate) =>
   `?start_date=${encodeURIComponent(startDate || "")}&end_date=${encodeURIComponent(endDate || "")}`;
@@ -12,4 +13,7 @@ export const commissionsApi = {
     }),
   markPaid: (contractGuid) =>
     apiClient.patch(`/api/v1/contracts/${contractGuid}/commission/pay`),
+  listProjects: () => projectsApi.list({ per_page: 100 }),
+  getProject: (projectId) => projectsApi.get(projectId),
+  updateProject: (projectId, project) => projectsApi.update(projectId, { project }),
 };

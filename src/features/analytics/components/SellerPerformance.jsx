@@ -1,7 +1,8 @@
-import React, { memo, useMemo } from "react";
+import { memo, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Bar } from "react-chartjs-2";
 import PropTypes from "prop-types";
+import ChartDataTable from "./ChartDataTable";
 
 const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -59,6 +60,8 @@ const SellerPerformance = memo(({ sellersPerformance, sellerChartOptions, t, for
         <motion.section
             id="seller-performance-section"
             variants={itemVariants}
+            role="region"
+            aria-label={t("analytics.sellerPerformance")}
             className="bg-white/80 dark:bg-darkblack-600/80 backdrop-blur p-8 rounded-[2.5rem] shadow-2xl border border-white/50 dark:border-darkblack-500/50 overflow-hidden relative"
         >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
@@ -83,12 +86,30 @@ const SellerPerformance = memo(({ sellersPerformance, sellerChartOptions, t, for
                 </div>
             </div>
 
-            <div className="h-[450px] w-full relative group">
+            <div
+                className="h-[450px] w-full relative group"
+                role="img"
+                aria-label={t("analytics.sellerPerformance")}
+            >
                 <Bar data={sellerPerformanceChartData} options={sellerChartOptions} />
 
                 {/* Background glow decoration */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-tr from-blue-500/5 via-transparent to-teal-500/5 pointer-events-none -z-10 blur-3xl"></div>
             </div>
+
+            <ChartDataTable
+                caption={t("analytics.sellerPerformance")}
+                columns={[
+                    t("analytics.sellerLabel"),
+                    t("analytics.totalSales"),
+                    t("analytics.contractsSold"),
+                ]}
+                rows={sellersPerformance.map((seller) => [
+                    seller.seller_name,
+                    formatCurrency(seller.total_sales),
+                    seller.active_contracts,
+                ])}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
                 {topSellers.map((seller, idx) => (

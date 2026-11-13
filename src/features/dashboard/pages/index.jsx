@@ -3,9 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../../../contexts/AuthContext";
 import { paymentsApi } from "../../payments/api";
 import { contractsApi } from "../../contracts/api";
+import { projectsApi } from "../../projects/api";
 import RecentActivity from "../components/RecentActivity";
 import SellerDashboard from "./SellerDashboard";
-import { Button, Card, ErrorState, Skeleton } from "@/shared/ui";
+import { Button, Card, Chip, ErrorState, Skeleton } from "@/shared/ui";
 
 const formatMoney = (value) => {
   const amount = Number(value);
@@ -46,6 +47,9 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [paymentsStats, setPaymentsStats] = useState(null);
   const [contractsStats, setContractsStats] = useState(null);
+  const [pendingPayments, setPendingPayments] = useState(0);
+  const [recentPayments, setRecentPayments] = useState([]);
+  const [occupancy, setOccupancy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -53,9 +57,18 @@ const AdminDashboard = () => {
     setLoading(true);
     setError(null);
 
-    const [paymentsResult, contractsResult] = await Promise.allSettled([
+    const [
+      paymentsResult,
+      contractsResult,
+      pendingPaymentsResult,
+      recentPaymentsResult,
+      projectsResult,
+    ] = await Promise.allSettled([
       paymentsApi.getStats(),
       contractsApi.getStats(),
+      paymentsApi.list({ page: 1, per_page: 1, status: "submitted" }),
+      paymentsApi.list({ page: 1, per_page: 4, sort: "due_date-asc" }),
+      projectsApi.list({ page: 1, per_page: 100 }),
     ]);
 
     if (paymentsResult.status === "fulfilled") {
@@ -63,6 +76,32 @@ const AdminDashboard = () => {
     }
     if (contractsResult.status === "fulfilled") {
       setContractsStats(contractsResult.value);
+    }
+    if (pendingPaymentsResult.status === "fulfilled") {
+      const pagination = pendingPaymentsResult.value.pagination || {};
+      setPendingPayments(Number(pagination.count || pagination.total || 0));
+    }
+    if (recentPaymentsResult.status === "fulfilled") {
+      setRecentPayments(
+        recentPaymentsResult.value.payments ||
+          recentPaymentsResult.value.data ||
+          []
+      );
+    }
+    if (projectsResult.status === "fulfilled") {
+      const projects = projectsResult.value.projects || projectsResult.value.data || [];
+      const total = projects.reduce(
+        (sum, project) => sum + (Number(project.lot_count) || 0),
+        0
+      );
+      const occupied = projects.reduce(
+        (sum, project) =>
+          sum +
+          (Number(project.sold_lots) || 0) +
+          (Number(project.financed_lots) || 0),
+        0
+      );
+      setOccupancy(total > 0 ? Math.round((occupied / total) * 1000) / 10 : null);
     }
 
     if (
@@ -119,15 +158,22 @@ const AdminDashboard = () => {
                 label: "Vencidos",
                 value: formatMoney(overdue),
                 caption: "Cuotas vencidas por cobrar",
-                to: "/payments",
+                to: "/payments?status=overdue",
                 tone: "danger",
+              },
+              {
+                label: "Pagos por aprobar",
+                value: pendingPayments,
+                caption: "Esperan una decisión",
+                to: "/payments?status=submitted",
+                tone: "warning",
               },
               {
                 label: "Contratos por aprobar",
                 value: pendingContracts ?? "—",
-                caption: "Esperan una decisión",
+                caption: "Reservas listas para firmar",
                 to: "/contracts",
-                tone: "warning",
+                tone: "info",
               },
               {
                 label: "Contratos activos",
@@ -136,13 +182,6 @@ const AdminDashboard = () => {
                 to: "/contracts",
                 tone: "default",
               },
-              {
-                label: "Recaudado este mes",
-                value: formatMoney(collected),
-                caption: "Pagos aprobados",
-                to: "/payments",
-                tone: "success",
-              },
             ].map((card) => (
               <AttentionCard key={card.label} {...card} />
             ))}
@@ -150,30 +189,87 @@ const AdminDashboard = () => {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
+          <Card
+            title="Cobros de esta semana"
+            action={
+              <Link to="/payments" className="text-label font-semibold text-brand">
+                Ver pagos →
+              </Link>
+            }
+          >
+            {loading ? (
+              <Skeleton rows={4} />
+            ) : recentPayments.length === 0 ? (
+              <p className="text-body text-ink-3">Sin cobros pendientes esta semana.</p>
+            ) : (
+              <div className="divide-y divide-line">
+                {recentPayments.map((payment) => {
+                  const overdue = payment.status === "overdue";
+                  return (
+                    <Link
+                      key={payment.id}
+                      to="/payments"
+                      className="flex flex-wrap items-center justify-between gap-2 py-3 transition-colors hover:bg-surface-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-body font-semibold text-ink">
+                          {payment.applicant_name ||
+                            payment.contract?.applicant_user?.full_name ||
+                            "—"}
+                        </p>
+                        <p className="truncate text-micro text-ink-3">
+                          {[payment.project_name, payment.lot_name]
+                            .filter(Boolean)
+                            .join(" · ") || payment.description}
+                        </p>
+                      </div>
+                      <span className={`text-body font-semibold ${overdue ? "text-danger" : "text-ink-2"}`}>
+                        {payment.due_date
+                          ? new Date(payment.due_date).toLocaleDateString(undefined, {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : "—"}
+                      </span>
+                      <span className="text-body font-bold tabular-nums text-ink">
+                        {formatMoney(payment.total_amount ?? payment.amount)}
+                      </span>
+                      <Chip tone={overdue ? "danger" : "warning"}>
+                        {overdue ? "Vencido" : "Pendiente"}
+                      </Chip>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+        </div>
+        <div className="flex flex-col gap-6">
           <Card title="Resumen del mes">
-            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div>
-                <dt className="text-micro text-ink-3">Recaudado</dt>
-                <dd className="text-title font-bold text-ink">
-                  {formatMoney(collected)}
+            <dl className="space-y-3">
+              <div className="flex items-center justify-between">
+                <dt className="text-body text-ink-2">Recaudado</dt>
+                <dd className="text-body font-bold text-ink">{formatMoney(collected)}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-body text-ink-2">Vencido</dt>
+                <dd className="text-body font-bold text-danger">{formatMoney(overdue)}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-body text-ink-2">Ocupación de lotes</dt>
+                <dd className="text-body font-bold text-ink">
+                  {occupancy == null ? "—" : `${occupancy}%`}
                 </dd>
               </div>
-              <div>
-                <dt className="text-micro text-ink-3">Vencido</dt>
-                <dd className="text-title font-bold text-danger">
-                  {formatMoney(overdue)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-micro text-ink-3">Contratos activos</dt>
-                <dd className="text-title font-bold text-ink">
-                  {activeContracts ?? "—"}
-                </dd>
+              <div className="h-2 overflow-hidden rounded-full bg-surface-2">
+                <div
+                  className="h-full rounded-full bg-brand"
+                  style={{ width: `${Math.min(occupancy || 0, 100)}%` }}
+                />
               </div>
             </dl>
           </Card>
-        </div>
-        <div className="lg:col-span-1">
           <RecentActivity />
         </div>
       </div>

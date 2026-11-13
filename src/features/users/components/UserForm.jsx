@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import { useLocale } from "../../../contexts/LocaleContext";
@@ -48,14 +48,26 @@ const EMPTY_FORM = {
 };
 
 /**
- * Consolidated user form used by the create-user page. Encapsulates the
- * personal info, security and account sections so future edit flows reuse it.
+ * Consolidated user form used by the create and edit user pages. Encapsulates
+ * the personal info, security and account sections.
  */
-function UserForm({ onSubmit, error, submitting = false, creatorRole, creatorName }) {
+function UserForm({
+  onSubmit,
+  error,
+  submitting = false,
+  creatorRole,
+  creatorName,
+  initialValues,
+  mode = "create",
+}) {
   const { t } = useLocale();
   const navigate = useNavigate();
+  const isEdit = mode === "edit";
 
-  const [formData, setFormData] = useState(EMPTY_FORM);
+  const [formData, setFormData] = useState(() => ({
+    ...EMPTY_FORM,
+    ...(initialValues || {}),
+  }));
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [validationError, setValidationError] = useState(null);
@@ -117,11 +129,13 @@ function UserForm({ onSubmit, error, submitting = false, creatorRole, creatorNam
       setValidationError(t("users.fullNameRequired"));
       return;
     }
-    if (!(formData.identity.replace(/\D/g, "").length === 13)) {
+    const identityDigits = formData.identity.replace(/\D/g, "");
+    if ((!isEdit || identityDigits) && identityDigits.length !== 13) {
       setValidationError(t("users.invalidIdentity"));
       return;
     }
-    if (!(formData.rtn.replace(/\D/g, "").length === 14)) {
+    const rtnDigits = formData.rtn.replace(/\D/g, "");
+    if ((!isEdit || rtnDigits) && rtnDigits.length !== 14) {
       setValidationError(t("users.invalidRTN"));
       return;
     }
@@ -224,7 +238,7 @@ function UserForm({ onSubmit, error, submitting = false, creatorRole, creatorNam
 
           <Field
             label={t("users.identity")}
-            required
+            required={!isEdit}
             hint={t("users.identityPlaceholder")}
             error={
               formData.identity &&
@@ -237,7 +251,7 @@ function UserForm({ onSubmit, error, submitting = false, creatorRole, creatorNam
               name="identity"
               value={formData.identity}
               onChange={handleChange}
-              required
+              required={!isEdit}
               invalid={
                 !!formData.identity &&
                 formData.identity.replace(/\D/g, "").length !== 13
@@ -247,7 +261,7 @@ function UserForm({ onSubmit, error, submitting = false, creatorRole, creatorNam
 
           <Field
             label={t("users.rtn")}
-            required
+            required={!isEdit}
             hint={t("users.rtnPlaceholder")}
             error={
               formData.rtn && formData.rtn.replace(/\D/g, "").length !== 14
@@ -259,7 +273,7 @@ function UserForm({ onSubmit, error, submitting = false, creatorRole, creatorNam
               name="rtn"
               value={formData.rtn}
               onChange={handleChange}
-              required
+              required={!isEdit}
               invalid={
                 !!formData.rtn && formData.rtn.replace(/\D/g, "").length !== 14
               }
@@ -280,7 +294,11 @@ function UserForm({ onSubmit, error, submitting = false, creatorRole, creatorNam
         <div className="space-y-4">
           <Field
             label={t("users.password")}
-            hint={t("users.optional") || "opcional - dejar vacío para generar y enviar por email"}
+            hint={
+              isEdit
+                ? t("users.passwordEditHint")
+                : t("users.optional") || "opcional - dejar vacío para generar y enviar por email"
+            }
           >
             <Input
               type="password"
@@ -348,7 +366,7 @@ function UserForm({ onSubmit, error, submitting = false, creatorRole, creatorNam
 
           <Field
             label={t("users.confirmPassword")}
-            required
+            required={!isEdit || formData.password !== ""}
             error={
               formData.password_confirmation && !pwMatch
                 ? t("users.passwordsDoNotMatch")
@@ -360,7 +378,7 @@ function UserForm({ onSubmit, error, submitting = false, creatorRole, creatorNam
               name="password_confirmation"
               value={formData.password_confirmation}
               onChange={handleChange}
-              required
+              required={!isEdit || formData.password !== ""}
               invalid={!!formData.password_confirmation && !pwMatch}
               autoComplete="new-password"
             />
@@ -397,7 +415,7 @@ function UserForm({ onSubmit, error, submitting = false, creatorRole, creatorNam
           {t("users.back")}
         </Button>
         <Button type="submit" loading={submitting}>
-          {t("users.createUser")}
+          {isEdit ? t("common.saveChanges") : t("users.createUser")}
         </Button>
       </div>
     </form>
@@ -410,6 +428,16 @@ UserForm.propTypes = {
   submitting: PropTypes.bool,
   creatorRole: PropTypes.string,
   creatorName: PropTypes.string,
+  initialValues: PropTypes.shape({
+    full_name: PropTypes.string,
+    phone: PropTypes.string,
+    email: PropTypes.string,
+    identity: PropTypes.string,
+    rtn: PropTypes.string,
+    address: PropTypes.string,
+    role: PropTypes.string,
+  }),
+  mode: PropTypes.oneOf(["create", "edit"]),
 };
 
 export default UserForm;

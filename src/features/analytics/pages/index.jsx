@@ -1,9 +1,12 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { analyticsApi } from "../api";
 import { projectsApi } from "../../projects/api";
+import { paymentsApi } from "../../payments/api";
 
 import { useToast } from "@/contexts/ToastContext";
+import { Banner } from "@/shared/ui";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -26,6 +29,8 @@ import RevenueTrendChart from "../components/RevenueTrendChart";
 import DistributionChart from "../components/DistributionChart";
 import MonthlyPerformance from "../components/MonthlyPerformance";
 import SellerPerformance from "../components/SellerPerformance";
+import GrowthByProject from "../components/GrowthByProject";
+import MoraCard from "../components/MoraCard";
 
 // Register Chart.js components
 ChartJS.register(
@@ -83,6 +88,7 @@ const Analytics = () => {
     const [distribution, setDistribution] = useState(null);
     const [performance, setPerformance] = useState(null);
     const [sellersPerformance, setSellersPerformance] = useState([]);
+    const [paymentsStats, setPaymentsStats] = useState(null);
 
 
     // Fetch projects for filter
@@ -97,6 +103,19 @@ const Analytics = () => {
         };
 
         fetchProjects();
+    }, []);
+
+    useEffect(() => {
+        const fetchPaymentStats = async () => {
+            try {
+                const data = await paymentsApi.getStats();
+                setPaymentsStats(data || null);
+            } catch (err) {
+                console.error("Error fetching payment stats for analytics:", err);
+            }
+        };
+
+        fetchPaymentStats();
     }, []);
 
     // Format project options for GenericFilter
@@ -191,6 +210,36 @@ const Analytics = () => {
         if (val === undefined || val === null) return "0%";
         return `${Number(val).toFixed(1)}%`;
     }, []);
+
+    const overdueSummary = useMemo(() => {
+        const rawAmount =
+            overviewData?.total_overdue ??
+            overviewData?.overdue_amount ??
+            paymentsStats?.total_overdue ??
+            0;
+        const amount = Number(rawAmount);
+
+        return {
+            amount: Number.isFinite(amount) ? amount : 0,
+            installments:
+                paymentsStats?.overdue_count ??
+                paymentsStats?.overdue_installments ??
+                overviewData?.overdue_count ??
+                null,
+            clients:
+                paymentsStats?.overdue_clients ??
+                overviewData?.overdue_clients ??
+                null,
+        };
+    }, [overviewData, paymentsStats]);
+
+    const growthProjects = useMemo(
+        () =>
+            filterValue === "All"
+                ? projects
+                : projects.filter((project) => String(project.id) === filterValue),
+        [projects, filterValue]
+    );
 
     const handleExport = useCallback(
         async (format) => {
@@ -333,33 +382,56 @@ const Analytics = () => {
 
     const statsForGrid = useMemo(() => {
         const ov = overviewData;
+        const previousDate = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() - 1,
+            1
+        );
+        const previousLabel = new Intl.DateTimeFormat("en-US", {
+            month: "short",
+        }).format(previousDate);
+        const previousEntry = (ov?.revenue_trend || []).find(
+            (entry) =>
+                String(entry.label || "").toLowerCase() ===
+                previousLabel.toLowerCase()
+        );
+        // The API reports 100% when the previous period is empty; suppress it
+        // instead of presenting a fabricated comparison.
+        const hasPreviousData = previousEntry
+            ? Number(previousEntry.real) > 0
+            : false;
+        const formatChange = (value) =>
+            hasPreviousData && value != null
+                ? `${value > 0 ? "+" : ""}${value}%`
+                : null;
+
         return [
             {
                 label: t("analytics.totalRevenue"),
                 value: formatCurrency(ov?.total_revenue),
-                change: ov?.revenue_change_percentage != null ? `${ov.revenue_change_percentage > 0 ? "+" : ""}${ov.revenue_change_percentage}%` : "0%",
+                change: formatChange(ov?.revenue_change_percentage),
                 color: "text-blue-600 dark:text-blue-400",
             },
             {
                 label: t("analytics.activeContracts"),
                 value: ov?.active_contracts ?? "0",
-                change: ov?.contracts_change_percentage != null ? `${ov.contracts_change_percentage > 0 ? "+" : ""}${ov.contracts_change_percentage}%` : "0%",
+                change: formatChange(ov?.contracts_change_percentage),
                 color: "text-teal-600 dark:text-teal-400",
             },
             {
                 label: t("analytics.averagePayment"),
                 value: formatCurrency(ov?.average_payment),
-                change: ov?.payment_change_percentage != null ? `${ov.payment_change_percentage > 0 ? "+" : ""}${ov.payment_change_percentage}%` : "0%",
+                change: formatChange(ov?.payment_change_percentage),
                 color: "text-orange-600 dark:text-orange-400",
             },
             {
                 label: t("analytics.occupancyRate"),
                 value: formatPercent(ov?.occupancy_rate),
-                change: ov?.occupancy_change_percentage != null ? `${ov.occupancy_change_percentage > 0 ? "+" : ""}${ov.occupancy_change_percentage}%` : "0%",
+                change: formatChange(ov?.occupancy_change_percentage),
                 color: "text-green-600 dark:text-green-400",
             },
         ];
-    }, [overviewData, t, formatCurrency, formatPercent]);
+    }, [overviewData, t, formatCurrency, formatPercent, currentDate]);
 
     const doughnutOptions = useMemo(
         () => ({
@@ -499,6 +571,25 @@ const Analytics = () => {
                             t={t}
                         />
 
+                        {/* Charts Row 3 - Growth and Overdue */}
+                        <section className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                            <div className="h-full xl:col-span-2">
+                                <GrowthByProject
+                                    projects={growthProjects}
+                                    performance={performance}
+                                    t={t}
+                                />
+                            </div>
+                            <div className="h-full xl:col-span-1">
+                                <MoraCard
+                                    amount={overdueSummary.amount}
+                                    installments={overdueSummary.installments}
+                                    clients={overdueSummary.clients}
+                                    formatCurrency={formatCurrency}
+                                    t={t}
+                                />
+                            </div>
+                        </section>
 
                         <SellerPerformance
                             sellersPerformance={sellersPerformance}
@@ -506,6 +597,41 @@ const Analytics = () => {
                             t={t}
                             formatCurrency={formatCurrency}
                         />
+
+                        {overdueSummary.amount > 0 && (
+                            <Banner
+                                tone="warning"
+                                icon={
+                                    <svg
+                                        aria-hidden="true"
+                                        className="mt-0.5 h-4 w-4 shrink-0"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1.8}
+                                            d="M9.663 17h4.674M12 3a6 6 0 00-3.6 10.8c.4.3.6.8.6 1.2V16h6v-1c0-.4.2-.9.6-1.2A6 6 0 0012 3z"
+                                        />
+                                    </svg>
+                                }
+                                action={
+                                    <Link
+                                        to="/payments?status=overdue"
+                                        className="shrink-0 whitespace-nowrap text-label font-bold text-warning hover:underline"
+                                    >
+                                        {t("analytics.viewCollections")}{" "}
+                                        <span aria-hidden="true">→</span>
+                                    </Link>
+                                }
+                            >
+                                {t("analytics.insightOverdue", {
+                                    amount: formatCurrency(overdueSummary.amount),
+                                })}
+                            </Banner>
+                        )}
                     </div>
                 </div>
             </motion.div>

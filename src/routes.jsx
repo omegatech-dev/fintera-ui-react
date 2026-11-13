@@ -40,6 +40,7 @@ const CreateLot = lazy(() => import("./features/projects/pages/lots/create"));
 const EditLot = lazy(() => import("./features/projects/pages/lots/edit"));
 const Reserve = lazy(() => import("./features/projects/pages/reserve"));
 const CreateUser = lazy(() => import("./features/users/pages/create"));
+const EditUser = lazy(() => import("./features/users/pages/edit"));
 const Upload = lazy(() => import("./features/financing/pages/upload"));
 const Summary = lazy(() => import("./features/financing/pages/summary"));
 const Documentation = lazy(() => import("./features/docs/pages"));
@@ -70,14 +71,6 @@ export const appRoutes = [
             <AdminRoute>
               <Commissions />
             </AdminRoute>
-          ),
-        },
-        {
-          path: "/vendedor/comisiones",
-          element: (
-            <SellerRoute>
-              <Commissions />
-            </SellerRoute>
           ),
         },
         {
@@ -282,6 +275,14 @@ export const appRoutes = [
           element: (
             <AdminRoute>
               <CreateUser />
+            </AdminRoute>
+          ),
+        },
+        {
+          path: "/users/:id/edit",
+          element: (
+            <AdminRoute>
+              <EditUser />
             </AdminRoute>
           ),
         },

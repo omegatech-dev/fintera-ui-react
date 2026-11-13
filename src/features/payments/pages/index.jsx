@@ -1,6 +1,7 @@
 import { useState, useContext, useMemo, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import GenericFilter from "../../../shared/forms/GenericFilter";
+import { useSearchParams } from "react-router-dom";
+import useDebounce from "../../../hooks/useDebounce";
 import PaymentItem, {
   PaymentDetailModal,
   ApproveModal,
@@ -17,7 +18,9 @@ import {
   Chip,
   EmptyState,
   ErrorState,
+  Input,
   Pagination,
+  SegmentedControl,
   Skeleton,
   Table,
 } from "@/shared/ui";
@@ -61,7 +64,10 @@ const itemVariants = {
 
 function Payments() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [status, setStatus] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 400);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [status, setStatus] = useState(searchParams.get("status") || "");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedPayment, setSelectedPayment] = useState(null);
@@ -70,6 +76,12 @@ function Payments() {
   const [rejectionPayment, setRejectionPayment] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [stats, setStats] = useState({ pending: 0, paidThisMonth: 0, overdue: 0 });
+  const [statusCounts, setStatusCounts] = useState({
+    all: 0,
+    submitted: 0,
+    overdue: 0,
+    paid: 0,
+  });
   const [loadingStats, setLoadingStats] = useState(true);
 
   const [payments, setPayments] = useState([]);
@@ -103,8 +115,37 @@ function Payments() {
         setLoadingStats(false);
       }
     };
+
+    const fetchStatusCounts = async () => {
+      const statuses = ["", "submitted", "overdue", "paid"];
+      const results = await Promise.allSettled(
+        statuses.map((value) =>
+          paymentsApi.list({
+            page: 1,
+            per_page: 1,
+            ...(value ? { status: value } : {}),
+          })
+        )
+      );
+      const next = { all: 0, submitted: 0, overdue: 0, paid: 0 };
+      statuses.forEach((value, index) => {
+        const result = results[index];
+        if (result.status === "fulfilled") {
+          const pagination = result.value.pagination || {};
+          next[value || "all"] = Number(pagination.count || pagination.total || 0);
+        }
+      });
+      setStatusCounts(next);
+    };
+
     fetchStats();
+    fetchStatusCounts();
   }, [refreshTrigger]);
+
+  useEffect(() => {
+    setSearchTerm(debouncedSearch.length >= 3 ? debouncedSearch : "");
+    setPage(1);
+  }, [debouncedSearch]);
 
   const filters = useMemo(() => {
     const obj = {};
@@ -140,26 +181,17 @@ function Payments() {
     fetchPayments();
   }, [fetchPayments, refreshTrigger]);
 
-  const statusOptions = useMemo(
-    () => [
-      { value: "", label: t("filters.all") },
-      { value: "submitted", label: t("payments.statusOptions.submitted") },
-      { value: "paid", label: t("payments.statusOptions.paid") },
-      { value: "rejected", label: t("payments.statusOptions.rejected") },
-      { value: "overdue", label: t("payments.overdue") },
-    ],
-    [t]
+  const handleFilterChange = useCallback(
+    (value) => {
+      setStatus(value);
+      setPage(1);
+      const next = new URLSearchParams(searchParams);
+      if (value) next.set("status", value);
+      else next.delete("status");
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
   );
-
-  const handleSearchChange = useCallback((term) => {
-    setSearchTerm(term);
-    setPage(1);
-  }, []);
-
-  const handleFilterChange = useCallback((value) => {
-    setStatus(value);
-    setPage(1);
-  }, []);
 
   const handleSortChange = useCallback((field) => {
     setSort((prev) => ({
@@ -463,21 +495,56 @@ function Payments() {
             ))}
           </div>
 
-          <motion.div variants={itemVariants} className="mb-8 relative z-20">
-            <GenericFilter
-              searchTerm={searchTerm}
-              filterValue={status}
-              filterOptions={statusOptions}
-              onSearchChange={handleSearchChange}
-              onFilterChange={handleFilterChange}
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-              searchPlaceholder={t("filters.searchPlaceholder")}
-              filterPlaceholder={t("filters.statusPlaceholder")}
-              minSearchLength={2}
+          <motion.div variants={itemVariants} className="space-y-4">
+            <SegmentedControl
+              value={status}
+              onChange={handleFilterChange}
+              options={[
+                { value: "", label: `${t("payments.tabs.all")} ${statusCounts.all}` },
+                {
+                  value: "submitted",
+                  label: `${t("payments.tabs.pending")} ${statusCounts.submitted}`,
+                },
+                {
+                  value: "overdue",
+                  label: `${t("payments.tabs.overdue")} ${statusCounts.overdue}`,
+                },
+                {
+                  value: "paid",
+                  label: `${t("payments.tabs.approved")} ${statusCounts.paid}`,
+                },
+              ]}
             />
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Input
+                type="search"
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder={t("filters.searchPlaceholder")}
+                className="w-full sm:w-72"
+              />
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(event) => {
+                  setStartDate(event.target.value);
+                  setPage(1);
+                }}
+                aria-label={t("filters.startDate") || "Start date"}
+                className="w-full sm:w-44"
+              />
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(event) => {
+                  setEndDate(event.target.value);
+                  setPage(1);
+                }}
+                aria-label={t("filters.endDate") || "End date"}
+                className="w-full sm:w-44"
+              />
+            </div>
           </motion.div>
 
           {error && (

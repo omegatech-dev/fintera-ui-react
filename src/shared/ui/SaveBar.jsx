@@ -3,6 +3,7 @@ import Button from "./Button";
 
 function SaveBar({
   dirty = false,
+  visible,
   saving = false,
   onSave,
   onDiscard,
@@ -10,8 +11,11 @@ function SaveBar({
   discardLabel = "Descartar",
   message = "Cambios sin guardar",
   className = "",
+  saveType = "button",
+  saveForm,
+  saveDisabled = false,
 }) {
-  if (!dirty) return null;
+  if (!(visible ?? dirty)) return null;
 
   return (
     <div
@@ -24,7 +28,14 @@ function SaveBar({
         <Button variant="ghost" size="sm" onClick={onDiscard} disabled={saving}>
           {discardLabel}
         </Button>
-        <Button size="sm" onClick={onSave} loading={saving}>
+        <Button
+          size="sm"
+          type={saveType}
+          form={saveForm}
+          onClick={onSave}
+          loading={saving}
+          disabled={saveDisabled}
+        >
           {saveLabel}
         </Button>
       </div>
@@ -34,6 +45,7 @@ function SaveBar({
 
 SaveBar.propTypes = {
   dirty: PropTypes.bool,
+  visible: PropTypes.bool,
   saving: PropTypes.bool,
   onSave: PropTypes.func,
   onDiscard: PropTypes.func,
@@ -41,6 +53,9 @@ SaveBar.propTypes = {
   discardLabel: PropTypes.node,
   message: PropTypes.node,
   className: PropTypes.string,
+  saveType: PropTypes.string,
+  saveForm: PropTypes.string,
+  saveDisabled: PropTypes.bool,
 };
 
 export default SaveBar;

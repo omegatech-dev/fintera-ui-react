@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { motion } from "framer-motion";
 import PropTypes from "prop-types";
 
@@ -22,16 +22,24 @@ const StatsGrid = memo(({ stats, t }) => {
                     className="bg-white dark:bg-darkblack-600 p-6 rounded-2xl shadow-xl border border-gray-100 dark:border-darkblack-500"
                 >
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.label}</p>
-                    <div className="mt-2 flex items-baseline justify-between">
+                    <div className="mt-2 flex items-baseline justify-between gap-2">
                         <h2 className={`text-2xl font-bold ${stat.color}`}>{stat.value}</h2>
-                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${stat.change.startsWith("+")
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                            }`}>
-                            {stat.change}
-                        </span>
+                        {stat.change ? (
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${stat.change.startsWith("+")
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                }`}>
+                                {stat.change}
+                            </span>
+                        ) : (
+                            <span className="text-right text-xs font-medium text-gray-400">
+                                {t("analytics.noPrevious")}
+                            </span>
+                        )}
                     </div>
-                    <p className="mt-2 text-xs text-gray-400">{t("analytics.comparedToLastMonth")}</p>
+                    {stat.change && (
+                        <p className="mt-2 text-xs text-gray-400">{t("analytics.comparedToLastMonth")}</p>
+                    )}
                 </motion.div>
             ))}
         </section>
@@ -45,7 +53,7 @@ StatsGrid.propTypes = {
         PropTypes.shape({
             label: PropTypes.string.isRequired,
             value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-            change: PropTypes.string.isRequired,
+            change: PropTypes.string,
             color: PropTypes.string.isRequired,
         })
     ).isRequired,

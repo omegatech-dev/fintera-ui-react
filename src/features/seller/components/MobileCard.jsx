@@ -27,7 +27,7 @@ function MobileCard({ title, meta, detail, value, chip, caption, action }) {
             <p className="truncate text-micro text-ink-3">{meta}</p>
           )}
           {detail && (
-            <p className="truncate text-micro text-ink-3">{detail}</p>
+            <p className="text-micro text-ink-3">{detail}</p>
           )}
         </div>
         {value && (

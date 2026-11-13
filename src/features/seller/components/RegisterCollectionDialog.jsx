@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { Banner, Button, Dialog, FileUpload } from "@/shared/ui";
 import { useLocale } from "@/contexts/LocaleContext";
-import { formatDate, money } from "../utils/format";
+import { formatDate, money, paymentTypeLabel } from "../utils/format";
 
 function DetailRow({ label, value }) {
   return (
@@ -60,24 +60,24 @@ function RegisterCollectionDialog({
     >
       {target && (
         <div className="space-y-4">
-          <dl className="grid grid-cols-2 gap-3 rounded-control border border-line bg-surface-2 p-4">
+          <dl className="grid grid-cols-1 gap-3 rounded-control border border-line bg-surface-2 p-4 sm:grid-cols-2">
             <DetailRow label={t("seller.client")} value={clientName} />
             <DetailRow label={t("seller.contract")} value={`#${contract?.id}`} />
             <DetailRow
-              label={t("seller.installment")}
-              value={payment?.description || t("seller.pendingInstallment")}
+              label={t("seller.paymentType")}
+              value={
+                payment
+                  ? paymentTypeLabel(payment, t)
+                  : t("seller.noPendingInstallmentShort")
+              }
             />
             <DetailRow
               label={t("seller.dueDate")}
               value={formatDate(payment?.due_date)}
             />
             <DetailRow
-              label={t("seller.amount")}
-              value={
-                payment
-                  ? money(payment.amount)
-                  : money(Math.abs(Number(contract?.balance || 0)))
-              }
+              label={t("seller.amountToCollect")}
+              value={payment ? money(payment.amount) : "—"}
             />
             <DetailRow
               label={t("seller.currentBalance")}
@@ -89,14 +89,16 @@ function RegisterCollectionDialog({
             <Banner tone="warning">{t("seller.noPendingInstallment")}</Banner>
           )}
 
-          <FileUpload
-            label={t("seller.receipt")}
-            accept="image/*,application/pdf"
-            multiple={false}
-            files={receipt ? [receipt] : []}
-            onChange={(files) => onReceiptChange(files[0] || null)}
-            hint={t("seller.receiptRequired")}
-          />
+          {payment && (
+            <FileUpload
+              label={t("seller.receipt")}
+              accept="image/*,application/pdf"
+              multiple={false}
+              files={receipt ? [receipt] : []}
+              onChange={(files) => onReceiptChange(files[0] || null)}
+              hint={t("seller.receiptRequired")}
+            />
+          )}
 
           <Banner tone="info">{t("seller.collectionNotice")}</Banner>
         </div>

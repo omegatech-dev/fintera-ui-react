@@ -40,6 +40,7 @@ import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import CreditScoreCard from "../../components/CreditScoreCard";
 import DocumentsTab from "../../components/ContractDetails/tabs/DocumentsTab";
 import PaymentSchedulePanel from "../../components/PaymentSchedulePanel";
+import RejectionModal from "../../components/RejectionModal";
 import LotDetailsModal from "@/features/projects/components/lots/LotDetailsModal";
 
 const money = (value) => {
@@ -158,6 +159,7 @@ function ContractDetail() {
   const [editingNote, setEditingNote] = useState(false);
   const [savingNote, setSavingNote] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [rejectionOpen, setRejectionOpen] = useState(false);
   const [paymentRequestToken, setPaymentRequestToken] = useState(0);
   const [lotDetails, setLotDetails] = useState(null);
   const [lotLoading, setLotLoading] = useState(false);
@@ -178,9 +180,12 @@ function ContractDetail() {
     setError(null);
     try {
       const response = await contractsApi.getByGuid(guid);
-      setContract(response?.contract || response);
+      const loaded = response?.contract || response;
+      setContract(loaded);
+      return loaded;
     } catch (err) {
       setError(err?.status === 404 ? "not-found" : "error");
+      return null;
     } finally {
       if (!silent) setLoading(false);
     }
@@ -319,6 +324,58 @@ function ContractDetail() {
     }
   };
 
+  const handleApprove = async () => {
+    if (actionLoading) return;
+    if (!contract?.id) {
+      showToast(t("contracts.approveError"), "error");
+      return;
+    }
+    setActionLoading(true);
+    try {
+      await contractsApi.approve(
+        contract.project_id,
+        contract.lot_id,
+        contract.id
+      );
+      showToast(t("contracts.approvedSuccess"), "success");
+      await refreshContract();
+    } catch (err) {
+      const refreshed = await load({ silent: true });
+      if (String(refreshed?.status || "").toLowerCase() === "approved") {
+        showToast(t("contracts.approvedSuccess"), "success");
+        return;
+      }
+      const detail =
+        err?.message && err.message !== "Something went wrong"
+          ? ` ${err.message}`
+          : "";
+      showToast(`${t("contracts.approveError")}${detail}`, "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async (reason) => {
+    if (actionLoading) return;
+    if (!contract?.id) return;
+    setActionLoading(true);
+    try {
+      await contractsApi.reject(
+        contract.project_id,
+        contract.lot_id,
+        contract.id,
+        reason
+      );
+      showToast(t("contracts.rejectedSuccess"), "success");
+      setRejectionOpen(false);
+      await refreshContract();
+    } catch (err) {
+      showToast(err?.message || t("contracts.rejectError"), "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleDownloadPdf = async () => {
     if (!contract?.id) return;
     try {
@@ -447,6 +504,9 @@ function ContractDetail() {
   const isCancelled = status === "cancelled" || status === "canceled";
   const isClosed = status === "closed";
   const isAdmin = user?.role === "admin";
+  const canApprove =
+    isAdmin && ["pending", "submitted", "rejected"].includes(status);
+  const canReject = isAdmin && ["pending", "submitted"].includes(status);
   const canEditNote = isAdmin && Boolean(contract.project_id && contract.lot_id);
   const canRegisterPayment =
     user?.role !== "seller" &&
@@ -528,7 +588,20 @@ function ContractDetail() {
     });
   }
 
+  if (canReject) {
+    actionItems.push({ separator: true });
+    actionItems.push({
+      label: t("contracts.reject"),
+      icon: <FontAwesomeIcon icon={faBan} className="w-3.5" />,
+      tone: "danger",
+      onSelect: () => setRejectionOpen(true),
+    });
+  }
+
   if (isAdmin && !isCancelled && !isClosed) {
+    if (actionItems[actionItems.length - 1]?.separator !== true) {
+      actionItems.push({ separator: true });
+    }
     actionItems.push({
       label: t("contracts.cancelContract"),
       icon: <FontAwesomeIcon icon={faBan} className="w-3.5" />,
@@ -600,8 +673,23 @@ function ContractDetail() {
               <FontAwesomeIcon icon={faDownload} />
               {t("contracts.downloadPdf")}
             </Button>
+            {canApprove && (
+              <Button
+                className="grow sm:grow-0"
+                loading={actionLoading}
+                disabled={actionLoading}
+                onClick={handleApprove}
+              >
+                <FontAwesomeIcon icon={faCheckCircle} />
+                {t("contracts.approve")}
+              </Button>
+            )}
             {canRegisterPayment && nextPayment && (
-              <Button className="grow sm:grow-0" onClick={registerPayment}>
+              <Button
+                variant={canApprove ? "secondary" : "primary"}
+                className="grow sm:grow-0"
+                onClick={registerPayment}
+              >
                 <FontAwesomeIcon icon={faWallet} />
                 {t("contracts.registerPayment")}
               </Button>
@@ -1132,6 +1220,13 @@ function ContractDetail() {
           </Card>
         )}
       </div>
+
+      <RejectionModal
+        isOpen={rejectionOpen}
+        onClose={() => setRejectionOpen(false)}
+        onSubmit={handleReject}
+        loading={actionLoading}
+      />
 
       {lotDetails && (
         <LotDetailsModal

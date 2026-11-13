@@ -75,6 +75,8 @@ vi.mock("../../api", () => ({
     getDetails: vi.fn(),
     downloadPdf: vi.fn(),
     sendReminder: vi.fn(),
+    approve: vi.fn(),
+    reject: vi.fn(),
   },
 }));
 
@@ -108,6 +110,8 @@ beforeEach(() => {
   contractsApi.getDetails.mockResolvedValue({ contract });
   contractsApi.downloadPdf.mockResolvedValue(new Blob(["pdf"]));
   contractsApi.sendReminder.mockResolvedValue({});
+  contractsApi.approve.mockResolvedValue({});
+  contractsApi.reject.mockResolvedValue({});
   projectsApi.getLot.mockResolvedValue({ lot: lotDetails });
   window.URL.createObjectURL = vi.fn(() => "blob:contract");
   window.URL.revokeObjectURL = vi.fn();
@@ -251,6 +255,37 @@ describe("ContractDetail actions", () => {
     expect(screen.getByText("L 380,000")).toBeInTheDocument();
     expect(screen.getByText("financed")).toBeInTheDocument();
     expect(screen.getByText("Calle Principal, Sector Norte")).toBeInTheDocument();
+  });
+
+  it("approves a pending contract from the detail header and refreshes it", async () => {
+    const pendingContract = {
+      ...contract,
+      status: "pending",
+      payment_schedule: [],
+    };
+    renderDetail({ value: pendingContract });
+    await screen.findByText("contracts.contractNumber");
+
+    const approve = screen.getByRole("button", { name: "contracts.approve" });
+    fireEvent.click(approve);
+
+    await waitFor(() => {
+      expect(contractsApi.approve).toHaveBeenCalledWith(1, 2, 16);
+    });
+    expect(contractsApi.getByGuid).toHaveBeenCalledTimes(2);
+  });
+
+  it("opens the rejection dialog for a pending contract", async () => {
+    const pendingContract = { ...contract, status: "pending" };
+    renderDetail({ value: pendingContract });
+    await screen.findByText("contracts.contractNumber");
+
+    fireEvent.click(screen.getByRole("button", { name: "common.actions" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "contracts.reject" }));
+
+    expect(
+      await screen.findByRole("dialog", { name: "contracts.rejectContract" })
+    ).toBeInTheDocument();
   });
 
   it("opens the lot detail sheet from the contract without leaving the page", async () => {

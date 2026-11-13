@@ -28,6 +28,7 @@ Technical documentation for the FinteraUI frontend.
 - [GenericList](features/generic-list.md)
 - [SearchFilterBar](features/search-filter-bar.md)
 - [Payment schedule](features/payment-schedule.md)
+- [Seller collections](features/seller-collections.md)
 - [Pagination](features/pagination.md)
 - [Bank/cash reservation](features/bank-cash-reservation.md)
 - [Project media](features/project-media.md)

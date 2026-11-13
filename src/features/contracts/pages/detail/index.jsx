@@ -600,7 +600,7 @@ function ContractDetail() {
               <FontAwesomeIcon icon={faDownload} />
               {t("contracts.downloadPdf")}
             </Button>
-            {canRegisterPayment && nextPayment && tab !== "cronograma" && (
+            {canRegisterPayment && nextPayment && (
               <Button className="grow sm:grow-0" onClick={registerPayment}>
                 <FontAwesomeIcon icon={faWallet} />
                 {t("contracts.registerPayment")}

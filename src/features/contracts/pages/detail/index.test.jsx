@@ -157,10 +157,9 @@ describe("ContractDetail actions", () => {
     expect(
       await screen.findByRole("heading", { name: "contracts.applyPayment" })
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "contracts.registerPayment" })).not.toBeInTheDocument();
   });
 
-  it("hides the global CTA on the schedule and exposes row and panel actions", async () => {
+  it("keeps the global CTA on the schedule and exposes row and panel actions", async () => {
     renderDetail();
     await screen.findByText("contracts.contractNumber");
 
@@ -173,8 +172,8 @@ describe("ContractDetail actions", () => {
       screen.getByRole("button", { name: "contracts.capitalPayment" })
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "contracts.registerPayment" })
-    ).not.toBeInTheDocument();
+      screen.getByRole("button", { name: "contracts.registerPayment" })
+    ).toBeInTheDocument();
   });
 
   it("shows receipt reference, origin account and the view action in the schedule tab", async () => {

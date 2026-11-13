@@ -24,16 +24,15 @@ function HeaderOne({ handleSidebar }) {
   const [notifications, setNotifications] = useState([]);
 
   // Extract user, logout from AuthContext
-  const { user, logout, token } = useContext(AuthContext);
+  const { user, logout, token, loading: authLoading } = useContext(AuthContext);
 
-  // On mount, fetch notifications once the session (user + token) is ready.
-  // Fetching with only `user` available can fire before the token is restored
-  // and produce a spurious 401.
+  // Wait for auth hydration/refresh before fetching. Firing earlier can use an
+  // expired token and produce a spurious 401.
   useEffect(() => {
-    if (user && token) {
+    if (!authLoading && user && token) {
       fetchNotifications();
     }
-  }, [user, token]);
+  }, [user, token, authLoading]);
 
   const fetchNotifications = async (status = "unread") => {
     setLoading(true);
@@ -42,7 +41,9 @@ function HeaderOne({ handleSidebar }) {
       // Expect data.notifications to be an array
       setNotifications(data.notifications || []);
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      if (error?.status !== 401) {
+        console.error("Error fetching notifications:", error);
+      }
     } finally {
       setLoading(false);
     }

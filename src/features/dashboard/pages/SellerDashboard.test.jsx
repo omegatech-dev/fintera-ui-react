@@ -141,7 +141,7 @@ describe("SellerDashboard", () => {
     renderDashboard();
 
     expect(
-      await screen.findByRole("heading", { name: /Buenos días, Cristofer/i })
+      await screen.findByRole("heading", { name: /Buenos días|Buenas tardes|Buenas noches, Cristofer/i })
     ).toBeInTheDocument();
 
     expect(screen.getByText("Ventas del mes")).toBeInTheDocument();

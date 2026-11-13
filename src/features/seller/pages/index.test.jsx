@@ -74,6 +74,16 @@ const contracts = [
     project_name: "Altos del Valle",
     lot_name: "Lote 011",
     created_at: "2026-10-01T10:00:00Z",
+    next_payment: {
+      id: 42,
+      amount: 54583,
+      due_date: "2026-12-01T00:00:00Z",
+      payment_type: "installment",
+      description: "Cuota 1 de 12",
+      label: "Cuota 1",
+      status: "pending",
+      has_receipt: false,
+    },
   },
   {
     guid: "contract-2",
@@ -241,8 +251,9 @@ describe("Seller workspace collections", () => {
     fireEvent.click(collectButtons[0]);
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Cuota 1")).toBeInTheDocument();
-    expect(screen.getByText("L 54,583")).toBeInTheDocument();
+    expect(contractsApi.getByGuid).not.toHaveBeenCalled();
+    expect(screen.getAllByText("Installment 1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("L 54,583").length).toBeGreaterThan(0);
     expect(
       screen.getByText(t("seller.collectionNotice"))
     ).toBeInTheDocument();
@@ -304,6 +315,20 @@ describe("Seller workspace collections", () => {
       expect(showToast).toHaveBeenCalledWith("Upload failed", "error")
     );
     expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("shows no pending installment when the active contract has nothing to collect", async () => {
+    sellerApi.contracts.mockResolvedValue({
+      contracts: [{ ...contracts[0], next_payment: null }],
+    });
+    renderWorkspace("/vendedor/cobros");
+
+    expect(
+      await screen.findAllByText("No pending installment")
+    ).not.toHaveLength(0);
+    const disabledCollect = screen.getAllByRole("button", { name: "Collect" });
+    expect(disabledCollect.length).toBeGreaterThan(0);
+    expect(disabledCollect[0]).toBeDisabled();
   });
 
   it("shows an error state when contracts cannot be loaded", async () => {
@@ -394,7 +419,9 @@ describe("Seller workspace navigation", () => {
       screen.getByRole("heading", { level: 1, name: "Collections" })
     ).toBeInTheDocument();
     expect(
-      await screen.findByText("1 contracts with balance · L 450,000 pending")
+      await screen.findByText(
+        "1 contracts · L 54,583 in next installments"
+      )
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("tab", { name: /Commissions/ }));

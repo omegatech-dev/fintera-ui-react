@@ -47,6 +47,25 @@ const money = (value) => {
   })}`;
 };
 
+const formatPaymentDate = (value) => {
+  if (!value) return "—";
+  const raw = String(value);
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return "—";
+  const dateOnly =
+    /^\d{4}-\d{2}-\d{2}$/.test(raw) ||
+    (date.getUTCHours() === 0 &&
+      date.getUTCMinutes() === 0 &&
+      date.getUTCSeconds() === 0);
+  if (!dateOnly) return formatDate(value);
+  return date.toLocaleDateString("es-HN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+};
+
 const STATUS_TONES = {
   approved: "success",
   closed: "info",
@@ -100,6 +119,7 @@ function Contract() {
   const [scheduleContract, setScheduleContract] = useState(null);
   const [rejectionContract, setRejectionContract] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [approvingId, setApprovingId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const filters = useMemo(() => {
@@ -160,8 +180,13 @@ function Contract() {
       const data = await contractsApi.list(params);
       setContracts(data.contracts || []);
       const pagination = data.pagination || {};
-      setTotalPages(Math.max(1, parseInt(pagination.pages || 1, 10)));
-      setTotal(parseInt(pagination.count || pagination.total || 0, 10));
+      setTotalPages(
+        Math.max(
+          1,
+          parseInt(pagination.total_pages || pagination.pages || 1, 10)
+        )
+      );
+      setTotal(parseInt(pagination.total ?? pagination.count ?? 0, 10));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -207,16 +232,20 @@ function Contract() {
 
   const handleApprove = useCallback(
     async (contract) => {
-      if (!contract.id) return;
-      setActionLoading(true);
+      if (!contract.id) {
+        showToast(t("contracts.approveError"), "error");
+        return;
+      }
+      setApprovingId(contract.id);
       try {
         await contractsApi.approve(contract.project_id, contract.lot_id, contract.id);
         showToast(t("contracts.approvedSuccess"), "success");
         refreshContracts();
       } catch (err) {
-        showToast(`Error: ${err.message}`, "error");
+        const detail = err?.message && err.message !== "Something went wrong" ? ` ${err.message}` : "";
+        showToast(`${t("contracts.approveError")}${detail}`, "error");
       } finally {
-        setActionLoading(false);
+        setApprovingId(null);
       }
     },
     [refreshContracts, showToast, t]
@@ -275,7 +304,14 @@ function Contract() {
   );
 
   const hasNextPaymentColumn = useMemo(
-    () => contracts.some((contract) => contract.next_payment_date || contract.next_due_date),
+    () =>
+      contracts.some(
+        (contract) =>
+          contract.next_payment ||
+          contract.next_payment_amount ||
+          contract.next_payment_date ||
+          contract.next_due_date
+      ),
     [contracts]
   );
 
@@ -355,11 +391,30 @@ function Contract() {
       base.push({
         key: "next_payment_date",
         header: t("contracts.nextPayment"),
-        render: (contract) => (
-          <span className="text-body text-ink-2">
-            {formatDate(contract.next_payment_date || contract.next_due_date)}
-          </span>
-        ),
+        align: "right",
+        render: (contract) => {
+          const payment =
+            contract.next_payment ||
+            (contract.next_payment_amount
+              ? {
+                  amount: contract.next_payment_amount,
+                  due_date: contract.next_payment_date,
+                }
+              : null);
+          if (!payment) {
+            return <span className="text-body text-ink-3">—</span>;
+          }
+          return (
+            <div className="text-right">
+              <p className="text-body font-semibold tabular-nums text-ink">
+                {money(payment.amount)}
+              </p>
+              <p className="text-micro text-ink-3">
+                {formatPaymentDate(payment.due_date)}
+              </p>
+            </div>
+          );
+        },
       });
     } else {
       base.push({
@@ -391,19 +446,15 @@ function Contract() {
             onSelect: () => setScheduleContract(contract),
           });
         }
-        if (userRole === "admin" && ["pending", "submitted", "rejected"].includes(contractStatus)) {
-          items.push({
-            label: t("contracts.approve"),
-            onSelect: () => handleApprove(contract),
-          });
-        }
         if (userRole === "admin" && ["pending", "submitted"].includes(contractStatus)) {
+          items.push({ separator: true });
           items.push({
             label: t("contracts.reject"),
             onSelect: () => setRejectionContract(contract),
           });
         }
         if (userRole === "admin" && contractStatus === "rejected") {
+          items.push({ separator: true });
           items.push({
             label: t("common.delete") || "Eliminar",
             tone: "danger",
@@ -411,8 +462,25 @@ function Contract() {
           });
         }
 
+        const canApprove =
+          userRole === "admin" &&
+          ["pending", "submitted", "rejected"].includes(contractStatus);
+
         return (
-          <div className="flex justify-end" onClick={(event) => event.stopPropagation()}>
+          <div
+            className="flex items-center justify-end gap-1.5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {canApprove && (
+              <Button
+                size="sm"
+                loading={approvingId === contract.id}
+                disabled={approvingId === contract.id}
+                onClick={() => handleApprove(contract)}
+              >
+                {t("contracts.approve")}
+              </Button>
+            )}
             <Menu
               label={t("common.actions")}
               icon={<FontAwesomeIcon icon={faEllipsisVertical} />}
@@ -425,6 +493,7 @@ function Contract() {
 
     return base;
   }, [
+    approvingId,
     handleApprove,
     handleDeleteContract,
     hasNextPaymentColumn,
@@ -590,7 +659,7 @@ function Contract() {
                         event?.stopPropagation();
                         handleDeleteContract(contract);
                       }}
-                      actionLoading={actionLoading}
+                      actionLoading={approvingId === contract.id}
                       deleteLoading={deleteLoading}
                       setShowSchedule={(open) => open && setScheduleContract(contract)}
                       setShowRejectionModal={(open) => open && setRejectionContract(contract)}

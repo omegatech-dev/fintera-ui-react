@@ -27,7 +27,14 @@ import {
   TABS,
   tabFromPath,
 } from "../config";
-import { formatDate, formatRate, money } from "../utils/format";
+import {
+  formatDate,
+  formatRate,
+  isPaymentOverdue,
+  money,
+  nextPaymentOf,
+  paymentTypeLabel,
+} from "../utils/format";
 import SellerKpis from "../components/SellerKpis";
 import WorkspaceTableCard from "../components/WorkspaceTableCard";
 import RegisterCollectionDialog from "../components/RegisterCollectionDialog";
@@ -134,11 +141,20 @@ function SellerWorkspace() {
   }, [tab]);
 
   const openCollect = async (row) => {
+    const payment = nextPaymentOf(row);
+    if (payment) {
+      setCollectTarget({ contract: row, row, payment });
+      setReceipt(null);
+      return;
+    }
+
+    // Older API payloads may not include next_payment; fall back to the
+    // contract detail only in that case.
     setCollecting(row.guid);
     try {
       const response = await contractsApi.getByGuid(row.guid);
       const contract = response?.contract || response;
-      const payment =
+      const fallbackPayment =
         [...(contract.payment_schedule || [])]
           .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
           .find(
@@ -148,13 +164,18 @@ function SellerWorkspace() {
               ) && !item.has_receipt
           ) || null;
 
-      setCollectTarget({ contract, row, payment });
+      setCollectTarget({ contract, row, payment: fallbackPayment });
       setReceipt(null);
     } catch {
       showToast(t("seller.openContractError"), "error");
     } finally {
       setCollecting(null);
     }
+  };
+
+  const isReceiptSent = (row) => {
+    const payment = nextPaymentOf(row);
+    return Boolean(payment?.id && submitted.has(payment.id));
   };
 
   const submitCollection = async () => {
@@ -167,10 +188,7 @@ function SellerWorkspace() {
       formData.append("receipt", receipt);
       await paymentsApi.uploadReceipt(paymentId, formData);
 
-      const guid = collectTarget.contract?.guid || collectTarget.row?.guid;
-      if (guid) {
-        setSubmitted((prev) => new Set(prev).add(guid));
-      }
+      setSubmitted((prev) => new Set(prev).add(paymentId));
 
       showToast(t("seller.collectionSubmitted"));
       setCollectTarget(null);
@@ -207,7 +225,7 @@ function SellerWorkspace() {
       if (ACTIVE_STATUSES.includes(contract.status)) current.active += 1;
       if (
         ACTIVE_STATUSES.includes(contract.status) &&
-        Number(contract.balance || 0) !== 0
+        (nextPaymentOf(contract) || Number(contract.balance || 0) !== 0)
       ) {
         current.pending = true;
       }
@@ -241,7 +259,16 @@ function SellerWorkspace() {
             Number(contract.balance || 0) !== 0 &&
             ACTIVE_STATUSES.includes(contract.status)
         )
-        .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance)),
+        .sort((a, b) => {
+          const aDue = nextPaymentOf(a)?.due_date;
+          const bDue = nextPaymentOf(b)?.due_date;
+          if (aDue && bDue) {
+            return new Date(aDue) - new Date(bDue);
+          }
+          if (aDue) return -1;
+          if (bDue) return 1;
+          return Math.abs(b.balance) - Math.abs(a.balance);
+        }),
     [contracts]
   );
 
@@ -330,7 +357,7 @@ function SellerWorkspace() {
   const collectionsTotal = useMemo(
     () =>
       allCollections.reduce(
-        (sum, contract) => sum + Math.abs(Number(contract.balance || 0)),
+        (sum, contract) => sum + Number(nextPaymentOf(contract)?.amount || 0),
         0
       ),
     [allCollections]
@@ -470,7 +497,7 @@ function SellerWorkspace() {
   ];
 
   const statusChip = (row, { reviewable = false } = {}) => {
-    if (reviewable && submitted.has(row.guid)) {
+    if (reviewable && isReceiptSent(row)) {
       return <Chip tone="info">{t("seller.inReview")}</Chip>;
     }
     const key = String(row.status || "").toLowerCase();
@@ -548,14 +575,37 @@ function SellerWorkspace() {
       ),
     },
     {
-      key: "balance",
-      header: t("seller.amount"),
+      key: "next_payment",
+      header: t("seller.nextCollection"),
       align: "right",
-      render: (row) => (
-        <span className="tabular-nums font-semibold text-ink">
-          {money(Math.abs(row.balance))}
-        </span>
-      ),
+      render: (row) => {
+        const payment = nextPaymentOf(row);
+        const overdue = isPaymentOverdue(payment);
+        return (
+          <div className="text-right">
+            <p className="text-body font-bold tabular-nums text-ink">
+              {payment ? money(payment.amount) : "—"}
+            </p>
+            <p
+              className={`text-micro ${
+                overdue ? "font-semibold text-danger" : "text-ink-3"
+              }`}
+            >
+              {payment
+                ? `${paymentTypeLabel(payment, t)} · ${formatDate(
+                    payment.due_date
+                  )}`
+                : t("seller.noPendingInstallmentShort")}
+              {overdue ? ` · ${t("seller.overduePayment")}` : ""}
+            </p>
+            <p className="text-micro text-ink-3">
+              {t("seller.balanceSecondary", {
+                amount: money(Math.abs(Number(row.balance || 0))),
+              })}
+            </p>
+          </div>
+        );
+      },
     },
     {
       key: "status",
@@ -566,12 +616,23 @@ function SellerWorkspace() {
       key: "actions",
       header: t("seller.action"),
       align: "right",
-      render: (row) =>
-        submitted.has(row.guid) ? (
-          <span className="text-micro font-semibold text-ink-3">
-            {t("seller.receiptSent")}
-          </span>
-        ) : (
+      render: (row) => {
+        const payment = nextPaymentOf(row);
+        if (!payment) {
+          return (
+            <Button size="sm" variant="secondary" disabled>
+              {t("seller.collect")}
+            </Button>
+          );
+        }
+        if (isReceiptSent(row)) {
+          return (
+            <span className="text-micro font-semibold text-ink-3">
+              {t("seller.receiptSent")}
+            </span>
+          );
+        }
+        return (
           <Button
             size="sm"
             loading={collecting === row.guid}
@@ -579,7 +640,8 @@ function SellerWorkspace() {
           >
             {t("seller.collect")}
           </Button>
-        ),
+        );
+      },
     },
   ];
 
@@ -754,31 +816,52 @@ function SellerWorkspace() {
         })}
       />
     ),
-    cobros: (row) => (
-      <MobileCard
-        title={row.applicant_name || t("seller.unnamedClient")}
-        meta={`#${row.id} · ${row.project_name || "—"} · ${
-          row.lot_name || "—"
-        }`}
-        value={money(Math.abs(row.balance))}
-        chip={statusChip(row, { reviewable: true })}
-        action={
-          submitted.has(row.guid) ? (
-            <span className="text-micro font-semibold text-ink-3">
-              {t("seller.receiptSent")}
-            </span>
-          ) : (
-            <Button
-              size="sm"
-              loading={collecting === row.guid}
-              onClick={() => openCollect(row)}
-            >
-              {t("seller.collect")}
-            </Button>
-          )
-        }
-      />
-    ),
+    cobros: (row) => {
+      const payment = nextPaymentOf(row);
+      const overdue = isPaymentOverdue(payment);
+      return (
+        <MobileCard
+          title={row.applicant_name || t("seller.unnamedClient")}
+          meta={`#${row.id} · ${row.project_name || "—"} · ${
+            row.lot_name || "—"
+          }`}
+          detail={
+            payment ? (
+              <span className={overdue ? "text-danger" : undefined}>
+                {paymentTypeLabel(payment, t)} · {formatDate(payment.due_date)}
+                {overdue ? ` · ${t("seller.overduePayment")}` : ""}
+              </span>
+            ) : (
+              t("seller.noPendingInstallmentShort")
+            )
+          }
+          value={payment ? money(payment.amount) : "—"}
+          chip={statusChip(row, { reviewable: true })}
+          caption={t("seller.balanceSecondary", {
+            amount: money(Math.abs(Number(row.balance || 0))),
+          })}
+          action={
+            !payment ? (
+              <Button size="sm" variant="secondary" disabled>
+                {t("seller.collect")}
+              </Button>
+            ) : isReceiptSent(row) ? (
+              <span className="text-micro font-semibold text-ink-3">
+                {t("seller.receiptSent")}
+              </span>
+            ) : (
+              <Button
+                size="sm"
+                loading={collecting === row.guid}
+                onClick={() => openCollect(row)}
+              >
+                {t("seller.collect")}
+              </Button>
+            )
+          }
+        />
+      );
+    },
     comisiones: (row) => (
       <MobileCard
         title={`#${row.contract_id} · ${row.client_name || "—"}`}

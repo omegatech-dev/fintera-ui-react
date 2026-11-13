@@ -29,11 +29,30 @@ primary identifier with the lot as context.
 Authorized users SHALL be able to approve, reject, cancel, and reopen a
 contract, and the interface SHALL reflect the new state after success.
 
-#### Scenario: Approve a contract
+Approve SHALL be a direct, visible primary action in the contract list and in
+the contract detail header, not hidden behind an overflow menu that can be
+clipped by table scroll containers. Reject, cancel and delete SHALL live in the
+actions menu, separated from non-destructive actions.
+
+#### Scenario: Approve a contract from the list
 
 - **WHEN** an authorized user approves a pending contract
 - **THEN** the contract status becomes approved
 - **AND** the list and statistics refresh
+- **AND** the success feedback names the result
+
+#### Scenario: Approve a contract from the detail
+
+- **WHEN** an authorized user opens a pending contract's detail
+- **THEN** an Approve primary action is visible in the header
+- **AND** the detail reloads the contract after success
+
+#### Scenario: Approval fails
+
+- **WHEN** the approval request fails
+- **THEN** the user sees an error message
+- **AND** the contract is reloaded so a partially successful approval is shown
+  as approved instead of stale pending
 
 #### Scenario: Reject a contract
 

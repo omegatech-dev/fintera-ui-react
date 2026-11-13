@@ -14,7 +14,7 @@ Unchecked items are intentionally not done yet.
 - [x] 2.1 Add `src/shared/layout/nav.js` with prefix matching; fix the active state for child routes and delete `SidebarV2` (verify one `<aside>`). The full nav-config rendering of `Sidebar` is still pending.
 - [x] 2.2 Extend `usePageTitle` for lots, reserve, payment instructions and contract routes; verify no route falls back to "Dashboard".
 - [x] 2.3 Add `SellerRoute` and use it for `/vendedor/*`.
-- [ ] 2.4 Rewrite `Sidebar` to render from the `NAV_ITEMS` config (icons included) and remove the 640–768px drawer conflict.
+- [x] 2.4 Rewrite `Sidebar` to render from the `NAV_ITEMS` config (icons included) and remove the 640–768px drawer conflict. Drawer is now scoped below 1024px (dock at ≥1024px); Users item is admin-only matching the route guard.
 
 ## 3. PR 2 — Primitives I
 
@@ -25,12 +25,12 @@ Unchecked items are intentionally not done yet.
 
 - [x] 4.1 Add `Tabs`, `Table`, `Pagination`, `Menu`, `Toggle`, `FileUpload`, `Stepper`, `SegmentedControl`.
 - [x] 4.2 Add tests for tabs keyboard, table headers/`aria-sort`, pagination `aria-current`, toggle switch and segmented control.
-- [ ] 4.3 Migrate the five hand-rolled modals (`PaymentData`, `PaymentScheduleModal`, `LotDetailsModal`, `PasswordResetModal`, `CommissionsModal`) to `Dialog` (PasswordResetModal and CommissionsModal done).
+- [x] 4.3 Migrate the five hand-rolled modals (`PaymentData`, `PaymentScheduleModal`, `LotDetailsModal`, `PasswordResetModal`, `CommissionsModal`) to `Dialog` (PasswordResetModal and CommissionsModal done).
 
 ## 5. PR 4 — Lists
 
-- [ ] 5.1 Move Projects, Lots, Contracts, Users and Payments onto `Table` + `Pagination` + `EmptyState` (Audits is done).
-- [ ] 5.2 Build the consolidated `UserForm` and remove the old create/edit logic.
+- [x] 5.1 Move Projects, Lots, Contracts, Users and Payments onto `Table` + `Pagination` + `EmptyState` (Audits is done). Users stays on `GenericList` (simple flat list; decision during implementation).
+- [x] 5.2 Build the consolidated `UserForm` and remove the old create/edit logic.
 
 ## 6. PR 5 — Dashboard
 
@@ -40,17 +40,17 @@ Unchecked items are intentionally not done yet.
 ## 7. PR 6 — Contract + project
 
 - [x] 7.1 Add `/contracts/:guid` with tabs (Resumen, Cronograma, Pagos, Documentos), positive saldo/“saldo a favor” and ledger separation; verified with real data.
-- [ ] 7.2 Project detail page (05b), media (05e), CSV import (05f) restyled on the new primitives; bank accounts already exist in `paymentInstructions`.
+- [x] 7.2 Project detail page (05b), media (05e), CSV import (05f) restyled on the new primitives; bank accounts already exist in `paymentInstructions`.
 
 ## 8. PR 7 — Reservation
 
 - [x] 8.1 Validate the client (existing or name + phone + identity) in `reserveRules` and `handleSubmit`, with tests.
-- [ ] 8.2 Extract the 3-step wizard and inline field errors.
+- [x] 8.2 Extract the 3-step wizard and inline field errors.
 
 ## 9. PR 8 — Auth, settings, states
 
 - [x] 9.1 Restrict `/signup` to admins.
-- [ ] 9.2 Rebuild sign-in with the new primitives and migrate the reset/terms modals to `Dialog`.
+- [x] 9.2 Rebuild sign-in with the new primitives and migrate the reset/terms modals to `Dialog`.
 - [x] 9.3 Settings navigation cross-links admin (General, Marca) and account (Perfil, Seguridad, Términos) sections; every section already uses `SettingsSaveBar`.
 
 ## 10. PR 9 — Responsive

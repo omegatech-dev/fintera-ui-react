@@ -1,5 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faBan,
+  faEllipsisVertical,
+  faLocationDot,
+  faRotateLeft,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
+import AuthContext from "@/contexts/AuthContext";
+import { useLocale } from "@/contexts/LocaleContext";
+import { useToast } from "@/contexts/ToastContext";
+import { sanitizeHtml } from "@/shared/utils/sanitizeHtml";
 import { contractsApi } from "../../api";
 import {
   Button,
@@ -7,10 +19,12 @@ import {
   Chip,
   EmptyState,
   ErrorState,
+  Menu,
   Skeleton,
   Table,
   Tabs,
 } from "@/shared/ui";
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 
 const money = (value) =>
   `L ${Number(value || 0).toLocaleString("es-HN", {
@@ -50,20 +64,33 @@ function StatusChip({ status }) {
   return <Chip tone={config.tone}>{config.label}</Chip>;
 }
 
-const TABS = [
-  { value: "resumen", label: "Resumen" },
-  { value: "cronograma", label: "Cronograma" },
-  { value: "pagos", label: "Pagos" },
-  { value: "documentos", label: "Documentos" },
-];
+const isHtml = (value) => /<\/?[a-z][\s\S]*>/i.test(value || "");
 
 function ContractDetail() {
   const { guid } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const { t } = useLocale();
+  const { showToast } = useToast();
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("resumen");
+  const [noteDraft, setNoteDraft] = useState("");
+  const [editingNote, setEditingNote] = useState(false);
+  const [savingNote, setSavingNote] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const tabs = useMemo(
+    () => [
+      { value: "resumen", label: "Resumen" },
+      { value: "cronograma", label: "Cronograma" },
+      { value: "pagos", label: "Pagos" },
+      { value: "documentos", label: "Documentos" },
+      { value: "notas", label: t("contracts.tabNotes") || "Notas" },
+    ],
+    [t]
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -148,6 +175,75 @@ function ContractDetail() {
     []
   );
 
+  const handleSaveNote = async () => {
+    if (!contract?.id || !contract?.project_id || !contract?.lot_id) return;
+    setSavingNote(true);
+    try {
+      await contractsApi.updateNotes(
+        contract.project_id,
+        contract.lot_id,
+        contract.id,
+        noteDraft.trim()
+      );
+      setContract((current) => ({ ...current, note: noteDraft.trim() }));
+      setEditingNote(false);
+      showToast(t("contractNotes.notesUpdated"), "success");
+    } catch (err) {
+      showToast(`${t("contractNotes.updateError")}: ${err.message}`, "error");
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
+  const handleReopen = async () => {
+    if (actionLoading) return;
+    if (!contract?.id || !contract?.project_id || !contract?.lot_id) return;
+    setActionLoading(true);
+    try {
+      await contractsApi.reopen(
+        contract.project_id,
+        contract.lot_id,
+        contract.id
+      );
+      showToast(t("paymentSchedule.contractReopenedSuccess"), "success");
+      await load();
+    } catch (err) {
+      showToast(
+        `${t("paymentSchedule.errorReopeningContract")}: ${err.message}`,
+        "error"
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancelContract = async () => {
+    if (actionLoading) return;
+    if (!contract?.id || !contract?.project_id || !contract?.lot_id) return;
+    const confirmed = await confirmDialog({
+      title: t("contracts.cancelTitle", { id: contract.id }),
+      description: t("contracts.cancelDescription"),
+      confirmLabel: t("contracts.cancelContract"),
+      cancelLabel: t("common.cancel"),
+    });
+    if (!confirmed) return;
+    setActionLoading(true);
+    try {
+      await contractsApi.cancel(
+        contract.project_id,
+        contract.lot_id,
+        contract.id,
+        t("contracts.cancelNote")
+      );
+      showToast(t("contracts.cancelSuccess"), "success");
+      await load();
+    } catch (err) {
+      showToast(`${t("contracts.cancelError")} ${err.message}`, "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
@@ -197,6 +293,62 @@ function ContractDetail() {
   // debt, positive means the client overpaid (credit in their favor).
   const balance = Number(contract.balance ?? paid - total);
   const hasCredit = balance > 0;
+  const rawNote = contract.note ?? contract.notes ?? "";
+  const noteContent = typeof rawNote === "string" ? rawNote : "";
+  const status = contract.status?.toLowerCase();
+  const isCancelled = status === "cancelled" || status === "canceled";
+  const isClosed = status === "closed";
+  const isAdmin = user?.role === "admin";
+  const canEditNote = isAdmin && Boolean(contract.project_id && contract.lot_id);
+
+  const actionItems = [];
+
+  if (isAdmin) {
+    actionItems.push({
+      label: t("contracts.viewApplicant"),
+      icon: <FontAwesomeIcon icon={faUser} className="w-3.5" />,
+      onSelect: () =>
+        navigate("/users", {
+          state: {
+            selectedUserId: contract.applicant_identity,
+            selectedUserName: contract.applicant_name,
+            selectedUserPhone: contract.applicant_phone,
+          },
+        }),
+    });
+  }
+
+  if (contract.project_id) {
+    actionItems.push({
+      label: t("contracts.viewLot"),
+      icon: <FontAwesomeIcon icon={faLocationDot} className="w-3.5" />,
+      onSelect: () =>
+        navigate(`/projects/${contract.project_id}/lots`, {
+          state: {
+            selectedLotId: contract.lot_id,
+            selectedLotName: contract.lot_name,
+            selectedLotAddress: contract.lot_address,
+          },
+        }),
+    });
+  }
+
+  if (isAdmin && (isCancelled || isClosed)) {
+    actionItems.push({
+      label: t("paymentSchedule.reopenContract"),
+      icon: <FontAwesomeIcon icon={faRotateLeft} className="w-3.5" />,
+      onSelect: handleReopen,
+    });
+  }
+
+  if (isAdmin && !isCancelled && !isClosed) {
+    actionItems.push({
+      label: t("contracts.cancelContract"),
+      icon: <FontAwesomeIcon icon={faBan} className="w-3.5" />,
+      tone: "danger",
+      onSelect: handleCancelContract,
+    });
+  }
 
   return (
     <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
@@ -222,10 +374,17 @@ function ContractDetail() {
               Volver
             </Button>
             <Button onClick={() => navigate("/payments")}>Registrar pago</Button>
+            {actionItems.length > 0 && (
+              <Menu
+                label={t("common.actions")}
+                icon={<FontAwesomeIcon icon={faEllipsisVertical} />}
+                items={actionItems}
+              />
+            )}
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Card title="Total del contrato">
             <p className="text-page font-bold text-ink">{money(total)}</p>
             <p className="text-micro text-ink-3">
@@ -244,14 +403,22 @@ function ContractDetail() {
               {money(Math.abs(balance))}
             </p>
             <p className="text-micro text-ink-3">
+              {hasCredit ? "A favor del cliente" : "Saldo pendiente"}
+            </p>
+          </Card>
+          <Card title="Próximo pago">
+            <p className="text-page font-bold text-warning">
+              {nextPayment ? formatDate(nextPayment.due_date) : "—"}
+            </p>
+            <p className="text-micro text-ink-3">
               {nextPayment
-                ? `Próximo pago: ${formatDate(nextPayment.due_date)}`
+                ? `${money(nextPayment.amount)} · ${nextPayment.installment_number ? `cuota ${nextPayment.installment_number}` : "próxima cuota"}`
                 : "Sin pagos pendientes"}
             </p>
           </Card>
         </div>
 
-        <Tabs items={TABS} value={tab} onChange={setTab} />
+        <Tabs items={tabs} value={tab} onChange={setTab} />
 
         {tab === "resumen" && (
           <div className="grid gap-4 lg:grid-cols-2">
@@ -365,6 +532,74 @@ function ContractDetail() {
                 <li className="text-body text-ink-3">Sin comprobantes adjuntos.</li>
               )}
             </ul>
+          </Card>
+        )}
+
+        {tab === "notas" && (
+          <Card title={t("contracts.notes")}>
+            {editingNote ? (
+              <div className="space-y-3">
+                <textarea
+                  value={noteDraft}
+                  onChange={(event) => setNoteDraft(event.target.value)}
+                  rows={8}
+                  placeholder={t("contracts.notesPlaceholder")}
+                  className="w-full rounded-control border border-line bg-surface px-3 py-2 text-body text-ink outline-none focus:border-brand-strong"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setEditingNote(false);
+                      setNoteDraft("");
+                    }}
+                    disabled={savingNote}
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    onClick={handleSaveNote}
+                    loading={savingNote}
+                    disabled={noteDraft.trim() === noteContent}
+                  >
+                    {t("contractNotes.save")}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {noteContent ? (
+                  isHtml(noteContent) ? (
+                    <div
+                      className="space-y-2 text-body text-ink-2"
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeHtml(noteContent),
+                      }}
+                    />
+                  ) : (
+                    <p className="whitespace-pre-wrap text-body text-ink-2">
+                      {noteContent}
+                    </p>
+                  )
+                ) : (
+                  <p className="text-body text-ink-3">{t("contracts.noNotes")}</p>
+                )}
+                {canEditNote && (
+                  <div className="flex justify-end">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setNoteDraft(noteContent);
+                        setEditingNote(true);
+                      }}
+                    >
+                      {t("contractNotes.edit")}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </Card>
         )}
       </div>

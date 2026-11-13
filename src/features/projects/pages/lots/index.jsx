@@ -1,21 +1,20 @@
 import { useState, useContext, useMemo, useCallback, useEffect } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import AuthContext from "../../../../contexts/AuthContext";
-import SearchFilterBar from "../../../../shared/ui/SearchFilterBar";
-import LotItem from "../../components/lots/LotItem";
+import useDebounce from "../../../../hooks/useDebounce";
+import LotCard from "../../components/lots/LotCard";
 import LotDetailsModal from "../../components/lots/LotDetailsModal";
 import { projectsApi } from "../../api";
-import { getStatusLabel } from "../../../../shared/utils/statusUtils";
+import { getDefaultCurrency } from "../../../../shared/utils/formatSettings";
 import {
   Button,
-  Card,
-  Chip,
   EmptyState,
   ErrorState,
+  Input,
   Pagination,
+  Select,
   Skeleton,
-  Table,
 } from "@/shared/ui";
 
 const STATUS_TONES = {
@@ -28,6 +27,7 @@ const STATUS_TONES = {
 };
 
 const PER_PAGE = 20;
+const GRID_CLASS = "grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
 function LotsList() {
   const { id: projectId } = useParams();
@@ -38,16 +38,28 @@ function LotsList() {
   const userRole = user?.role;
 
   // Search and filter state
-  const [searchTerm, setSearchTerm] = useState("");
+  const initialSelectedName = location.state?.selectedLotName || "";
+  const [searchInput, setSearchInput] = useState(initialSelectedName);
+  const [searchTerm, setSearchTerm] = useState(initialSelectedName);
+  const debouncedSearch = useDebounce(searchInput, 400);
   const [statusFilter, setStatusFilter] = useState("");
 
   const [lots, setLots] = useState([]);
+  const [projectName, setProjectName] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sort, setSort] = useState({ field: "updated_at", direction: "asc" });
+  const [summary, setSummary] = useState({
+    total: 0,
+    available: 0,
+    reserved: 0,
+    financed: 0,
+    fully_paid: 0,
+    price: null,
+  });
 
   const [detailsLot, setDetailsLot] = useState(null);
 
@@ -60,6 +72,7 @@ function LotsList() {
   useEffect(() => {
     if (location.state?.selectedLotId || location.state?.selectedLotName) {
       if (location.state.selectedLotName) {
+        setSearchInput(location.state.selectedLotName);
         setSearchTerm(location.state.selectedLotName);
       }
 
@@ -74,6 +87,12 @@ function LotsList() {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
+
+  useEffect(() => {
+    const next = debouncedSearch.trim();
+    setSearchTerm(next.length >= 3 ? next : "");
+    setPage(1);
+  }, [debouncedSearch]);
 
   const filters = useMemo(
     () => ({
@@ -93,12 +112,48 @@ function LotsList() {
         per_page: PER_PAGE,
         sort: `${sort.field}-${sort.direction}`,
       });
-      setLots(data.lots || []);
+      const rows = data.lots || [];
+      setLots(rows);
+      if (rows[0]?.project_name) setProjectName(rows[0].project_name);
+
       const pagination =
         data.pagination ||
         (data.total ? { pages: Math.ceil(data.total / PER_PAGE), total: data.total } : {});
-      setTotalPages(Math.max(1, parseInt(pagination.pages || 1, 10)));
-      setTotal(parseInt(pagination.total || pagination.count || 0, 10));
+      const totalCount = parseInt(pagination.total || pagination.count || 0, 10);
+      const pages =
+        pagination.total_pages ||
+        pagination.pages ||
+        (pagination.total ? Math.ceil(pagination.total / PER_PAGE) : 1);
+
+      setTotalPages(Math.max(1, parseInt(pages, 10)));
+      setTotal(totalCount);
+
+      if (page === 1) {
+        const hasFilters = Boolean(filters.search_term || filters.status);
+        const countByStatus = (status) =>
+          rows.filter((lot) => String(lot.status || "").toLowerCase() === status).length;
+        const pricedLot =
+          rows.find(
+            (lot) => lot.effective_price !== undefined && lot.effective_price !== null
+          ) || rows.find((lot) => lot.price !== undefined && lot.price !== null);
+
+        setSummary((prev) => {
+          if (hasFilters && prev.total > 0) return prev;
+          return {
+            total: totalCount,
+            available: countByStatus("available"),
+            reserved: countByStatus("reserved"),
+            financed: countByStatus("financed"),
+            fully_paid: countByStatus("fully_paid"),
+            price: pricedLot
+              ? pricedLot.effective_price !== undefined &&
+                pricedLot.effective_price !== null
+                ? pricedLot.effective_price
+                : pricedLot.price
+              : null,
+          };
+        });
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -110,21 +165,20 @@ function LotsList() {
     fetchLots();
   }, [fetchLots]);
 
-  const handleSearchChange = useCallback((term) => {
-    setSearchTerm(term);
-    setPage(1);
-  }, []);
-
   const handleFilterChange = useCallback((value) => {
     setStatusFilter(value);
     setPage(1);
   }, []);
 
-  const handleSortChange = useCallback((field) => {
+  const handleSortFieldChange = useCallback((event) => {
+    setSort((prev) => ({ ...prev, field: event.target.value }));
+    setPage(1);
+  }, []);
+
+  const handleSortDirectionToggle = useCallback(() => {
     setSort((prev) => ({
-      field,
-      direction:
-        prev.field === field && prev.direction === "asc" ? "desc" : "asc",
+      ...prev,
+      direction: prev.direction === "asc" ? "desc" : "asc",
     }));
     setPage(1);
   }, []);
@@ -134,225 +188,224 @@ function LotsList() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const formatPrice = (value) => {
-    if (!value && value !== 0) return "N/A";
-    return `${Number(value).toLocaleString()}`;
-  };
+  const handleReserve = useCallback(
+    (lot) =>
+      navigate(`/projects/${projectId}/lots/${lot.id}/contracts/create`),
+    [navigate, projectId]
+  );
 
-  // Status filter options
-  const statusOptions = useMemo(
+  const handleEdit = useCallback(
+    (lot) => navigate(`/projects/${projectId}/lots/${lot.id}/edit`),
+    [navigate, projectId]
+  );
+
+  const statusChips = useMemo(
     () => [
-      { value: "", label: t("common.all") },
-      { value: "available", label: t("status.available") },
-      { value: "reserved", label: t("status.reserved") },
-      { value: "financed", label: t("status.financed") },
-      { value: "fully_paid", label: t("status.fully_paid") },
+      { value: "", label: t("common.all"), count: summary.total || total },
+      { value: "available", label: t("lots.availablePlural"), count: summary.available },
+      { value: "reserved", label: t("lots.reservedPlural"), count: summary.reserved },
+      { value: "financed", label: t("lots.financedPlural"), count: summary.financed },
+      { value: "fully_paid", label: t("lots.fullyPaidPlural"), count: summary.fully_paid },
+    ],
+    [t, summary, total]
+  );
+
+  const sortOptions = useMemo(
+    () => [
+      { value: "updated_at", label: t("lots.updatedAt") },
+      { value: "name", label: t("lotsTable.lot") },
+      { value: "width", label: t("lotsTable.dimensions") },
+      { value: "price", label: t("lotsTable.price") },
+      { value: "status", label: t("lotsTable.status") },
     ],
     [t]
   );
 
-  const columns = useMemo(
-    () => [
-      {
-        key: "name",
-        header: t("lotsTable.lot"),
-        sortable: true,
-        render: (lot) => (
-          <div className="min-w-0">
-            <p className="truncate text-body font-semibold text-ink">
-              {lot.name}
-              {highlightedLotId && lot.id === highlightedLotId && (
-                <span className="ml-2 rounded-chip bg-brand-soft px-2 py-0.5 text-micro font-bold text-brand-strong">
-                  {t("common.selected") || "Seleccionado"}
-                </span>
-              )}
-            </p>
-            <p className="truncate text-micro text-ink-3">
-              {lot.address || lot.project_name || "—"}
-            </p>
-          </div>
-        ),
-      },
-      {
-        key: "width",
-        header: t("lotsTable.dimensions"),
-        sortable: true,
-        render: (lot) => {
-          const dimensions = lot.length && lot.width ? `${lot.width} × ${lot.length}` : lot.dimensions || "—";
-          return (
-            <span className="text-body text-ink-2">
-              {dimensions}{" "}
-              <span className="text-micro text-ink-3">
-                {lot.area ? `· ${lot.area} ${lot.measurement_unit || ""}` : ""}
-              </span>
-            </span>
-          );
-        },
-      },
-      {
-        key: "price",
-        header: t("lotsTable.price"),
-        sortable: true,
-        align: "right",
-        render: (lot) => {
-          const finalPrice =
-            lot.effective_price !== undefined
-              ? lot.effective_price
-              : lot.override_price && lot.override_price > 0
-                ? lot.override_price
-                : lot.price;
-          const hasOverride =
-            lot.price > 0 && Math.abs(finalPrice - lot.price) > 0.01;
-          return (
-            <span
-              className={`text-body font-bold ${
-                hasOverride ? "text-brand-strong" : "text-ink"
-              }`}
-            >
-              {formatPrice(finalPrice)}
-            </span>
-          );
-        },
-      },
-      {
-        key: "reserved_by",
-        header: t("lotsTable.reservedBy"),
-        render: (lot) =>
-          lot.reserved_by ? (
-            <span className="text-body text-ink">{lot.reserved_by}</span>
-          ) : (
-            <span className="text-body text-ink-3">{t("lots.notReserved")}</span>
-          ),
-      },
-      {
-        key: "status",
-        header: t("lotsTable.status"),
-        sortable: true,
-        render: (lot) => (
-          <Chip tone={STATUS_TONES[lot.status?.toLowerCase()] || "neutral"}>
-            {getStatusLabel(lot.status)}
-          </Chip>
-        ),
-      },
-      {
-        key: "actions",
-        header: "",
-        align: "right",
-        render: (lot) => (
-          <div className="flex items-center justify-end gap-2">
-            {lot.status?.toLowerCase() === "available" && (
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() =>
-                  navigate(`/projects/${projectId}/lots/${lot.id}/contracts/create`)
-                }
-              >
-                {t("lots.reserve")}
-              </Button>
-            )}
-            {userRole === "admin" && lot.status?.toLowerCase() !== "sold" && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => navigate(`/projects/${projectId}/lots/${lot.id}/edit`)}
-              >
-                {t("common.edit")}
-              </Button>
-            )}
-            <Button size="sm" variant="ghost" onClick={() => setDetailsLot(lot)}>
-              {t("common.view")}
-            </Button>
-          </div>
-        ),
-      },
-    ],
-    [highlightedLotId, navigate, projectId, t, userRole]
-  );
-
-  // Actions for SearchFilterBar
-  const actions = useMemo(() => {
-    if (userRole === "admin") {
-      return [
-        {
-          label: t("common.create"),
-          onClick: () => navigate(`/projects/${projectId}/lots/create`),
-          className:
-            "py-3 px-10 bg-success-300 text-white font-bold rounded-lg hover:bg-success-400 transition-all",
-        },
-      ];
-    }
-    return [];
-  }, [userRole, navigate, projectId, t]);
+  const displayTotal = summary.total || total;
+  const priceLabel =
+    summary.price !== null && summary.price !== undefined
+      ? `${Number(summary.price).toLocaleString()} ${getDefaultCurrency()}`
+      : null;
+  const subtitle = [
+    t("lots.totalCount", { count: displayTotal }),
+    t("lots.availableCount", { count: summary.available }),
+    priceLabel ? t("lots.priceEach", { price: priceLabel }) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <main className="w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
-      <div className="space-y-5">
-        {/* Search and Filter Bar */}
-        <SearchFilterBar
-          searchTerm={searchTerm}
-          filterValue={statusFilter}
-          filterOptions={statusOptions}
-          onSearchChange={handleSearchChange}
-          onFilterChange={handleFilterChange}
-          searchPlaceholder={t("lotsTable.lotFilter")}
-          filterPlaceholder={t("lotsTable.status")}
-          showFilter={true}
-          actions={actions}
-        />
+      <div className="mx-auto max-w-7xl space-y-5">
+        <header className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <nav
+              aria-label="Breadcrumb"
+              className="flex flex-wrap items-center gap-1 text-label font-medium text-ink-3"
+            >
+              <Link to="/projects" className="transition-colors hover:text-ink">
+                {t("dashboard.projects")}
+              </Link>
+              <span aria-hidden="true">/</span>
+              <Link
+                to={`/projects/${projectId}`}
+                className="truncate transition-colors hover:text-ink"
+              >
+                {projectName || t("lotsTable.project")}
+              </Link>
+            </nav>
+            <h1 className="mt-1 text-page font-bold tracking-tight text-ink">
+              {t("projects.lots")}
+            </h1>
+            <p className="mt-1 text-body text-ink-3">{subtitle}</p>
+          </div>
 
-        {error && (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => navigate(`/projects/${projectId}`)}
+            >
+              {t("lots.viewProject")}
+            </Button>
+            {userRole === "admin" && (
+              <Button onClick={() => navigate(`/projects/${projectId}/lots/create`)}>
+                <span aria-hidden="true">+</span>
+                {t("lots.newLot")}
+              </Button>
+            )}
+          </div>
+        </header>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:w-72">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3"
+            >
+              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+              <path
+                d="m20 20-3.5-3.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            <Input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder={t("lots.searchPlaceholder")}
+              className="h-10 pl-9"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {statusChips.map((chip) => {
+              const active = statusFilter === chip.value;
+              return (
+                <button
+                  key={chip.value || "all"}
+                  type="button"
+                  onClick={() => handleFilterChange(chip.value)}
+                  aria-pressed={active}
+                  className={`inline-flex h-8 items-center gap-1.5 rounded-chip px-3 text-label font-semibold transition-colors ${
+                    active
+                      ? "bg-brand-soft text-brand-strong"
+                      : "border border-line bg-surface text-ink-2 hover:bg-surface-2"
+                  }`}
+                >
+                  {chip.label}
+                  <span
+                    className={`text-micro ${active ? "text-brand-strong" : "text-ink-3"}`}
+                  >
+                    {chip.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            <div className="w-44">
+              <Select
+                value={sort.field}
+                onChange={handleSortFieldChange}
+                aria-label={t("lots.sortBy")}
+                className="h-10"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <button
+              type="button"
+              onClick={handleSortDirectionToggle}
+              aria-label={
+                sort.direction === "asc"
+                  ? t("lots.sortAscending")
+                  : t("lots.sortDescending")
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-control border border-line-strong bg-surface text-ink-2 transition-colors hover:bg-surface-2"
+            >
+              {sort.direction === "asc" ? "↑" : "↓"}
+            </button>
+          </div>
+        </div>
+
+        {error ? (
           <ErrorState
             title={t("common.error")}
             description={error}
             onRetry={fetchLots}
           />
-        )}
-
-        <Card bodyClassName="p-0">
-          {loading ? (
-            <div className="p-5">
-              <Skeleton rows={6} />
+        ) : loading ? (
+          <div className={GRID_CLASS}>
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={index}
+                className="rounded-card border border-line bg-surface p-4"
+              >
+                <Skeleton rows={4} />
+              </div>
+            ))}
+          </div>
+        ) : lots.length === 0 ? (
+          <EmptyState
+            variant="no-results"
+            title={t("common.noItemsFound")}
+            description={t("common.tryAdjustingFilters")}
+          />
+        ) : (
+          <>
+            <div className={GRID_CLASS}>
+              {lots.map((lot) => (
+                <LotCard
+                  key={lot.id}
+                  lot={lot}
+                  tone={STATUS_TONES[String(lot.status || "").toLowerCase()] || "neutral"}
+                  isHighlighted={!!highlightedLotId && lot.id === highlightedLotId}
+                  isAdmin={userRole === "admin"}
+                  onReserve={() => handleReserve(lot)}
+                  onView={() => setDetailsLot(lot)}
+                  onEdit={() => handleEdit(lot)}
+                />
+              ))}
             </div>
-          ) : (
-            <>
-              <Table
-                columns={columns}
-                rows={lots}
-                getRowKey={(lot) => lot.id}
-                sort={sort}
-                onSortChange={handleSortChange}
-                empty={
-                  <div className="p-5">
-                    <EmptyState
-                      variant="no-results"
-                      title={t("common.noItemsFound")}
-                      description={t("common.tryAdjustingFilters")}
-                    />
-                  </div>
-                }
-                mobileCard={(lot) => (
-                  <LotItem
-                    lot={lot}
-                    userRole={userRole}
-                    isHighlighted={!!highlightedLotId && lot.id === highlightedLotId}
-                  />
-                )}
+            {totalPages > 1 && (
+              <Pagination
+                page={page}
+                pageCount={totalPages}
+                total={total}
+                perPage={PER_PAGE}
+                onPageChange={handlePageChange}
               />
-              {totalPages > 1 && (
-                <div className="px-5 pb-4">
-                  <Pagination
-                    page={page}
-                    pageCount={totalPages}
-                    total={total}
-                    perPage={PER_PAGE}
-                    onPageChange={handlePageChange}
-                  />
-                </div>
-              )}
-            </>
-          )}
-        </Card>
+            )}
+          </>
+        )}
       </div>
 
       <LotDetailsModal lot={detailsLot} onClose={() => setDetailsLot(null)} />

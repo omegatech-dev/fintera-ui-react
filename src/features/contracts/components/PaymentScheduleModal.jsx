@@ -15,6 +15,7 @@ import EditMoratoryModal from "./PaymentSchedule/EditMoratoryModal";
 import UndoConfirmationModal from "./PaymentSchedule/UndoConfirmationModal";
 import PaymentModalHeader from "./PaymentSchedule/PaymentModalHeader";
 import PaymentModalFooter from "./PaymentSchedule/PaymentModalFooter";
+import { Dialog } from "@/shared/ui";
 
 // Moved outside component to prevent recreation on every render
 const fmt = (v) => formatCurrency(v);
@@ -137,9 +138,14 @@ function PaymentScheduleModal({ contract, open, onClose, onPaymentSuccess }) {
   const progressPercent = Math.min(100, Math.max(0, (paidAmount / (summary?.price || 1)) * 100));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={onClose} />
-      <div className="relative w-full md:max-w-6xl bg-white dark:bg-darkblack-600 rounded-t-2xl md:rounded-2xl shadow-xl max-h-[90vh] flex flex-col">
+    <>
+      <Dialog
+        open={open && !!contract}
+        onClose={onClose}
+        size="xl"
+        flush
+        className="flex max-h-[90vh] flex-col"
+      >
         <PaymentModalHeader
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -204,7 +210,7 @@ function PaymentScheduleModal({ contract, open, onClose, onPaymentSuccess }) {
           onClose={onClose}
           t={t}
         />
-      </div>
+      </Dialog>
 
       <ApplyPaymentModal
         isOpen={applyPaymentModal}
@@ -234,7 +240,7 @@ function PaymentScheduleModal({ contract, open, onClose, onPaymentSuccess }) {
         schedule={schedule}
         setSchedule={setSchedule}
       />
-    </div>
+    </>
   );
 }
 

@@ -1,24 +1,13 @@
-import { useRef, useEffect } from "react";
 import PropTypes from "prop-types";
-import { motion } from "framer-motion";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { getStatusLabel, getStatusBadgeClass } from "../../../../shared/utils/statusUtils";
 import { calculateLotAreas } from "../../../../shared/utils/areaUtils";
 import { areaUnitLabel, linearUnitLabel } from "../../../../shared/utils/units";
 import { getDefaultCurrency } from "../../../../shared/utils/formatSettings";
+import { Button, Dialog } from "@/shared/ui";
 
 function LotDetailsModal({ lot, onClose }) {
     const { t } = useLocale();
-    const modalRef = useRef(null);
-
-    // Close on Escape key
-    useEffect(() => {
-        const handleEsc = (e) => {
-            if (e.key === "Escape") onClose();
-        };
-        window.addEventListener("keydown", handleEsc);
-        return () => window.removeEventListener("keydown", handleEsc);
-    }, [onClose]);
 
     if (!lot) return null;
 
@@ -61,22 +50,19 @@ function LotDetailsModal({ lot, onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={onClose}
-                className="absolute inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-xs"
-            />
-
-            <motion.div
-                ref={modalRef}
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-darkblack-600 rounded-[2.5rem] shadow-2xl border-2 border-bgray-100 dark:border-darkblack-500 flex flex-col"
-            >
+        <Dialog
+            open={!!lot}
+            onClose={onClose}
+            size="xl"
+            flush
+            footer={
+                <Button variant="secondary" onClick={onClose}>
+                    {t("common.close")}
+                </Button>
+            }
+            className="max-h-[90vh]"
+        >
+            <div className="max-h-[90vh] overflow-y-auto">
                 {/* Decorative background */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-success-300/10 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none" />
 
@@ -228,18 +214,8 @@ function LotDetailsModal({ lot, onClose }) {
                                 </div>
                             )}
                         </div>
-
-                {/* Footer */}
-                <div className="p-8 border-t border-bgray-100 dark:border-darkblack-500 flex justify-end">
-                    <button
-                        onClick={onClose}
-                        className="px-8 py-3 rounded-xl bg-bgray-100 dark:bg-darkblack-500 text-bgray-700 dark:text-white font-bold hover:bg-bgray-200 dark:hover:bg-darkblack-400 transition-colors"
-                    >
-                        {t("common.close")}
-                    </button>
-                </div>
-            </motion.div>
-        </div>
+            </div>
+        </Dialog>
     );
 }
 

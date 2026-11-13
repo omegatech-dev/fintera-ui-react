@@ -9,6 +9,7 @@ const SIZES = {
   sm: "max-w-md",
   md: "max-w-xl",
   lg: "max-w-3xl",
+  xl: "max-w-6xl",
 };
 
 function Dialog({
@@ -17,6 +18,7 @@ function Dialog({
   title,
   description,
   size = "md",
+  flush = false,
   footer,
   children,
   className = "",
@@ -88,7 +90,7 @@ function Dialog({
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={`w-full ${SIZES[size]} rounded-sheet bg-surface p-5 shadow-pop ${className}`}
+        className={`w-full ${SIZES[size]} rounded-sheet bg-surface shadow-pop ${flush ? "" : "p-5"} ${className}`}
       >
         {title && (
           <h2 id={titleId} className="text-section font-bold text-ink">
@@ -100,7 +102,7 @@ function Dialog({
             {description}
           </p>
         )}
-        <div className="mt-4">{children}</div>
+        <div className={flush ? "" : "mt-4"}>{children}</div>
         {footer && <div className="mt-5 flex justify-end gap-2">{footer}</div>}
       </div>
     </div>,
@@ -113,7 +115,8 @@ Dialog.propTypes = {
   onClose: PropTypes.func,
   title: PropTypes.node,
   description: PropTypes.node,
-  size: PropTypes.oneOf(["sm", "md", "lg"]),
+  size: PropTypes.oneOf(["sm", "md", "lg", "xl"]),
+  flush: PropTypes.bool,
   footer: PropTypes.node,
   children: PropTypes.node,
   className: PropTypes.string,

@@ -1,7 +1,4 @@
-// src/components/payments/PaymentData.jsx
-
-import React, { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { format, isBefore, parseISO, startOfDay } from "date-fns";
 import { formatStatus } from "../../../shared/utils/formatStatus";
@@ -9,6 +6,7 @@ import { paymentsApi } from "../api";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
 import { getDefaultCurrency } from "../../../shared/utils/formatSettings";
+import { Button, Dialog } from "@/shared/ui";
 
 // Normalize payment from API: user payments return flat shape (no nested contract); build a safe contract for display
 function normalizePayment(paymentData) {
@@ -37,53 +35,48 @@ function PaymentData({ paymentData, onPaymentSuccess }) {
   const { t } = useLocale();
   const { showToast } = useToast();
 
-  // State for payment modal
-  const [paymentModal, setPaymentModal] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  // State for payment dialog
+  const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const modalRef = useRef(null);
 
-  // Handle modal animation and body scroll
-  useEffect(() => {
-    if (paymentModal) {
-      document.body.style.overflow = 'hidden';
-      // Add a small delay to trigger the animation
-      requestAnimationFrame(() => {
-        setIsModalVisible(true);
-      });
+  const openPaymentModal = () => setPaymentOpen(true);
 
-      // Focus after animation starts
-      setTimeout(() => {
-        if (modalRef.current) {
-          modalRef.current.focus();
-        }
-      }, 150);
-    } else {
-      // Delay removing body scroll to allow for exit animation
-      setTimeout(() => {
-        document.body.style.overflow = 'unset';
-      }, 300);
-    }
-
-    // Cleanup on unmount
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [paymentModal]);
-
-  // Function to open payment modal instead of navigating
-  const openPaymentModal = () => {
-    setPaymentModal(true);
+  const closePaymentModal = () => {
+    setPaymentOpen(false);
+    setSelectedFile(null);
   };
 
-  // Function to close modal with animation
-  const closePaymentModal = () => {
-    setIsModalVisible(false);
-    setTimeout(() => {
-      setPaymentModal(false);
-      setSelectedFile(null);
-    }, 300);
+  const handleUploadReceipt = async () => {
+    if (!selectedFile) {
+      showToast(t('payments.selectFileToUpload'), "error");
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const totalAmount = Number(parseFloat(amount || 0) + parseFloat(interest_amount || 0));
+      const formData = new FormData();
+      formData.append('receipt', selectedFile);
+      formData.append('paid_amount', totalAmount.toString());
+
+      await paymentsApi.uploadReceipt(id, formData);
+
+      showToast(t('payments.paymentSuccessful'), "success");
+      closePaymentModal();
+      if (onPaymentSuccess) {
+        onPaymentSuccess();
+      }
+    } catch (error) {
+      console.error('Error uploading payment:', error);
+      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+        showToast(t('common.sessionExpired'), "error");
+      } else {
+        showToast(`${t('payments.paymentError')}: ${error.message}`, "error");
+      }
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // Format currency function (contract may be missing when API returns flat PaymentResponse)
@@ -265,132 +258,65 @@ function PaymentData({ paymentData, onPaymentSuccess }) {
         </div>
       )}
 
-      {/* Payment Modal - Rendered as Portal */}
-      {paymentModal && createPortal(
-        <div
-          className={`fixed inset-0 flex items-center justify-center z-50 overflow-y-auto transition-all duration-300 ease-out ${isModalVisible
-            ? 'bg-black/50 backdrop-blur-xs'
-            : 'bg-black/0 backdrop-blur-none'
-            }`}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              closePaymentModal();
-            }
-          }}
-        >
-          <div
-            ref={modalRef}
-            className={`bg-white dark:bg-darkblack-600 rounded-lg p-6 w-full max-w-md mx-4 transition-all duration-300 ease-out transform ${isModalVisible
-              ? 'opacity-100 scale-100 translate-y-0'
-              : 'opacity-0 scale-95 translate-y-4'
-              }`}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-title"
-            aria-describedby="modal-description"
-            tabIndex="-1"
-          >
-            <h4 id="modal-title" className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+      {/* Payment Dialog */}
+      <Dialog
+        open={paymentOpen}
+        onClose={closePaymentModal}
+        title={t('payments.makePayment')}
+        description={description}
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={closePaymentModal}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              onClick={handleUploadReceipt}
+              loading={actionLoading}
+              disabled={!selectedFile}
+            >
               {t('payments.makePayment')}
-            </h4>
-            <p id="modal-description" className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              {description}
-            </p>
-            <div className="space-y-4">
-              {/* Subtotal and Total Display */}
-              <div className="p-3 bg-gray-50 dark:bg-darkblack-500 rounded-lg">
-                <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300 mb-1">
-                  <span>{t('payments.amount')}:</span>
-                  <span>{fmt(parseFloat(amount || 0))}</span>
-                </div>
-                {interest_amount > 0 && (
-                  <div className="flex justify-between text-sm text-red-600 dark:text-red-400 mb-1">
-                    <span>{t('payments.lateInterest')}:</span>
-                    <span>{fmt(parseFloat(interest_amount || 0))}</span>
-                  </div>
-                )}
-                <div className="flex justify-between font-semibold text-gray-900 dark:text-white border-t border-gray-300 dark:border-gray-600 pt-2 mt-2">
-                  <span>{t('payments.total')}:</span>
-                  <span>{fmt(parseFloat(amount || 0) + parseFloat(interest_amount || 0))}</span>
-                </div>
-              </div>
-              {/* File Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('payments.uploadReceipt')}
-                </label>
-                <input
-                  type="file"
-                  accept="image/*,.pdf,.doc,.docx"
-                  onChange={(e) => setSelectedFile(e.target.files[0])}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-darkblack-400 rounded-lg dark:bg-darkblack-500 dark:text-white focus:ring-2 focus:ring-blue-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
-                {selectedFile && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {t('payments.selectedFile')}: {selectedFile.name}
-                  </p>
-                )}
-              </div>
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          {/* Subtotal and Total Display */}
+          <div className="p-3 rounded-control bg-bgray-50 dark:bg-darkblack-500">
+            <div className="flex justify-between text-body text-ink-2 mb-1">
+              <span>{t('payments.amount')}:</span>
+              <span>{fmt(parseFloat(amount || 0))}</span>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={closePaymentModal}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-darkblack-500 dark:hover:bg-darkblack-400 text-gray-800 dark:text-gray-100"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={async () => {
-                  if (!selectedFile) {
-                    showToast(t('payments.selectFileToUpload'), "error");
-                    return;
-                  }
-
-                  setActionLoading(true);
-                  try {
-                    const totalAmount = Number(parseFloat(amount || 0) + parseFloat(interest_amount || 0));
-                    const formData = new FormData();
-                    formData.append('receipt', selectedFile);
-                    formData.append('paid_amount', totalAmount.toString());
-
-                    await paymentsApi.uploadReceipt(id, formData);
-
-                    showToast(t('payments.paymentSuccessful'), "success");
-
-                    // Close modal and reset state without page reload
-                    setTimeout(() => {
-                      closePaymentModal();
-                      setActionLoading(false);
-                      // Refresh payment status after successful submission
-                      if (onPaymentSuccess) {
-                        onPaymentSuccess();
-                      }
-                    }, 500);
-                  } catch (error) {
-                    console.error('Error uploading payment:', error);
-
-                    // Check if it's an auth error
-                    if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-                      showToast(t('common.sessionExpired'), "error");
-                      // Optionally redirect to login instead of reload
-                      window.location.href = '/signin';
-                    } else {
-                      showToast(`${t('payments.paymentError')}: ${error.message}`, "error");
-                    }
-
-                    setActionLoading(false);
-                  }
-                }}
-                disabled={actionLoading || !selectedFile}
-                className="px-4 py-2 text-sm font-medium rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed bg-blue-500 hover:bg-blue-600"
-              >
-                {actionLoading ? t('common.processing') : t('payments.makePayment')}
-              </button>
+            {interest_amount > 0 && (
+              <div className="flex justify-between text-body text-danger-strong mb-1">
+                <span>{t('payments.lateInterest')}:</span>
+                <span>{fmt(parseFloat(interest_amount || 0))}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-semibold text-ink border-t border-line pt-2 mt-2">
+              <span>{t('payments.total')}:</span>
+              <span>{fmt(parseFloat(amount || 0) + parseFloat(interest_amount || 0))}</span>
             </div>
           </div>
-        </div>,
-        document.body
-      )}
+          {/* File Upload */}
+          <div>
+            <label className="block text-label font-medium text-ink-2 mb-1">
+              {t('payments.uploadReceipt')}
+            </label>
+            <input
+              type="file"
+              accept="image/*,.pdf,.doc,.docx"
+              onChange={(e) => setSelectedFile(e.target.files[0])}
+              className="w-full px-3 py-2 rounded-control border border-line-strong bg-surface text-ink file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-body file:font-semibold file:bg-brand-soft file:text-brand-strong"
+            />
+            {selectedFile && (
+              <p className="text-micro text-ink-3 mt-1">
+                {t('payments.selectedFile')}: {selectedFile.name}
+              </p>
+            )}
+          </div>
+        </div>
+      </Dialog>
 
     </div>
   );

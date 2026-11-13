@@ -24,14 +24,16 @@ function HeaderOne({ handleSidebar }) {
   const [notifications, setNotifications] = useState([]);
 
   // Extract user, logout from AuthContext
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, token } = useContext(AuthContext);
 
-  // On mount, fetch notifications if user is logged in
+  // On mount, fetch notifications once the session (user + token) is ready.
+  // Fetching with only `user` available can fire before the token is restored
+  // and produce a spurious 401.
   useEffect(() => {
-    if (user) {
+    if (user && token) {
       fetchNotifications();
     }
-  }, [user]);
+  }, [user, token]);
 
   const fetchNotifications = async (status = "unread") => {
     setLoading(true);

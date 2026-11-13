@@ -1,3 +1,4 @@
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 
 import PropTypes from "prop-types";
 import { useState, memo } from "react";
@@ -98,7 +99,11 @@ function ContractItem({
   const handleDeleteContract = async (e) => {
     e?.stopPropagation();
     if (!contract?.id) return;
-    if (!window.confirm(t("contractDetailsModal.deleteConfirm"))) return;
+    const confirmed = await confirmDialog({
+      title: t("contractDetailsModal.deleteConfirm"),
+      confirmLabel: t("common.delete") || "Eliminar",
+    });
+    if (!confirmed) return;
     setDeleteLoading(true);
     try {
       const data = await contractsApi.delete(contract.project_id, contract.lot_id, contract.id);

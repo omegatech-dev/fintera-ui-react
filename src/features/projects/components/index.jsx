@@ -1,3 +1,4 @@
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import { memo, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
@@ -95,7 +96,11 @@ const Project = memo(function Project({ project, user, onDeleted, onVisibilityCh
   const handleDelete = async (e) => {
     e.stopPropagation();
     e.preventDefault();
-    if (!window.confirm(t('projects.confirmDelete', { name }))) return;
+    const confirmed = await confirmDialog({
+      title: t('projects.confirmDelete', { name }),
+      confirmLabel: t('common.delete') || 'Eliminar',
+    });
+    if (!confirmed) return;
     try {
       await projectsApi.delete(id);
       showToast(t('projects.deleteSuccess'), "success");

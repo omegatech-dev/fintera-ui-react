@@ -15,6 +15,11 @@ export { default as Skeleton } from "./Skeleton";
 export { default as SaveBar } from "./SaveBar";
 export { default as Dialog } from "./Dialog";
 export { default as ConfirmDialog } from "./ConfirmDialog";
+export {
+  ConfirmProvider,
+  useConfirm,
+  confirmDialog,
+} from "./ConfirmProvider";
 export { default as Tabs } from "./Tabs";
 export { default as Table } from "./Table";
 export { default as Pagination } from "./Pagination";

@@ -1,3 +1,4 @@
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { projectsApi } from "../../api";
@@ -108,10 +109,15 @@ function EditProject() {
     fetchProject();
   }, [id, t]);
 
-  const handleMeasurementUnitChange = (event) => {
+  const handleMeasurementUnitChange = async (event) => {
     const next = event.target.value;
     if (next === measurementUnit) return;
-    if (window.confirm(t("projects.measurementUnitChangeWarning"))) {
+    const confirmed = await confirmDialog({
+      title: t("projects.measurementUnitChangeWarning"),
+      confirmLabel: t("common.continue") || "Continuar",
+      tone: "primary",
+    });
+    if (confirmed) {
       setMeasurementUnit(next);
     }
   };

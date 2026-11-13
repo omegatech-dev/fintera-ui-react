@@ -1,3 +1,4 @@
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
@@ -36,7 +37,11 @@ function UserData({ userInfo, index, onClick, showStatusToggle = true, showEditB
   };
 
   const handleDelete = async () => {
-    if (!window.confirm(t('users.confirmDelete', { name: full_name }))) return;
+    const confirmed = await confirmDialog({
+      title: t('users.confirmDelete', { name: full_name }),
+      confirmLabel: t('common.delete') || 'Eliminar',
+    });
+    if (!confirmed) return;
 
     try {
       await usersApi.delete(id);

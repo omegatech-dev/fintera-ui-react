@@ -10,6 +10,7 @@ import "./index.css";
 import { AuthProvider } from './contexts/AuthContext.jsx';
 import { BrandingProvider } from './contexts/BrandingContext.jsx';
 import { GeneralSettingsProvider } from './contexts/GeneralSettingsContext.jsx';
+import { ConfirmProvider } from './shared/ui/ConfirmProvider';
 import { buildRollbarConfig } from './lib/rollbarConfig';
 import { registerSW } from "virtual:pwa-register";
 
@@ -26,7 +27,9 @@ const appTree = (
   <BrandingProvider>
     <AuthProvider>
       <GeneralSettingsProvider>
-        <App />
+        <ConfirmProvider>
+          <App />
+        </ConfirmProvider>
       </GeneralSettingsProvider>
     </AuthProvider>
   </BrandingProvider>

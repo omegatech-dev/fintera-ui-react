@@ -1,3 +1,4 @@
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import { useEffect, useRef, useState } from "react";
 import { projectsApi } from "../../api";
 import { useLocale } from "../../../../contexts/LocaleContext";
@@ -73,7 +74,11 @@ export default function ProjectDrawingsPanel({ projectId, canManage }) {
   };
 
   const handleDelete = async (drawing) => {
-    if (!window.confirm(t("media.deleteConfirm", { name: drawing.name }))) return;
+    const confirmed = await confirmDialog({
+      title: t("media.deleteConfirm", { name: drawing.name }),
+      confirmLabel: t("common.delete") || "Eliminar",
+    });
+    if (!confirmed) return;
     try {
       await projectsApi.deleteDrawing(drawing.id);
       showToast(t("media.deleteSuccess"), "success");

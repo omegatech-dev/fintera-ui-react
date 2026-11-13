@@ -1,3 +1,4 @@
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 // src/component/contracts/ContractDetailsModal.jsx
 import { createPortal } from "react-dom";
 import { useState, useContext, useEffect, useMemo, memo, useCallback } from "react";
@@ -94,7 +95,11 @@ const ContractDetailsModal = memo(function ContractDetailsModal({
 
   const handleDeleteContract = async () => {
     if (!contract?.id || !token) return;
-    if (!window.confirm(t("contractDetailsModal.deleteConfirm"))) return;
+    const confirmed = await confirmDialog({
+      title: t("contractDetailsModal.deleteConfirm"),
+      confirmLabel: t("common.delete") || "Eliminar",
+    });
+    if (!confirmed) return;
     setIsDeleting(true);
     try {
       const data = await contractsApi.delete(

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import SearchFilterBar from "../../../shared/ui/SearchFilterBar";
 import AuditTimeline from "../components/AuditTimeline";
-import PaginationV2 from "@/shared/ui/PaginationV2";
+import Pagination from "@/shared/ui/Pagination";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { auditsApi } from "../api";
 import { AUDIT_MODELS, formatAuditModel } from "../modelLabels";
@@ -132,12 +132,10 @@ function Audits() {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center pt-8">
-                <PaginationV2
-                  currentPage={page}
-                  totalPages={totalPages}
-                  onPageClick={handlePageChange}
-                  onPrev={handlePageChange}
-                  onNext={handlePageChange}
+                <Pagination
+                  page={page}
+                  pageCount={totalPages}
+                  onPageChange={handlePageChange}
                 />
               </div>
             )}

@@ -1,3 +1,4 @@
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -67,13 +68,13 @@ export default function PaymentInstructionsPage() {
   };
 
   const handleDelete = async (account) => {
-    if (
-      !window.confirm(
-        t("paymentInstructions.confirmDelete", {
-          account: account.account_number,
-        })
-      )
-    ) {
+    const confirmed = await confirmDialog({
+      title: t("paymentInstructions.confirmDelete", {
+        account: account.account_number,
+      }),
+      confirmLabel: t("common.delete") || "Eliminar",
+    });
+    if (!confirmed) {
       return;
     }
     try {

@@ -1,3 +1,4 @@
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import { useMemo, useState } from "react";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { useToast } from "../../../../contexts/ToastContext";
@@ -51,7 +52,11 @@ export default function PhotoGalleryManager({
   };
 
   const handleDelete = async (photo) => {
-    if (!window.confirm(t("media.deletePhotoConfirm"))) return;
+    const confirmed = await confirmDialog({
+      title: t("media.deletePhotoConfirm"),
+      confirmLabel: t("common.delete") || "Eliminar",
+    });
+    if (!confirmed) return;
     try {
       await onDelete(photo.id);
       showToast(t("media.deleteSuccess"), "success");

@@ -5,6 +5,7 @@ import * as matchers from "@testing-library/jest-dom/matchers";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import PaymentInstructionsPage from "./index";
 import { projectsApi } from "../../api";
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 
 expect.extend(matchers);
 
@@ -56,6 +57,10 @@ vi.mock("@/contexts/LocaleContext", () => ({
         String(params?.[name] ?? "")
       ),
   }),
+}));
+
+vi.mock("@/shared/ui/ConfirmProvider", () => ({
+  confirmDialog: vi.fn(() => Promise.resolve(true)),
 }));
 
 vi.mock("@/contexts/ToastContext", () => ({
@@ -223,7 +228,7 @@ describe("PaymentInstructionsPage", () => {
     fireEvent.click((await screen.findAllByLabelText("Eliminar cuenta"))[0]);
 
     await waitFor(() => {
-      expect(window.confirm).toHaveBeenCalled();
+      expect(confirmDialog).toHaveBeenCalled();
       expect(projectsApi.deletePaymentInstruction).toHaveBeenCalledWith("1", 10);
     });
   });

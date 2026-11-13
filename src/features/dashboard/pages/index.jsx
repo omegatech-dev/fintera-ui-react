@@ -1,148 +1,183 @@
-import React, { useContext } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import AuthContext from "../../../contexts/AuthContext";
-import { useLocale } from "../../../contexts/LocaleContext";
-import QuickActionCard from "../components/QuickActionCard";
+import { paymentsApi } from "../../payments/api";
+import { contractsApi } from "../../contracts/api";
 import RecentActivity from "../components/RecentActivity";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import SellerDashboard from "./SellerDashboard";
+import { Button, Card, ErrorState, Skeleton } from "@/shared/ui";
 
-const AdminDashboard = () => {
-  const { t } = useLocale();
-  const navigate = useNavigate();
+const formatMoney = (value) => {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return "—";
+  if (Math.abs(amount) >= 1_000_000) {
+    return `L ${(amount / 1_000_000).toFixed(2)}M`;
+  }
+  return `L ${amount.toLocaleString("es-HN", {
+    maximumFractionDigits: 0,
+  })}`;
+};
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 50,
-        damping: 15
-      }
-    }
+function AttentionCard({ label, value, caption, to, tone = "default" }) {
+  const tones = {
+    default: "text-ink",
+    danger: "text-danger",
+    warning: "text-warning",
+    success: "text-brand-strong",
+    info: "text-info",
   };
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="space-y-8"
+    <Link
+      to={to}
+      className="group flex flex-col gap-1 rounded-card border border-line bg-surface p-4 transition-colors hover:border-line-strong"
     >
-      {/* Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <span className="text-label font-semibold text-ink-3">{label}</span>
+      <span className={`text-page font-bold ${tones[tone]}`}>{value}</span>
+      <span className="text-micro text-ink-3">{caption}</span>
+      <span className="mt-1 text-label font-semibold text-brand">
+        Revisar →
+      </span>
+    </Link>
+  );
+}
 
-        {/* Left Column: Quick Actions */}
-        <motion.div variants={itemVariants} className="lg:col-span-2 space-y-8">
-          <div>
-            <h2 id="quick-actions" className="text-xl font-bold text-bgray-900 dark:text-white mb-6 flex items-center">
-              <svg className="w-6 h-6 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              {t("dashboard.quickActions") || "Quick Actions"}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {[
-                {
-                  to: "/payments",
-                  color: "green",
-                  title: t("dashboard.newPayment") || "Register Payment",
-                  desc: t("dashboard.newPaymentDesc") || "Record a new payment for a contract.",
-                  icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                },
-                {
-                  to: "/projects",
-                  color: "blue",
-                  title: t("dashboard.newContract") || "New Contract",
-                  desc: t("dashboard.newContractDesc") || "Start a new sale process in a project.",
-                  icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                },
-                {
-                  to: "/users",
-                  color: "purple",
-                  title: t("dashboard.manageUsers") || "Manage Users",
-                  desc: t("dashboard.manageUsersDesc") || "Add or update system users.",
-                  icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                },
-                {
-                  to: "/analytics",
-                  color: "indigo",
-                  title: t("dashboard.viewAnalytics") || "View Analytics",
-                  desc: t("dashboard.viewAnalyticsDesc") || "Deep dive into financial reports.",
-                  icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                }
-              ].map((action, idx) => (
-                <motion.div variants={itemVariants} key={idx} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <QuickActionCard
-                    to={action.to}
-                    color={action.color}
-                    title={action.title}
-                    description={action.desc}
-                    icon={
-                      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        {action.icon}
-                      </svg>
-                    }
-                  />
-                </motion.div>
-              ))}
-            </div>
-          </div>
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const [paymentsStats, setPaymentsStats] = useState(null);
+  const [contractsStats, setContractsStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-          {/* Status Overview Banner */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 p-8 shadow-xl">
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="text-center md:text-left text-white">
-                <h3 className="text-2xl font-bold mb-2">
-                  {t("dashboard.systemHealth") || "System Status"}
-                </h3>
-                <p className="text-blue-100 max-w-md">
-                  {t("dashboard.systemHealthDesc") || "All systems are operational. Check the audits log for detailed activity tracking."}
-                </p>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/projects')}
-                className="px-6 py-3 bg-white text-blue-600 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all"
-              >
-                {t("dashboard.viewLogs") || "View Projects"}
-              </motion.button>
-            </div>
-            {/* Decorative Circles */}
-            <motion.div
-              animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-white opacity-10 blur-3xl"
-            />
-            <motion.div
-              animate={{ scale: [1, 1.1, 1], x: [0, 10, 0] }}
-              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute bottom-0 left-0 -ml-20 -mb-20 w-40 h-40 rounded-full bg-white opacity-10 blur-2xl"
-            />
-          </div>
-        </motion.div>
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-        {/* Right Column: Recent Activity */}
-        <motion.div id="recent-activity" variants={itemVariants} className="lg:col-span-1 h-full min-h-[500px]">
-          <RecentActivity />
-        </motion.div>
+    const [paymentsResult, contractsResult] = await Promise.allSettled([
+      paymentsApi.getStats(),
+      contractsApi.getStats(),
+    ]);
 
+    if (paymentsResult.status === "fulfilled") {
+      setPaymentsStats(paymentsResult.value);
+    }
+    if (contractsResult.status === "fulfilled") {
+      setContractsStats(contractsResult.value);
+    }
+
+    if (
+      paymentsResult.status === "rejected" &&
+      contractsResult.status === "rejected"
+    ) {
+      setError("No pudimos cargar el resumen.");
+    }
+
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const overdue = paymentsStats?.total_overdue;
+  const collected = paymentsStats?.collected_this_month;
+  const pendingContracts = contractsStats?.pending;
+  const activeContracts = contractsStats?.approved;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 className="text-page font-bold text-ink">Requiere tu atención</h2>
+          <p className="text-body text-ink-3">
+            Lo que necesita una decisión hoy.
+          </p>
+        </div>
+        <Button onClick={() => navigate("/payments")}>Registrar pago</Button>
       </div>
-    </motion.div>
+
+      {error && (
+        <ErrorState
+          title="No pudimos cargar el resumen"
+          description="Revisa tu conexión e intenta de nuevo."
+          onRetry={load}
+        />
+      )}
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {loading
+          ? Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className="rounded-card border border-line bg-surface p-4"
+              >
+                <Skeleton rows={3} />
+              </div>
+            ))
+          : [
+              {
+                label: "Vencidos",
+                value: formatMoney(overdue),
+                caption: "Cuotas vencidas por cobrar",
+                to: "/payments",
+                tone: "danger",
+              },
+              {
+                label: "Contratos por aprobar",
+                value: pendingContracts ?? "—",
+                caption: "Esperan una decisión",
+                to: "/contracts",
+                tone: "warning",
+              },
+              {
+                label: "Contratos activos",
+                value: activeContracts ?? "—",
+                caption: "Con financiamiento vigente",
+                to: "/contracts",
+                tone: "default",
+              },
+              {
+                label: "Recaudado este mes",
+                value: formatMoney(collected),
+                caption: "Pagos aprobados",
+                to: "/payments",
+                tone: "success",
+              },
+            ].map((card) => (
+              <AttentionCard key={card.label} {...card} />
+            ))}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card title="Resumen del mes">
+            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div>
+                <dt className="text-micro text-ink-3">Recaudado</dt>
+                <dd className="text-title font-bold text-ink">
+                  {formatMoney(collected)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-micro text-ink-3">Vencido</dt>
+                <dd className="text-title font-bold text-danger">
+                  {formatMoney(overdue)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-micro text-ink-3">Contratos activos</dt>
+                <dd className="text-title font-bold text-ink">
+                  {activeContracts ?? "—"}
+                </dd>
+              </div>
+            </dl>
+          </Card>
+        </div>
+        <div className="lg:col-span-1">
+          <RecentActivity />
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -150,13 +185,9 @@ function Home() {
   const { user } = useContext(AuthContext);
 
   return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] sm:pt-[156px] pt-[100px] dark:bg-darkblack-700 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        {user?.role === "seller" ? (
-          <SellerDashboard user={user} />
-        ) : (
-          <AdminDashboard />
-        )}
+    <main className="min-h-screen w-full px-6 pb-6 pt-[100px] sm:pt-[156px] xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
+      <div className="mx-auto max-w-7xl">
+        {user?.role === "seller" ? <SellerDashboard user={user} /> : <AdminDashboard />}
       </div>
     </main>
   );

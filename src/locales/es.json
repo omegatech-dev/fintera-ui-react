@@ -202,6 +202,7 @@
   "dashboard": {
     "welcome": "Bienvenido",
     "workspace": "Mi espacio",
+    "workspaceSubtitle": "Tus clientes, cobros pendientes y documentos.",
     "user": "Usuario",
     "balance": "Balance",
     "financing": "Financiamientos",

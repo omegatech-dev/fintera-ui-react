@@ -219,6 +219,7 @@
   "dashboard": {
     "welcome": "Welcome",
     "workspace": "My workspace",
+    "workspaceSubtitle": "Your clients, pending collections and documents.",
     "user": "User",
     "balance": "Balance",
     "financing": "Financing",

@@ -72,6 +72,14 @@ export const usePageTitle = () => {
         title: t('header.pageTitle.audits'),
         subtitle: t('audits.viewSystemActivity')
       },
+      '/commissions': {
+        title: t('commissions.title'),
+        subtitle: t('commissions.subtitle')
+      },
+      '/vendedor/comisiones': {
+        title: t('commissions.title'),
+        subtitle: t('commissions.subtitle')
+      },
       '/settings': {
         title: t('settings.admin.title'),
         subtitle: t('settings.admin.subtitle')
@@ -103,6 +111,13 @@ export const usePageTitle = () => {
       return {
         title: t('docs.title'),
         subtitle: t('docs.subtitle')
+      };
+    }
+
+    if (path.startsWith('/vendedor')) {
+      return {
+        title: t('dashboard.workspace'),
+        subtitle: t('dashboard.workspaceSubtitle')
       };
     }
 

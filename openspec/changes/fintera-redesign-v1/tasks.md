@@ -78,4 +78,4 @@ Unchecked items are intentionally not done yet.
 
 - [x] 13.1 `npm run verify` (lint + test:run + build) green on every branch.
 - [x] 13.2 Local runtime: web `5174` and API `8081` healthy; key flows checked in the browser.
-- [ ] 13.3 Sync these delta specs to `openspec/specs/` and archive the change once the unchecked items land.
+- [x] 13.3 Sync these delta specs to `openspec/specs/` and archive the change once the unchecked items land.

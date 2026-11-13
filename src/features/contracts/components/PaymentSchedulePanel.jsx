@@ -41,6 +41,7 @@ function PaymentSchedulePanelView({
   title,
   subtitle,
   framed = true,
+  onRequestHandled,
 }) {
   const { user } = useContext(AuthContext);
   const { t } = useLocale();
@@ -181,7 +182,11 @@ function PaymentSchedulePanelView({
       setSelectedPayment(nextPending);
       setApplyPaymentModal(true);
     }
-  }, [isReadOnly, nextPending, openNextPaymentToken, schedule]);
+    // Consume the request in the parent. Otherwise remounting the panel
+    // (for example when switching between Resumen and Cronograma) would replay
+    // the same token and reopen the modal without a new click.
+    onRequestHandled?.();
+  }, [isReadOnly, nextPending, onRequestHandled, openNextPaymentToken, schedule]);
 
   if (error && !loading && (!Array.isArray(schedule) || schedule.length === 0)) {
     return (
@@ -287,6 +292,7 @@ PaymentSchedulePanel.propTypes = {
   title: PropTypes.node,
   subtitle: PropTypes.node,
   framed: PropTypes.bool,
+  onRequestHandled: PropTypes.func,
 };
 
 PaymentSchedulePanelView.propTypes = {
@@ -311,6 +317,7 @@ PaymentSchedulePanelView.propTypes = {
   title: PropTypes.node,
   subtitle: PropTypes.node,
   framed: PropTypes.bool,
+  onRequestHandled: PropTypes.func,
 };
 
 export default PaymentSchedulePanel;

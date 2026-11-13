@@ -970,6 +970,7 @@ function ContractDetail() {
             <PaymentSchedulePanel
               contract={contract}
               openNextPaymentToken={paymentRequestToken}
+              onRequestHandled={() => setPaymentRequestToken(0)}
               onChanged={refreshContract}
               title={t("contracts.paymentSchedule")}
               subtitle={t("contracts.installmentsRemaining", {

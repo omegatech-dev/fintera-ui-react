@@ -141,6 +141,16 @@ describe("PaymentSchedulePanel operations", () => {
     ).toBeInTheDocument();
   });
 
+  it("consumes the external next-payment request exactly once", async () => {
+    const onRequestHandled = vi.fn();
+    renderPanel({
+      props: { openNextPaymentToken: 1, onRequestHandled },
+    });
+
+    expect(await screen.findByTestId("apply-modal")).toBeInTheDocument();
+    expect(onRequestHandled).toHaveBeenCalledTimes(1);
+  });
+
   it("opens the moratory editor for overdue installments", async () => {
     renderPanel();
 

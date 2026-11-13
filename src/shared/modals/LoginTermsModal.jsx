@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { useLocale } from "../../contexts/LocaleContext";
 import { useGeneralSettings } from "../../contexts/generalSettings";
 import { formatDate } from "../utils/formatters";
+import { Button, Dialog } from "../ui";
 import enTranslations from "../../locales/en.json";
 import esTranslations from "../../locales/es.json";
 
@@ -29,225 +30,132 @@ function LoginTermsModal({ isActive, onClose }) {
     return Array.isArray(value) ? value : [];
   };
 
-  if (!isActive) return null;
+  const sections = [
+    {
+      title: t("termsAndConditions.sections.acceptanceTitle"),
+      body: t("termsAndConditions.sections.acceptance"),
+    },
+    {
+      title: t("termsAndConditions.sections.descriptionTitle"),
+      body: t("termsAndConditions.sections.description"),
+    },
+    {
+      title: t("termsAndConditions.sections.accountRegistrationTitle"),
+      points: getTranslationArray(
+        "termsAndConditions.sections.accountRegistration.points"
+      ),
+    },
+    {
+      title: t("termsAndConditions.sections.useOfPlatformTitle"),
+      body: t("termsAndConditions.sections.useOfPlatform"),
+    },
+    {
+      title: t("termsAndConditions.sections.feesAndPaymentsTitle"),
+      body: t("termsAndConditions.sections.feesAndPayments"),
+    },
+    {
+      title: t("termsAndConditions.sections.notificationsTitle"),
+      body: t("termsAndConditions.sections.notifications.intro"),
+      points: getTranslationArray("termsAndConditions.sections.notifications.points"),
+    },
+    {
+      title: t("termsAndConditions.sections.privacyPolicyTitle"),
+      body: t("termsAndConditions.sections.privacyPolicy"),
+    },
+    {
+      title: t("termsAndConditions.sections.limitationOfLiabilityTitle"),
+      body: t("termsAndConditions.sections.limitationOfLiability"),
+    },
+    {
+      title: t("termsAndConditions.sections.accountSuspensionTitle"),
+      body: t("termsAndConditions.sections.accountSuspension"),
+    },
+    {
+      title: t("termsAndConditions.sections.amendmentsTitle"),
+      body: t("termsAndConditions.sections.amendments"),
+    },
+    {
+      title: t("termsAndConditions.sections.contactInformationTitle"),
+      body: t("termsAndConditions.sections.contactInformation.content"),
+      contact: true,
+    },
+  ];
+
+  const contactRows = [
+    ["legalName", settings.legal_name],
+    ["email", settings.support_email],
+    ["phone", settings.support_whatsapp],
+    ["address", settings.legal_address],
+  ].filter(([, value]) => Boolean(value));
 
   return (
-    <div className="modal fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-gray-900/60 dark:bg-black/70"
-        aria-hidden="true"
-        onClick={onClose}
-      />
-      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700">
-        {/* Header */}
-        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            {t("termsAndConditions.title")}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors"
-            aria-label={t("common.close")}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+    <Dialog
+      open={Boolean(isActive)}
+      onClose={onClose}
+      title={t("termsAndConditions.title")}
+      description={`${t("termsAndConditions.lastUpdated")}: ${effectiveDate}`}
+      size="lg"
+      footer={
+        <Button variant="secondary" onClick={onClose}>
+          {t("common.close")}
+        </Button>
+      }
+      className="max-h-[90vh]"
+    >
+      <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1 text-body text-ink-2">
+        <p>{t("termsAndConditions.sections.welcome")}</p>
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {t("termsAndConditions.sections.welcome")}
-          </p>
-
-          <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400">
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {t("termsAndConditions.lastUpdated")}: {effectiveDate}
-          </div>
-
-          {/* 1. Acceptance */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              1. {t("termsAndConditions.sections.acceptanceTitle")}
+        {sections.map((section, index) => (
+          <section key={index}>
+            <h3 className="mb-1 text-body font-semibold text-ink">
+              {index + 1}. {section.title}
             </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t("termsAndConditions.sections.acceptance")}
-            </p>
+            {section.body && <p className="text-body leading-relaxed">{section.body}</p>}
+            {section.points && section.points.length > 0 && (
+              <ul className="mt-1 space-y-1">
+                {section.points.map((point, pointIndex) => (
+                  <li key={pointIndex} className="flex items-start gap-2">
+                    <span className="mt-0.5 text-brand-strong">•</span>
+                    <span className="leading-relaxed">{point}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {section.contact && (
+              <div className="mt-1 space-y-1">
+                {contactRows.map(([key, value]) => (
+                  <p key={key}>
+                    <span className="font-semibold text-ink">
+                      {t(`termsAndConditions.sections.contactInformation.${key}`)}:{" "}
+                    </span>
+                    {value}
+                  </p>
+                ))}
+                {settings.website && (
+                  <p>
+                    <span className="font-semibold text-ink">
+                      {t("termsAndConditions.sections.contactInformation.website")}:{" "}
+                    </span>
+                    <a
+                      href={settings.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-brand-strong hover:underline"
+                    >
+                      {settings.website}
+                    </a>
+                  </p>
+                )}
+              </div>
+            )}
           </section>
+        ))}
 
-          {/* 2. Description */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              2. {t("termsAndConditions.sections.descriptionTitle")}
-            </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t("termsAndConditions.sections.description")}
-            </p>
-          </section>
-
-          {/* 3. Account Registration */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              3. {t("termsAndConditions.sections.accountRegistrationTitle")}
-            </h3>
-            <ul className="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
-              {getTranslationArray("termsAndConditions.sections.accountRegistration.points").map((point, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="text-green-500 mt-0.5">•</span>
-                  <span className="leading-relaxed">{point}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* 4. Use of Platform */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              4. {t("termsAndConditions.sections.useOfPlatformTitle")}
-            </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t("termsAndConditions.sections.useOfPlatform")}
-            </p>
-          </section>
-
-          {/* 5. Fees and Payments */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              5. {t("termsAndConditions.sections.feesAndPaymentsTitle")}
-            </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t("termsAndConditions.sections.feesAndPayments")}
-            </p>
-          </section>
-
-          {/* 6. Notifications and Communications (Email) */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              6. {t("termsAndConditions.sections.notificationsTitle")}
-            </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-2">
-              {t("termsAndConditions.sections.notifications.intro")}
-            </p>
-            <ul className="space-y-1.5 text-xs text-gray-600 dark:text-gray-400">
-              {getTranslationArray("termsAndConditions.sections.notifications.points").map((point, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="text-indigo-500 mt-0.5">•</span>
-                  <span className="leading-relaxed">{point}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* 7. Privacy */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              7. {t("termsAndConditions.sections.privacyPolicyTitle")}
-            </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t("termsAndConditions.sections.privacyPolicy")}
-            </p>
-          </section>
-
-          {/* 8. Limitation of Liability */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              8. {t("termsAndConditions.sections.limitationOfLiabilityTitle")}
-            </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t("termsAndConditions.sections.limitationOfLiability")}
-            </p>
-          </section>
-
-          {/* 9. Account Suspension */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              9. {t("termsAndConditions.sections.accountSuspensionTitle")}
-            </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t("termsAndConditions.sections.accountSuspension")}
-            </p>
-          </section>
-
-          {/* 10. Amendments */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              10. {t("termsAndConditions.sections.amendmentsTitle")}
-            </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t("termsAndConditions.sections.amendments")}
-            </p>
-          </section>
-
-          {/* 11. Contact */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-              11. {t("termsAndConditions.sections.contactInformationTitle")}
-            </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-2">
-              {t("termsAndConditions.sections.contactInformation.content")}
-            </p>
-            <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
-              {settings.legal_name && (
-                <p>
-                  {t("termsAndConditions.sections.contactInformation.legalName")}:{" "}
-                  {settings.legal_name}
-                </p>
-              )}
-              {settings.support_email && (
-                <p>
-                  {t("termsAndConditions.sections.contactInformation.email")}:{" "}
-                  {settings.support_email}
-                </p>
-              )}
-              {settings.support_whatsapp && (
-                <p>
-                  {t("termsAndConditions.sections.contactInformation.phone")}:{" "}
-                  {settings.support_whatsapp}
-                </p>
-              )}
-              {settings.legal_address && (
-                <p>
-                  {t("termsAndConditions.sections.contactInformation.address")}:{" "}
-                  {settings.legal_address}
-                </p>
-              )}
-              {settings.website && (
-                <p>
-                  {t("termsAndConditions.sections.contactInformation.website")}:{" "}
-                  <a
-                    href={settings.website}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-medium text-blue-600 hover:underline dark:text-blue-400"
-                  >
-                    {settings.website}
-                  </a>
-                </p>
-              )}
-            </div>
-          </section>
-
-          <p className="text-xs text-gray-500 dark:text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-700">
-            {t("termsAndConditions.footerNote")}
-          </p>
-        </div>
-
-        {/* Footer */}
-        <div className="shrink-0 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors"
-          >
-            {t("common.close")}
-          </button>
-        </div>
+        <p className="border-t border-line pt-3 text-micro text-ink-3">
+          {t("termsAndConditions.footerNote")}
+        </p>
       </div>
-    </div>
+    </Dialog>
   );
 }
 

@@ -1,6 +1,6 @@
 # Keyboard shortcuts
 
-Shortcuts use a chord: press **g** and then one letter. The second key must be pressed within about 1.2 seconds; otherwise the chord expires and nothing happens.
+Shortcuts use a chord: press **g** to navigate or **n** to create, then the indicated key. The second key must be pressed within about 1.2 seconds; otherwise the chord expires and nothing happens.
 
 Press **?** at any time to open the shortcut list for your role. Close it with **Escape**.
 
@@ -18,6 +18,13 @@ Press **?** at any time to open the shortcut list for your role. Close it with *
 | `g` then `l` | Audits |
 | `g` then `g` | User guide |
 | `g` then `s` | Settings |
+
+## Administrator actions
+
+| Shortcut | Action |
+| --- | --- |
+| `n` then `p` | New project |
+| `n` then `u` | Add user |
 
 ## Seller shortcuts
 

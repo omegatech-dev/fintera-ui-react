@@ -203,7 +203,7 @@ describe("Seller workspace clients", () => {
       screen.getByRole("tab", { name: /My clients\s*3/ })
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Mostrando 1–3 de 3")
+      screen.getByText("Showing 1–3 of 3")
     ).toBeInTheDocument();
   });
 

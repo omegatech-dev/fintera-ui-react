@@ -1,11 +1,15 @@
 import { render, screen, cleanup } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
 import AuthContext from "@/contexts/AuthContext";
 import AdminRoute from "./AdminRoute";
 import AdminOrOwnerRoute from "./AdminOrOwnerRoute";
 
-const FORBIDDEN_TEXT = "Esta sección es para personal autorizado";
+vi.mock("@/contexts/LocaleContext", () => ({
+  useLocale: () => ({ locale: "es", t: (key) => key }),
+}));
+
+const FORBIDDEN_TEXT = "errors.forbiddenTitle";
 
 afterEach(() => {
   cleanup();

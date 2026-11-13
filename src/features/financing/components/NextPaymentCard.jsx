@@ -1,7 +1,8 @@
 import { useLocale } from '../../../contexts/LocaleContext';
+import { formatCurrency, formatDate } from '../../../shared/utils/formatters';
 
 function NextPaymentCard({ payments, currency }) {
-    const { t, locale } = useLocale();
+    const { t } = useLocale();
 
     const nextPayment = payments
         .filter((p) => (p.status || '').toLowerCase() !== 'paid' && (p.status || '').toLowerCase() !== 'rejected' && new Date(p.due_date) >= new Date())
@@ -16,7 +17,6 @@ function NextPaymentCard({ payments, currency }) {
     }
 
     const totalDue = Number(nextPayment.amount || 0) + Number(nextPayment.interest_amount || 0);
-    const dueDate = new Date(nextPayment.due_date);
     const displayProject = nextPayment.project_name || nextPayment.contract?.lot?.project?.name || '';
     const displayLot = nextPayment.lot_name || nextPayment.contract?.lot?.name || '';
     const paymentContext = [nextPayment.description, displayProject && displayLot ? `${displayProject} – ${displayLot}` : displayProject || displayLot].filter(Boolean);
@@ -44,11 +44,11 @@ function NextPaymentCard({ payments, currency }) {
                     </p>
                 )}
                 <p className="text-page font-bold text-ink tabular-nums">
-                    {currency} {totalDue.toLocaleString()}
+                    {formatCurrency(totalDue, currency)}
                 </p>
                 <p className="inline-flex items-center gap-2 rounded-chip bg-warning-soft px-2.5 py-1 text-micro font-semibold text-warning">
                     <span className="h-1.5 w-1.5 rounded-full bg-warning" aria-hidden="true" />
-                    {dueDate.toLocaleDateString(locale === 'es' ? 'es-HN' : 'en-US')}
+                    {formatDate(nextPayment.due_date)}
                 </p>
             </div>
 

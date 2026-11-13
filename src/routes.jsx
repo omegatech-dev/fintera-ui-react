@@ -27,7 +27,6 @@ const Analytics = lazy(() => import("./features/analytics/pages"));
 const Financing = lazy(() => import("./features/financing/pages"));
 const SignIn = lazy(() => import("./features/auth/pages/signin"));
 const SignUp = lazy(() => import("./features/auth/pages/signup"));
-const ComingSoon = lazy(() => import("./features/commingSoon"));
 const NotFound = lazy(() => import("./shared/error/NotFound"));
 const PersonalInfo = lazy(() => import("./features/settings/pages/personal-info"));
 const Security = lazy(() => import("./features/settings/pages/security"));
@@ -325,14 +324,6 @@ export const appRoutes = [
             <SignUp />
           </Suspense>
         </AdminRoute>
-      ),
-    },
-    {
-      path: "/coming-soon",
-      element: (
-        <Suspense fallback={<PageLoader />}>
-          <ComingSoon />
-        </Suspense>
       ),
     },
 ];

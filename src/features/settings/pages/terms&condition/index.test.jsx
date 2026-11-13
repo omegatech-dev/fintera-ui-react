@@ -85,6 +85,44 @@ describe("TermsAndCondition", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("renders formatted HTML terms and sanitizes unsafe markup", () => {
+    mockSettings({
+      terms_content_es:
+        '<h2>Uso responsable</h2><p>Estos son los <strong>términos</strong> con <a href="https://fintera.test">enlace</a>.</p><ul><li>Uno</li><li>Dos</li></ul><script>alert(1)</script><img src="x" onerror="alert(2)">',
+    });
+
+    const { container } = render(<TermsAndCondition />);
+
+    const content = container.querySelector(".rich-text-content");
+    expect(content).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Uso responsable" })
+    ).toBeInTheDocument();
+    expect(content.querySelector("strong")).toHaveTextContent("términos");
+    expect(content.querySelector("ul")).toHaveTextContent("Uno");
+    expect(
+      screen.getByRole("link", { name: "enlace" })
+    ).toHaveAttribute("href", "https://fintera.test");
+    expect(content.querySelector("script")).not.toBeInTheDocument();
+    expect(content.innerHTML).not.toContain("onerror");
+    expect(
+      screen.queryByText("termsAndConditions.sections.acceptanceTitle")
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps the contact section once when custom HTML terms exist", () => {
+    mockSettings({
+      terms_content_es: "<h2>Uso responsable</h2><p>Contenido.</p>",
+    });
+
+    render(<TermsAndCondition />);
+
+    expect(
+      screen.getAllByText("termsAndConditions.sections.contactInformationTitle")
+    ).toHaveLength(1);
+    expect(screen.getByText(/soporte@fintera\.test/)).toBeInTheDocument();
+  });
+
   it("keeps the contact details from settings", () => {
     render(<TermsAndCondition />);
 

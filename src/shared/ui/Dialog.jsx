@@ -78,7 +78,7 @@ function Dialog({
 
   return createPortal(
     <div
-      className="motion-fade-in fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
+      className="motion-fade-in fixed inset-0 z-[60] flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
@@ -90,20 +90,24 @@ function Dialog({
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={`motion-dialog w-full ${SIZES[size]} rounded-sheet bg-surface shadow-pop ${flush ? "" : "p-5"} ${className}`}
+        className={`motion-dialog flex max-h-[calc(100dvh-1rem)] w-full ${SIZES[size]} flex-col overflow-hidden rounded-t-sheet bg-surface shadow-pop sm:rounded-sheet ${flush ? "" : "p-5"} ${className}`}
       >
         {title && (
-          <h2 id={titleId} className="text-section font-bold text-ink">
+          <h2 id={titleId} className="shrink-0 text-section font-bold text-ink">
             {title}
           </h2>
         )}
         {description && (
-          <p id={descriptionId} className="mt-1 text-body text-ink-2">
+          <p id={descriptionId} className="mt-1 shrink-0 text-body text-ink-2">
             {description}
           </p>
         )}
-        <div className={flush ? "" : "mt-4"}>{children}</div>
-        {footer && <div className="mt-5 flex justify-end gap-2">{footer}</div>}
+        <div className={`min-h-0 flex-1 overflow-y-auto ${flush ? "" : "mt-4"}`}>
+          {children}
+        </div>
+        {footer && (
+          <div className="mt-5 flex shrink-0 justify-end gap-2">{footer}</div>
+        )}
       </div>
     </div>,
     document.body

@@ -29,15 +29,51 @@ The save bar stays disabled until the required fields are valid. New projects st
 
 ## Import CSV
 
-**Import CSV** creates or updates projects from a file:
+**Import CSV** creates or updates projects from a CSV file:
 
-1. Download the template or use your own headers.
-2. Drop the CSV into the dialog. The system maps recognizable headers, including Spanish aliases.
-3. Review the detected rows and column mapping.
+1. Download the template so the headers match the importer.
+2. Drop the CSV into the dialog. Headers are matched by name, including Spanish aliases.
+3. Review the detected rows and column mapping. The CTA stays disabled while a required column is missing.
 4. Choose **Update existing** and **Skip duplicates** as needed.
-5. Confirm the import.
+5. Confirm the import and review the summary (imported, updated, skipped) plus any row errors.
 
-The template columns are `name`, `code`, `address`, `city`, `price_per_square_unit`, `lot_count`, `measurement_unit`, `project_type`, `delivery_date`, and `description`.
+### Columns
+
+| Column | Required | Notes |
+| --- | --- | --- |
+| `name` | Yes | Project name |
+| `code` | No | Used to detect duplicates |
+| `address` | Yes | Project address |
+| `city` | No | City or zone |
+| `price_per_square_unit` | Yes | Non-negative number |
+| `lot_count` | No | Integer. Only applied to new projects |
+| `measurement_unit` | No | `m2` (default), `ft2`, or `vara2` |
+| `project_type` | No | Defaults to `residential` |
+| `delivery_date` | No | `YYYY-MM-DD` |
+| `description` | No | Free text. Quoted fields and line breaks are supported |
+| `interest_rate` | No | Percentage, default `0` |
+| `commission_rate_direct` | No | Percentage, default `0` |
+| `commission_rate_bank` | No | Percentage, default `0` |
+| `commission_rate_cash` | No | Percentage, default `0` |
+
+Spanish aliases such as `nombre`, `codigo`, `direccion`, `ciudad`, `precio_m2`, `lotes`, `unidad`, `tipo`, `fecha_entrega`, `descripcion`, `interes`, `comision_directa`, `comision_banco`, and `comision_contado` are also accepted. The file can be UTF-8 with or without a BOM.
+
+### Example
+
+```csv
+name,code,address,city,price_per_square_unit,lot_count,measurement_unit,project_type,delivery_date,description,interest_rate,commission_rate_direct,commission_rate_bank,commission_rate_cash
+Proyecto Ejemplo,EJ-001,"Calle 50, Ciudad de Panamá",Ciudad de Panamá,1200,10,m2,residential,2027-06-30,Proyecto de ejemplo,0,0,0,0
+```
+
+### Duplicates and options
+
+- **Skip duplicates** omits rows whose `code` or `guid` already exists. It takes precedence over **Update existing**.
+- **Update existing** updates the matched project instead of creating it. Required columns always overwrite; optional columns only overwrite when their header is present, and the existing lot count is preserved.
+- With both options off, a duplicate code creates another project.
+
+### Results and errors
+
+The dialog shows how many projects were imported, updated, and skipped. Rows that fail validation (missing name or address, invalid number, unsupported unit, invalid date) are listed with their file row number and are not silently ignored; valid rows still import.
 
 ## Deleting
 

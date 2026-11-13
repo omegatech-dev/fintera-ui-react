@@ -80,7 +80,8 @@
     "downloadCsv": "Descargar .csv",
     "refresh": "Actualizar",
     "appName": "Fintera",
-    "goBack": "Volver"
+    "goBack": "Volver",
+    "more": "Más"
   },
   "months": {
     "january": "Enero",
@@ -159,7 +160,15 @@
     "sessionExpired": "Su sesión ha expirado. Por favor, inicie sesión nuevamente.",
     "verificationCodeExpired": "El código de verificación ha expirado. Por favor, solicite uno nuevo.",
     "imageTooLarge": "La imagen es demasiado grande. El tamaño máximo es 5 MB.",
-    "imageUploadFailed": "No pudimos subir la imagen."
+    "imageUploadFailed": "No pudimos subir la imagen.",
+    "notFoundTitle": "Página no encontrada",
+    "notFoundDescription": "El enlace puede haber cambiado o la página fue eliminada.",
+    "forbiddenTitle": "Esta sección es para personal autorizado",
+    "forbiddenDescription": "Tu cuenta no tiene permisos para entrar al panel administrativo.",
+    "forbiddenPortalPrompt": "¿Buscas tus reservas?",
+    "forbiddenPortalLink": "Entra al portal de clientes →",
+    "forbiddenPortalFallback": "Entra al portal de clientes con el enlace que recibiste por correo.",
+    "backToHome": "Ir al inicio"
   },
   "auth": {
     "signIn": "Iniciar Sesión",
@@ -203,7 +212,11 @@
     "tooManyAttempts": "Demasiados intentos de inicio de sesión. Por favor espere unos minutos antes de intentar de nuevo.",
     "serverError": "Estamos experimentando dificultades técnicas. Por favor intente más tarde.",
     "networkError": "No se pudo conectar al servidor. Por favor verifique su conexión a internet e intente de nuevo.",
-    "loginFailed": "Error al iniciar sesión. Por favor intente de nuevo."
+    "loginFailed": "Error al iniciar sesión. Por favor intente de nuevo.",
+    "resendCodeError": "No pudimos reenviar el código. Inténtalo de nuevo.",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "verificationDigit": "Dígito de verificación"
   },
   "dashboard": {
     "welcome": "Bienvenido",
@@ -338,8 +351,17 @@
     "downloadTemplate": "Descargar plantilla",
     "columnMapping": "Mapeo de columnas",
     "notUsed": "No se usará",
+    "requiredColumn": "Requerida",
+    "missingRequiredColumns": "Faltan columnas requeridas: {columns}",
     "rowsDetected": "Se importarán {count} proyectos.",
-    "importCount": "Importar {count} proyectos"
+    "importCount": "Importar {count} proyectos",
+    "importSummary": "Resultado de la importación",
+    "importedCount": "Importados",
+    "updatedCount": "Actualizados",
+    "skippedCount": "Omitidos",
+    "rowErrors": "Filas con errores",
+    "rowError": "Fila {row}: {message}",
+    "templateDownloadError": "No se pudo descargar la plantilla."
   },
   "projects": {
     "squareMeters": "m²",
@@ -649,7 +671,11 @@
     "client": "Cliente",
     "searchPlaceholder": "Buscar cliente, lote o concepto",
     "dueShort": "Vence",
-    "amountShort": "Monto"
+    "amountShort": "Monto",
+    "receiptFileLabel": "Archivo del comprobante",
+    "uploading": "Subiendo...",
+    "uploadError": "No pudimos subir el comprobante.",
+    "networkError": "Error de red. Por favor intenta de nuevo."
   },
   "reports": {
     "financialReports": "Reportes Financieros",
@@ -870,7 +896,9 @@
     "keys": "Atajo",
     "close": "Entendido",
     "sidebarHint": "Pulsa g y luego {key}",
-    "typingNote": "Los atajos se pausan mientras escribes en un campo y mientras mantienes Ctrl, Cmd o Alt."
+    "typingNote": "Los atajos se pausan mientras escribes en un campo y mientras mantienes Ctrl, Cmd o Alt.",
+    "newProject": "Nuevo proyecto",
+    "newUser": "Agregar usuario"
   },
   "docs": {
     "title": "Guía de usuario",
@@ -1066,7 +1094,11 @@
     },
     "searchPlaceholder": "Buscar páginas…",
     "searchAria": "Buscar páginas",
-    "searchNoResults": "No hay páginas coincidentes"
+    "searchNoResults": "No hay páginas coincidentes",
+    "toggleSidebar": "Alternar barra lateral",
+    "toggleSidebarShortcut": "Alternar barra lateral (Ctrl+b)",
+    "closeSidebar": "Cerrar barra lateral",
+    "toggleDarkMode": "Alternar modo oscuro"
   },
   "footer": {
     "copyright": "© 2025 Todos los Derechos Reservados",
@@ -1109,7 +1141,15 @@
     "loading": "Cargando notificaciones...",
     "noNotifications": "No hay notificaciones",
     "markAllAsRead": "Marcar Todo Como Leído",
-    "markAsRead": "Marcar como leída"
+    "markAsRead": "Marcar como leída",
+    "loadError": "No pudimos cargar las notificaciones.",
+    "markAllError": "No pudimos marcar las notificaciones como leídas.",
+    "markOneError": "No pudimos marcar la notificación como leída.",
+    "allWithCount": "Todas {count}",
+    "unreadWithCount": "No leídas {count}",
+    "emptyUnread": "No hay notificaciones sin leer.",
+    "markOneAria": "Marcar como leída: {title}",
+    "readShort": "Leída"
   },
   "widgets": {
     "totalIncome": "Ingresos Totales",
@@ -1510,7 +1550,9 @@
     "approvedSuccess": "Contrato aprobado exitosamente.",
     "rejectedSuccess": "Contrato rechazado exitosamente.",
     "accountSummary": "Resumen de cuenta",
-    "receipts": "Comprobantes"
+    "receipts": "Comprobantes",
+    "pendingBalance": "Saldo pendiente",
+    "total": "Total"
   },
   "contractNotes": {
     "generalNotes": "Notas Generales",
@@ -1595,10 +1637,24 @@
     "interestAmount": "Monto de Interés",
     "moratoryInterest": "Interés Moratorio",
     "extraAmount": "Monto Extra",
+    "viewReceipt": "Ver comprobante",
+    "reference": "Referencia",
+    "originAccount": "Cuenta origen",
+    "receiptPdf": "Comprobante PDF",
+    "receiptLoadError": "No se pudo cargar el comprobante",
+    "noReceipt": "Sin comprobante",
+    "receipt": "Comprobante",
+    "paymentDate": "Fecha de pago",
+    "approved": "Aprobado",
     "reopenContract": "Reabrir Contrato",
     "reopening": "Reabriendo...",
     "contractReopenedSuccess": "Contrato reabierto exitosamente",
-    "errorReopeningContract": "Error al reabrir contrato"
+    "errorReopeningContract": "Error al reabrir contrato",
+    "receiptInformation": "Información del comprobante",
+    "dueDate": "Vencimiento",
+    "description": "Descripción",
+    "downloadReceipt": "Descargar comprobante",
+    "receiptDetails": "Comprobante y datos del pago"
   },
   "contractDetailsModal": {
     "title": "Detalles del Contrato",
@@ -2286,9 +2342,22 @@
       "saved": "Datos legales y de contacto actualizados",
       "error": "No se pudieron actualizar los datos legales y de contacto",
       "termsContentEs": "Términos y condiciones (Español)",
-      "termsContentEsHint": "Texto que se muestra en la página de Términos y Condiciones. Si lo dejas vacío se usa el contenido predeterminado.",
+      "termsContentEsHint": "Usa la barra de herramientas para agregar títulos, negritas, listas y enlaces. Si lo dejas vacío se usa el contenido predeterminado.",
       "termsContentEn": "Términos y condiciones (English)",
       "termsContentEnHint": "Se muestra cuando la plataforma está en inglés. Si lo dejas vacío se usa el contenido predeterminado.",
+      "termsPlaceholder": "Escribe los términos y condiciones…",
+      "useDefaultTemplate": "Usar plantilla predeterminada",
+      "termsTooLong": "Los términos no pueden superar los 20000 caracteres",
+      "editor": {
+        "bold": "Negrita",
+        "italic": "Cursiva",
+        "underline": "Subrayado",
+        "heading": "Título",
+        "orderedList": "Lista numerada",
+        "bulletList": "Lista con viñetas",
+        "link": "Insertar enlace",
+        "clean": "Limpiar formato"
+      },
       "characters": "{count}/60 caracteres",
       "termsCharacters": "{count} de {max} caracteres"
     },
@@ -2495,5 +2564,14 @@
     "statementDownloaded": "Estado de cuenta descargado",
     "statementError": "No pudimos descargar el estado de cuenta",
     "statementUnavailable": "Este contrato no tiene una cuenta de cliente vinculada"
+  },
+  "nav": {
+    "mainNavigation": "Navegación principal"
+  },
+  "pagination": {
+    "showingRange": "Mostrando {start}–{end} de {total}",
+    "pageOf": "Página {page} de {pageCount}",
+    "previous": "Página anterior",
+    "next": "Página siguiente"
   }
 }

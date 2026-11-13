@@ -80,7 +80,8 @@
     "downloadCsv": "Download .csv",
     "refresh": "Refresh",
     "appName": "Fintera",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "more": "More"
   },
   "months": {
     "january": "January",
@@ -159,7 +160,15 @@
     "verificationCodeExpired": "Verification code has expired. Please request a new one.",
     "sessionExpired": "Your session has expired. Please sign in again.",
     "imageTooLarge": "The image is too large. Maximum size is 5 MB.",
-    "imageUploadFailed": "We could not upload the image."
+    "imageUploadFailed": "We could not upload the image.",
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "The link may have changed or the page was removed.",
+    "forbiddenTitle": "This section is for authorized staff",
+    "forbiddenDescription": "Your account doesn't have permission to enter the admin panel.",
+    "forbiddenPortalPrompt": "Looking for your reservations?",
+    "forbiddenPortalLink": "Go to the customer portal →",
+    "forbiddenPortalFallback": "Enter the customer portal with the link you received by email.",
+    "backToHome": "Go to home"
   },
   "security": {
     "passwordChangedSuccessfully": "Password changed successfully.",
@@ -220,7 +229,11 @@
     "tooManyAttempts": "Too many login attempts. Please wait a few minutes before trying again.",
     "serverError": "We're experiencing technical difficulties. Please try again later.",
     "networkError": "Unable to connect to the server. Please check your internet connection and try again.",
-    "loginFailed": "Login failed. Please try again."
+    "loginFailed": "Login failed. Please try again.",
+    "resendCodeError": "We couldn't resend the code. Please try again.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "verificationDigit": "Verification digit"
   },
   "dashboard": {
     "welcome": "Welcome",
@@ -338,8 +351,17 @@
     "downloadTemplate": "Download template",
     "columnMapping": "Column mapping",
     "notUsed": "Not used",
+    "requiredColumn": "Required",
+    "missingRequiredColumns": "Missing required columns: {columns}",
     "rowsDetected": "{count} projects will be imported.",
-    "importCount": "Import {count} projects"
+    "importCount": "Import {count} projects",
+    "importSummary": "Import result",
+    "importedCount": "Imported",
+    "updatedCount": "Updated",
+    "skippedCount": "Skipped",
+    "rowErrors": "Rows with errors",
+    "rowError": "Row {row}: {message}",
+    "templateDownloadError": "Could not download the template."
   },
   "projects": {
     "squareMeters": "m²",
@@ -647,7 +669,11 @@
     "confirm": "Confirm",
     "nextPayment": "Next payment",
     "noUpcomingPayments": "No upcoming payments",
-    "paymentProgress": "Payment progress"
+    "paymentProgress": "Payment progress",
+    "receiptFileLabel": "Receipt file",
+    "uploading": "Uploading...",
+    "uploadError": "We couldn't upload the receipt.",
+    "networkError": "Network error. Please try again."
   },
   "reports": {
     "financialReports": "Financial Reports",
@@ -868,7 +894,9 @@
     "keys": "Shortcut",
     "close": "Got it",
     "sidebarHint": "Press g then {key}",
-    "typingNote": "Shortcuts are paused while you type in a field, and while you hold Ctrl, Cmd or Alt."
+    "typingNote": "Shortcuts are paused while you type in a field, and while you hold Ctrl, Cmd or Alt.",
+    "newProject": "New project",
+    "newUser": "Add user"
   },
   "docs": {
     "title": "User Guide",
@@ -1064,7 +1092,11 @@
     },
     "searchPlaceholder": "Search pages…",
     "searchAria": "Search pages",
-    "searchNoResults": "No matching pages"
+    "searchNoResults": "No matching pages",
+    "toggleSidebar": "Toggle sidebar",
+    "toggleSidebarShortcut": "Toggle sidebar (Ctrl+b)",
+    "closeSidebar": "Close sidebar",
+    "toggleDarkMode": "Toggle dark mode"
   },
   "footer": {
     "copyright": "© 2025 All Rights Reserved",
@@ -1107,7 +1139,15 @@
     "loading": "Loading notifications...",
     "noNotifications": "No notifications",
     "markAllAsRead": "Mark All As Read",
-    "markAsRead": "Mark as read"
+    "markAsRead": "Mark as read",
+    "loadError": "We couldn't load notifications.",
+    "markAllError": "We couldn't mark the notifications as read.",
+    "markOneError": "We couldn't mark the notification as read.",
+    "allWithCount": "All {count}",
+    "unreadWithCount": "Unread {count}",
+    "emptyUnread": "No unread notifications.",
+    "markOneAria": "Mark as read: {title}",
+    "readShort": "Read"
   },
   "widgets": {
     "totalIncome": "Total Income",
@@ -1507,7 +1547,10 @@
     "approvedSuccess": "Contract approved successfully.",
     "rejectedSuccess": "Contract rejected successfully.",
     "accountSummary": "Account summary",
-    "receipts": "Receipts"
+    "receipts": "Receipts",
+    "pendingBalance": "Pending balance",
+    "totalBalance": "Total balance",
+    "downloadCustomerRecord": "Download customer record"
   },
   "contractNotes": {
     "generalNotes": "General Notes",
@@ -1592,10 +1635,24 @@
     "interestAmount": "Interest Amount",
     "moratoryInterest": "Moratory Interest",
     "extraAmount": "Extra Amount",
+    "viewReceipt": "View receipt",
+    "reference": "Reference",
+    "originAccount": "Origin account",
+    "receiptPdf": "PDF receipt",
+    "receiptLoadError": "The receipt could not be loaded",
+    "noReceipt": "No receipt",
+    "receipt": "Receipt",
+    "paymentDate": "Payment date",
+    "approved": "Approved",
     "reopenContract": "Reopen Contract",
     "reopening": "Reopening...",
     "contractReopenedSuccess": "Contract reopened successfully",
-    "errorReopeningContract": "Error reopening contract"
+    "errorReopeningContract": "Error reopening contract",
+    "receiptInformation": "Receipt information",
+    "dueDate": "Due date",
+    "description": "Description",
+    "downloadReceipt": "Download receipt",
+    "receiptDetails": "Payment receipt and details"
   },
   "contractDetailsModal": {
     "title": "Contract Details",
@@ -2283,9 +2340,22 @@
       "saved": "Legal and contact details updated",
       "error": "Could not update the legal and contact details",
       "termsContentEs": "Terms and conditions (Spanish)",
-      "termsContentEsHint": "Text shown on the Terms and Conditions page. Leave empty to use the default content.",
+      "termsContentEsHint": "Use the toolbar to add headings, bold text, lists and links. Leave empty to use the default content.",
       "termsContentEn": "Terms and conditions (English)",
       "termsContentEnHint": "Shown when the platform language is English. Leave empty to use the default content.",
+      "termsPlaceholder": "Write the terms and conditions…",
+      "useDefaultTemplate": "Use default template",
+      "termsTooLong": "The terms cannot exceed 20000 characters",
+      "editor": {
+        "bold": "Bold",
+        "italic": "Italic",
+        "underline": "Underline",
+        "heading": "Heading",
+        "orderedList": "Numbered list",
+        "bulletList": "Bulleted list",
+        "link": "Insert link",
+        "clean": "Clear formatting"
+      },
       "characters": "{count}/60 characters",
       "termsCharacters": "{count} of {max} characters"
     },
@@ -2492,5 +2562,14 @@
     "statementDownloaded": "Account statement downloaded",
     "statementError": "We could not download the account statement",
     "statementUnavailable": "This contract has no linked customer account"
+  },
+  "nav": {
+    "mainNavigation": "Main navigation"
+  },
+  "pagination": {
+    "showingRange": "Showing {start}–{end} of {total}",
+    "pageOf": "Page {page} of {pageCount}",
+    "previous": "Previous page",
+    "next": "Next page"
   }
 }

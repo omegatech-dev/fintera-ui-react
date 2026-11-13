@@ -86,6 +86,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.js"],
+    // Performance/benchmark suites can exceed the 5s default under CI load.
+    testTimeout: 20000,
+    hookTimeout: 20000,
   },
   server: {
     watch: {

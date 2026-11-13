@@ -253,3 +253,13 @@ canvas {
 ::-webkit-scrollbar-button:vertical:single-button:increment:hover {
   border-color: #16a34a transparent transparent transparent;
 }
+
+/* Mobile drawer: the top bar must stay full width. The desktop rule above
+   shrinks it to leave room for the docked sidebar, but on phones the sidebar
+   is an overlay and must never clip the header. */
+@media (max-width: 1023.98px) {
+  .layout-wrapper .body-wrapper .header-wrapper,
+  .layout-wrapper.active .body-wrapper .header-wrapper {
+    width: 100%;
+  }
+}

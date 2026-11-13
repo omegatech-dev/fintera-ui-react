@@ -173,22 +173,31 @@ describe("General settings sections", () => {
     });
   });
 
-  it("saves the terms content in both languages", async () => {
+  it("saves the terms content in both languages using the default templates", async () => {
     const { container } = render(<LegalSettingsForm />);
 
-    fireEvent.change(screen.getByLabelText("branding.legal.termsContentEs"), {
-      target: { value: "Nuevos términos en español.\n\nSegundo párrafo." },
-    });
-    fireEvent.change(screen.getByLabelText("branding.legal.termsContentEn"), {
-      target: { value: "New English terms." },
-    });
+    expect(
+      screen.getByRole("textbox", { name: "branding.legal.termsContentEs" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", { name: "branding.legal.termsContentEn" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText("branding.legal.termsCharacters")
+    ).toHaveLength(2);
+
+    const templateButtons = screen.getAllByText(
+      "branding.legal.useDefaultTemplate"
+    );
+    fireEvent.click(templateButtons[0]);
+    fireEvent.click(templateButtons[1]);
     fireEvent.submit(container.querySelector("form"));
 
     await waitFor(() => {
       expect(update).toHaveBeenCalledWith(
         expect.objectContaining({
-          terms_content_es: "Nuevos términos en español.\n\nSegundo párrafo.",
-          terms_content_en: "New English terms.",
+          terms_content_es: expect.stringContaining("<h2>1. Aceptación</h2>"),
+          terms_content_en: expect.stringContaining("<h2>1. Acceptance</h2>"),
           legal_name: "Fintera S.A.",
         })
       );

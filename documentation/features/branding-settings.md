@@ -26,11 +26,22 @@ nested cards:
   updates `app_name` through `brandingApi.update()` and previews the browser tab.
 - **Support and reservations** — support WhatsApp/email, hold hours, minimum
   reservation amount, and reservation/down-payment due windows.
-- **Legal and contact** — legal name, tax ID, address, website, and terms
-  effective date.
+- **Legal and contact** — legal name, tax ID, address, website, terms
+  effective date, and the Spanish/English terms content.
 - **Notifications** — email notifications, overdue reminders, and upcoming
   reminder lead time.
 - **Regional** — default currency, locale, and timezone.
+
+The terms content uses a reusable Quill editor
+(`src/shared/editor/RichTextEditor.jsx`) with bold, italic, underline, H2/H3,
+bullet/numbered lists, links, and clear-format. Each locale has a **Use default
+template** action that loads the current i18n sections as editable HTML, so they
+can be adjusted without retyping the legal text. The character counter counts
+visible text and enforces 20,000 characters, matching the API. Saved content is
+HTML; the API sanitizes it with an allow-list before persisting, and the Terms
+page and login modal sanitize again before rendering. Legacy plain-text values
+still render as paragraphs, and the contact block is rendered by the page/modal
+shell so it is never duplicated by the editor content.
 
 Each section uses `SettingsSection` and its own save/discard bar. Saving a section
 updates only that section's values; `GeneralSettingsProvider` sends a merged
@@ -117,6 +128,10 @@ New strings use `settings.admin.*`, `branding.general.*`,
 - `src/features/branding/components/AppNameForm.test.jsx`
 - `src/features/branding/components/BrandIdentityForm.test.jsx`
 - `src/features/settings/components/GeneralSettingsForm.test.jsx`
+- `src/shared/editor/RichTextEditor.test.jsx`
+- `src/shared/editor/termsTemplate.test.js`
+- `src/shared/utils/sanitizeHtml.test.js`
+- `src/features/settings/pages/terms&condition/index.test.jsx`
 - `src/contexts/GeneralSettingsContext.test.jsx`
 - `src/shared/utils/formatters.test.js`
 - `src/features/projects/pages/reserve/reserveRules.test.js`

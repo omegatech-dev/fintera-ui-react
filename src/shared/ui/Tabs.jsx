@@ -1,8 +1,17 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
 function Tabs({ items, value, onChange, className = "" }) {
   const refs = useRef([]);
+  const selectedIndex = items.findIndex((item) => item.value === value);
+
+  useEffect(() => {
+    if (selectedIndex < 0) return;
+    refs.current[selectedIndex]?.scrollIntoView?.({
+      inline: "nearest",
+      block: "nearest",
+    });
+  }, [selectedIndex, value]);
 
   const handleKeyDown = (event, index) => {
     const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];

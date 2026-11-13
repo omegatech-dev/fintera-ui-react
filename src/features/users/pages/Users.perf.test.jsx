@@ -5,6 +5,7 @@ import {
   fireEvent,
   cleanup,
   waitFor,
+  within,
 } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import { MemoryRouter } from "react-router-dom";
@@ -104,6 +105,19 @@ describe("Users page", () => {
     fireEvent.click(screen.getAllByText("Ana Admin")[0]);
 
     expect(await screen.findByText("drawer:Ana Admin")).toBeInTheDocument();
+  });
+
+  it("renders the real clients_count returned by the API", async () => {
+    renderUsers();
+
+    const anaRow = (await screen.findAllByText("Ana Admin"))[0].closest("tr");
+    expect(within(anaRow).getByText("3")).toBeInTheDocument();
+
+    const carlaRow = screen.getAllByText("Carla Cliente")[0].closest("tr");
+    expect(within(carlaRow).getByText("0")).toBeInTheDocument();
+
+    const vicRow = screen.getAllByText("Vic Vendedor")[0].closest("tr");
+    expect(within(vicRow).getByText("—")).toBeInTheDocument();
   });
 
   it("does not refetch the list when the drawer opens", async () => {

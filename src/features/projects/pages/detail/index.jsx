@@ -212,7 +212,6 @@ function ProjectDetail() {
 
   if (!project) return null;
 
-  const totalLots = Number(project.lot_count) || 0;
   const availabilityRows = [
     {
       label: t("projects.available"),
@@ -233,6 +232,11 @@ function ProjectDetail() {
       text: "text-ink-3",
     },
   ];
+  const statusTotal = availabilityRows.reduce(
+    (sum, row) => sum + row.value,
+    0
+  );
+  const totalLots = statusTotal > 0 ? statusTotal : Number(project.lot_count) || 0;
 
   const formatMoney = (value) =>
     value

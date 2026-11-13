@@ -1,14 +1,10 @@
 import { useLocale } from '../../../contexts/LocaleContext';
+import { formatCurrency } from '../../../shared/utils/formatters';
 
 function StatsOverview({ totalAmount, totalPaid, currency }) {
     const { t } = useLocale();
 
     const percentage = totalAmount > 0 ? Math.min((totalPaid / totalAmount) * 100, 100) : 0;
-
-    const formatCurrency = (value) => {
-        if (typeof value !== 'number') return '—';
-        return value.toLocaleString('en-US', { style: 'currency', currency: currency || 'USD' });
-    };
 
     return (
         <div
@@ -34,11 +30,11 @@ function StatsOverview({ totalAmount, totalPaid, currency }) {
             <div className="flex justify-between gap-4 text-body">
                 <div>
                     <p className="mb-1 text-label font-medium text-ink-3">{t('payments.totalPaid')}</p>
-                    <p className="font-bold text-ink tabular-nums">{formatCurrency(totalPaid)}</p>
+                    <p className="font-bold text-ink tabular-nums">{formatCurrency(totalPaid, currency)}</p>
                 </div>
                 <div className="text-right">
                     <p className="mb-1 text-label font-medium text-ink-3">{t('contracts.amount')}</p>
-                    <p className="font-bold text-ink tabular-nums">{formatCurrency(totalAmount)}</p>
+                    <p className="font-bold text-ink tabular-nums">{formatCurrency(totalAmount, currency)}</p>
                 </div>
             </div>
         </div>

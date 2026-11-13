@@ -184,6 +184,32 @@ export function getNavItems(user) {
     .map((item) => ({ ...item, resolvedTo: resolveTo(item, user) }));
 }
 
+// Action shortcuts use a separate `n` chord so they never collide with the
+// navigation map. They are resolved by role like the sidebar.
+export const ACTION_SHORTCUTS = [
+  {
+    id: "new-project",
+    labelKey: "shortcuts.newProject",
+    keys: ["n", "p"],
+    to: "/projects/create",
+    roles: ["admin"],
+  },
+  {
+    id: "new-user",
+    labelKey: "shortcuts.newUser",
+    keys: ["n", "u"],
+    to: "/users/create",
+    roles: ["admin"],
+  },
+];
+
+export function getActionShortcuts(user) {
+  const role = user?.role;
+  return ACTION_SHORTCUTS.filter((item) => item.roles.includes(role)).map(
+    ({ id, labelKey, keys, to }) => ({ id, labelKey, keys, to })
+  );
+}
+
 // Chord shortcuts (g + letter) resolved from the same source as the sidebar so
 // routes and roles can never drift from the visible navigation.
 export function getNavShortcuts(user) {

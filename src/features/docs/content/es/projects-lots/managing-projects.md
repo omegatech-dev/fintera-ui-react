@@ -29,15 +29,51 @@ La barra de guardado permanece deshabilitada hasta que los campos obligatorios s
 
 ## Importar CSV
 
-**Importar CSV** crea o actualiza proyectos desde un archivo:
+**Importar CSV** crea o actualiza proyectos desde un archivo CSV:
 
-1. Descarga la plantilla o usa tus propios encabezados.
-2. Suelta el CSV en el diálogo. El sistema reconoce encabezados, incluidos alias en español.
-3. Revisa las filas detectadas y el mapeo de columnas.
+1. Descarga la plantilla para que los encabezados coincidan con el importador.
+2. Suelta el CSV en el diálogo. Los encabezados se reconocen por nombre, incluidos alias en español.
+3. Revisa las filas detectadas y el mapeo de columnas. El botón queda deshabilitado mientras falte una columna requerida.
 4. Elige **Actualizar existentes** y **Omitir duplicados** según necesites.
-5. Confirma la importación.
+5. Confirma la importación y revisa el resumen (importados, actualizados, omitidos) y los errores por fila.
 
-Las columnas de la plantilla son `name`, `code`, `address`, `city`, `price_per_square_unit`, `lot_count`, `measurement_unit`, `project_type`, `delivery_date` y `description`.
+### Columnas
+
+| Columna | Requerida | Notas |
+| --- | --- | --- |
+| `name` | Sí | Nombre del proyecto |
+| `code` | No | Se usa para detectar duplicados |
+| `address` | Sí | Dirección del proyecto |
+| `city` | No | Ciudad o zona |
+| `price_per_square_unit` | Sí | Número no negativo |
+| `lot_count` | No | Entero. Solo se aplica a proyectos nuevos |
+| `measurement_unit` | No | `m2` (por defecto), `ft2` o `vara2` |
+| `project_type` | No | Por defecto `residential` |
+| `delivery_date` | No | `YYYY-MM-DD` |
+| `description` | No | Texto libre. Se admiten campos entre comillas y saltos de línea |
+| `interest_rate` | No | Porcentaje, por defecto `0` |
+| `commission_rate_direct` | No | Porcentaje, por defecto `0` |
+| `commission_rate_bank` | No | Porcentaje, por defecto `0` |
+| `commission_rate_cash` | No | Porcentaje, por defecto `0` |
+
+También se aceptan alias en español como `nombre`, `codigo`, `direccion`, `ciudad`, `precio_m2`, `lotes`, `unidad`, `tipo`, `fecha_entrega`, `descripcion`, `interes`, `comision_directa`, `comision_banco` y `comision_contado`. El archivo puede ser UTF-8 con o sin BOM.
+
+### Ejemplo
+
+```csv
+name,code,address,city,price_per_square_unit,lot_count,measurement_unit,project_type,delivery_date,description,interest_rate,commission_rate_direct,commission_rate_bank,commission_rate_cash
+Proyecto Ejemplo,EJ-001,"Calle 50, Ciudad de Panamá",Ciudad de Panamá,1200,10,m2,residential,2027-06-30,Proyecto de ejemplo,0,0,0,0
+```
+
+### Duplicados y opciones
+
+- **Omitir duplicados** omite las filas cuyo `code` o `guid` ya existe. Tiene prioridad sobre **Actualizar existentes**.
+- **Actualizar existentes** actualiza el proyecto encontrado en lugar de crearlo. Las columnas requeridas siempre se sobrescriben; las opcionales solo cuando su encabezado está presente, y se conserva la cantidad de lotes existente.
+- Con ambas opciones desactivadas, un código duplicado crea otro proyecto.
+
+### Resultados y errores
+
+El diálogo muestra cuántos proyectos se importaron, actualizaron y omitieron. Las filas que fallan la validación (nombre o dirección vacíos, número inválido, unidad no admitida, fecha inválida) se listan con el número de fila del archivo y no se ignoran en silencio; las filas válidas sí se importan.
 
 ## Eliminar
 

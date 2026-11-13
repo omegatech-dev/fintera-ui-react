@@ -1,18 +1,20 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import AuthContext from "@/contexts/AuthContext";
+import { useLocale } from "@/contexts/LocaleContext";
 import ForbiddenPage from "@/features/common/ForbiddenPage";
 
 const AdminRoute = ({ children }) => {
   const { token, user, loading } = useContext(AuthContext);
+  const { t } = useLocale();
   const location = useLocation();
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-darkblack-600">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+      <div className="flex items-center justify-center min-h-screen bg-canvas">
+        <div className="text-center" role="status">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto mb-4"></div>
+          <p className="text-ink-3">{t("common.loading")}</p>
         </div>
       </div>
     );

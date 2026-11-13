@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { useLocale } from "../../contexts/LocaleContext";
 
 function Pagination({
   page = 1,
@@ -8,6 +9,7 @@ function Pagination({
   onPageChange,
   className = "",
 }) {
+  const { t } = useLocale();
   const start = total != null && perPage ? (page - 1) * perPage + 1 : null;
   const end =
     total != null && perPage ? Math.min(page * perPage, total) : null;
@@ -28,17 +30,17 @@ function Pagination({
     <div
       className={`flex flex-wrap items-center justify-between gap-3 py-3 text-body text-ink-3 ${className}`}
     >
-      <span>
+      <span aria-live="polite">
         {total != null
-          ? `Mostrando ${start}–${end} de ${total}`
-          : `Página ${page} de ${pageCount}`}
+          ? t("pagination.showingRange", { start, end, total })
+          : t("pagination.pageOf", { page, pageCount })}
       </span>
       <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={() => go(page - 1)}
           disabled={page <= 1}
-          aria-label="Página anterior"
+          aria-label={t("pagination.previous")}
           className="flex h-8 w-8 items-center justify-center rounded-chip hover:bg-surface-2 disabled:opacity-40"
         >
           ‹
@@ -62,7 +64,7 @@ function Pagination({
           type="button"
           onClick={() => go(page + 1)}
           disabled={page >= pageCount}
-          aria-label="Página siguiente"
+          aria-label={t("pagination.next")}
           className="flex h-8 w-8 items-center justify-center rounded-chip hover:bg-surface-2 disabled:opacity-40"
         >
           ›

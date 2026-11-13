@@ -127,33 +127,6 @@ function LotsList() {
 
       setTotalPages(Math.max(1, parseInt(pages, 10)));
       setTotal(totalCount);
-
-      if (page === 1) {
-        const hasFilters = Boolean(filters.search_term || filters.status);
-        const countByStatus = (status) =>
-          rows.filter((lot) => String(lot.status || "").toLowerCase() === status).length;
-        const pricedLot =
-          rows.find(
-            (lot) => lot.effective_price !== undefined && lot.effective_price !== null
-          ) || rows.find((lot) => lot.price !== undefined && lot.price !== null);
-
-        setSummary((prev) => {
-          if (hasFilters && prev.total > 0) return prev;
-          return {
-            total: totalCount,
-            available: countByStatus("available"),
-            reserved: countByStatus("reserved"),
-            financed: countByStatus("financed"),
-            fully_paid: countByStatus("fully_paid"),
-            price: pricedLot
-              ? pricedLot.effective_price !== undefined &&
-                pricedLot.effective_price !== null
-                ? pricedLot.effective_price
-                : pricedLot.price
-              : null,
-          };
-        });
-      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -164,6 +137,55 @@ function LotsList() {
   useEffect(() => {
     fetchLots();
   }, [fetchLots]);
+
+  // Status chips and the header total describe the whole project, not just the
+  // current page, so they are computed from a single unpaginated read.
+  useEffect(() => {
+    let active = true;
+    const fetchSummary = async () => {
+      try {
+        const data = await projectsApi.listLots(projectId, {
+          page: 1,
+          per_page: 1000,
+          sort: `${sort.field}-${sort.direction}`,
+        });
+        if (!active) return;
+        const rows = data.lots || [];
+        const countByStatus = (status) =>
+          rows.filter(
+            (lot) => String(lot.status || "").toLowerCase() === status
+          ).length;
+        const pagination = data.pagination || {};
+        const totalCount =
+          Number(pagination.total ?? pagination.count) || rows.length;
+        const pricedLot =
+          rows.find(
+            (lot) =>
+              lot.effective_price !== undefined && lot.effective_price !== null
+          ) || rows.find((lot) => lot.price !== undefined && lot.price !== null);
+
+        setSummary({
+          total: totalCount,
+          available: countByStatus("available"),
+          reserved: countByStatus("reserved"),
+          financed: countByStatus("financed"),
+          fully_paid: countByStatus("fully_paid"),
+          price: pricedLot
+            ? pricedLot.effective_price !== undefined &&
+              pricedLot.effective_price !== null
+              ? pricedLot.effective_price
+              : pricedLot.price
+            : null,
+        });
+      } catch {
+        // Keep the last known summary; the table error state covers failures.
+      }
+    };
+    fetchSummary();
+    return () => {
+      active = false;
+    };
+  }, [projectId, sort.field, sort.direction]);
 
   const handleFilterChange = useCallback((value) => {
     setStatusFilter(value);

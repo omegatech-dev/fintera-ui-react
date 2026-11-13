@@ -12,7 +12,7 @@ function BrandSaveBar({ visible, saving, disabled, onDiscard, labels }) {
           animate={{ opacity: 1, y: 0 }}
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
           transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
-          className="sticky bottom-4 z-20"
+          className="sticky bottom-[calc(80px+env(safe-area-inset-bottom))] z-30 md:bottom-4"
         >
           <div className="flex flex-col gap-3 rounded-card border border-line bg-surface p-4 shadow-pop sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:py-0">
             <div className="flex items-center gap-2 text-label font-semibold text-warning">

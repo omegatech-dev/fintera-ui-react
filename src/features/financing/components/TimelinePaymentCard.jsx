@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { format, isBefore, parseISO, startOfDay } from "date-fns";
-import { es, enUS } from 'date-fns/locale';
+import { isBefore, parseISO, startOfDay } from "date-fns";
 import { useLocale } from '@/contexts/LocaleContext';
 import { useToast } from '@/contexts/ToastContext';
 import { getDefaultCurrency } from '@/shared/utils/formatSettings';
+import {
+    formatCurrency as formatCurrencyIntl,
+    formatDate,
+} from '@/shared/utils/formatters';
 
 import { paymentsApi } from "@/features/payments/api";
 
@@ -16,7 +19,7 @@ const STATUS_STYLES = {
 };
 
 function TimelinePaymentCard({ payment, onPaymentSuccess, cardId }) {
-    const { t, locale } = useLocale();
+    const { t } = useLocale();
     const { showToast } = useToast();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,7 +35,6 @@ function TimelinePaymentCard({ payment, onPaymentSuccess, cardId }) {
     const currency = contract?.currency || getDefaultCurrency();
     const displayProject = project_name || contract?.lot?.project?.name || '';
     const displayLot = lot_name || contract?.lot?.name || '';
-    const dateLocale = locale === 'es' ? es : enUS;
 
     const interest = Number(interest_amount || 0);
     const totalDue = Number(amount || 0) + interest;
@@ -40,10 +42,7 @@ function TimelinePaymentCard({ payment, onPaymentSuccess, cardId }) {
     const showOverpayment = statusLower === 'paid' && (is_overpayment === true || (paidAmount > totalDue && totalDue > 0));
     const overpaymentAmount = showOverpayment ? paidAmount - totalDue : 0;
 
-    const formatCurrency = (val) => new Intl.NumberFormat(locale === 'es' ? 'es-HN' : 'en-US', {
-        style: 'currency',
-        currency: currency
-    }).format(val);
+    const formatCurrency = (val) => formatCurrencyIntl(val, currency);
 
     const statusTone = statusLower === 'paid'
         ? 'paid'
@@ -82,7 +81,7 @@ function TimelinePaymentCard({ payment, onPaymentSuccess, cardId }) {
                 <div className="min-w-0 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                         <span className="text-micro font-semibold uppercase tracking-wide text-ink-3">
-                            {format(dueDate, 'dd MMM yyyy', { locale: dateLocale })}
+                            {formatDate(due_date)}
                         </span>
                         <span className={`rounded-chip px-2 py-0.5 text-micro font-semibold ${STATUS_STYLES[statusTone]}`}>
                             {statusLower === 'paid' ? t('payments.paid') : isRejected ? t('payments.statusOptions.rejected') : isOverdue ? t('payments.overdue') : t('payments.pending')}
@@ -180,6 +179,7 @@ function TimelinePaymentCard({ payment, onPaymentSuccess, cardId }) {
                             <button
                                 type="button"
                                 onClick={() => setIsModalOpen(false)}
+                                aria-label={t('common.close')}
                                 className="rounded-control p-1.5 text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink"
                             >
                                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -200,7 +200,7 @@ function TimelinePaymentCard({ payment, onPaymentSuccess, cardId }) {
                                 )}
                                 <div className="flex items-center justify-between gap-3">
                                     <span className="text-micro font-medium uppercase tracking-wide text-ink-3">{t('payments.dueDate')}</span>
-                                    <span className="text-body font-semibold text-ink">{format(dueDate, 'PPP', { locale: dateLocale })}</span>
+                                    <span className="text-body font-semibold text-ink">{formatDate(due_date)}</span>
                                 </div>
                                 <div className="flex items-center justify-between gap-3">
                                     <span className="text-micro font-medium uppercase tracking-wide text-ink-3">{t('payments.subtotal')}</span>

@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import { useLocale } from "../../contexts/LocaleContext";
 import { useGeneralSettings } from "../../contexts/generalSettings";
 import { formatDate } from "../utils/formatters";
+import { containsHtml } from "../utils/sanitizeHtml";
+import RichTextContent from "../editor/RichTextContent";
 import { Button, Dialog } from "../ui";
 import enTranslations from "../../locales/en.json";
 import esTranslations from "../../locales/es.json";
@@ -35,7 +37,8 @@ function LoginTermsModal({ isActive, onClose }) {
       ? String(settings.terms_content_en || "").trim()
       : String(settings.terms_content_es || "").trim();
   const hasCustomContent = customContent.length > 0;
-  const customParagraphs = hasCustomContent
+  const hasCustomHtml = containsHtml(customContent);
+  const customParagraphs = hasCustomContent && !hasCustomHtml
     ? customContent
         .split(/\n{2,}/)
         .map((paragraph) => paragraph.trim())
@@ -109,17 +112,24 @@ function LoginTermsModal({ isActive, onClose }) {
       }
       className="max-h-[90vh]"
     >
-      <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1 text-body text-ink-2">
+      <div
+        className="max-h-[60vh] space-y-4 overflow-y-auto pr-1 text-body text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30"
+        tabIndex={0}
+      >
         <p>{t("termsAndConditions.sections.welcome")}</p>
 
         {hasCustomContent ? (
-          <div className="space-y-3">
-            {customParagraphs.map((paragraph, index) => (
-              <p key={index} className="whitespace-pre-line leading-relaxed">
-                {paragraph}
-              </p>
-            ))}
-          </div>
+          hasCustomHtml ? (
+            <RichTextContent html={customContent} className="text-body text-ink-2" />
+          ) : (
+            <div className="space-y-3">
+              {customParagraphs.map((paragraph, index) => (
+                <p key={index} className="whitespace-pre-line leading-relaxed">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          )
         ) : (
           sections.map((section, index) => (
             <section key={index}>

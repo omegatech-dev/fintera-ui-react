@@ -36,6 +36,7 @@ import {
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import CreditScoreCard from "../../components/CreditScoreCard";
 import DocumentsTab from "../../components/ContractDetails/tabs/DocumentsTab";
+import PaymentReceipt from "../../components/PaymentSchedule/PaymentReceipt";
 import PaymentScheduleModal from "../../components/PaymentScheduleModal";
 
 const money = (value) => {
@@ -223,6 +224,13 @@ function ContractDetail() {
         key: "status",
         header: t("common.status"),
         render: (row) => <StatusChip status={row.status} t={t} />,
+      },
+      {
+        key: "receipt",
+        header: t("paymentSchedule.receipt"),
+        render: (row) => (
+          <PaymentReceipt row={row} t={t} />
+        ),
       },
     ],
     [t]
@@ -555,7 +563,7 @@ function ContractDetail() {
                 .join(" · ")}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex max-w-full flex-wrap items-center justify-end gap-2">
             <Button
               variant="secondary"
               className="hidden sm:inline-flex"
@@ -565,7 +573,7 @@ function ContractDetail() {
               {t("contracts.downloadPdf")}
             </Button>
             {canRegisterPayment && (
-              <Button onClick={registerPayment}>
+              <Button className="hidden sm:inline-flex" onClick={registerPayment}>
                 <FontAwesomeIcon icon={faWallet} />
                 {t("contracts.registerPayment")}
               </Button>
@@ -877,16 +885,21 @@ function ContractDetail() {
                 />
               }
               mobileCard={(row) => (
-                <div className="flex items-center justify-between gap-3 rounded-card border border-line bg-surface p-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-body font-semibold text-ink">
-                      {row.description}
-                    </p>
-                    <p className="text-micro text-ink-3">{formatDate(row.due_date)}</p>
+                <div className="rounded-card border border-line bg-surface p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-body font-semibold text-ink">
+                        {row.description}
+                      </p>
+                      <p className="text-micro text-ink-3">{formatDate(row.due_date)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-body font-semibold text-ink">{money(row.amount)}</p>
+                      <StatusChip status={row.status} t={t} />
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-body font-semibold text-ink">{money(row.amount)}</p>
-                    <StatusChip status={row.status} t={t} />
+                  <div className="mt-2.5 border-t border-line/70 pt-2">
+                    <PaymentReceipt row={row} t={t} />
                   </div>
                 </div>
               )}

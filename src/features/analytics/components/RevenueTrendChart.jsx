@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Line } from "react-chartjs-2";
 import PropTypes from "prop-types";
 import ChartDataTable from "./ChartDataTable";
+import { localizeMonth, monthOrder } from "./monthLabels";
 
 const itemVariants = {
   hidden: { y: 16, opacity: 0 },
@@ -11,21 +12,6 @@ const itemVariants = {
     opacity: 1,
     transition: { type: "spring", stiffness: 110, damping: 16 },
   },
-};
-
-const monthOrder = {
-  Jan: 0,
-  Feb: 1,
-  Mar: 2,
-  Apr: 3,
-  May: 4,
-  Jun: 5,
-  Jul: 6,
-  Aug: 7,
-  Sep: 8,
-  Oct: 9,
-  Nov: 10,
-  Dec: 11,
 };
 
 const RevenueTrendChart = memo(
@@ -81,7 +67,9 @@ const RevenueTrendChart = memo(
     useEffect(() => {
       const chart = chartRef.current;
       if (chart) {
-        chart.data.labels = sortedData.map((point) => point.label);
+        chart.data.labels = sortedData.map((point) =>
+          localizeMonth(point.label, t)
+        );
         chart.data.datasets[0].data = sortedData.map((point) => point.real);
         chart.data.datasets[1].data = sortedData.map(
           (point) => point.projected
@@ -220,7 +208,7 @@ const RevenueTrendChart = memo(
             t("analytics.projections"),
           ]}
           rows={sortedData.map((point) => [
-            point.label,
+            localizeMonth(point.label, t),
             point.real ?? "—",
             point.projected ?? "—",
           ])}

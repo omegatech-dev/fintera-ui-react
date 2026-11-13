@@ -8,6 +8,26 @@ import Pagination from "../Pagination";
 import Toggle from "../Toggle";
 import SegmentedControl from "../SegmentedControl";
 
+vi.mock("../../../contexts/LocaleContext", () => ({
+  useLocale: () => ({
+    locale: "es",
+    t: (key, params = {}) => {
+      const templates = {
+        "pagination.showingRange": "Mostrando {start}–{end} de {total}",
+        "pagination.pageOf": "Página {page} de {pageCount}",
+        "pagination.previous": "Página anterior",
+        "pagination.next": "Página siguiente",
+      };
+      const template = templates[key] ?? key;
+      return Object.entries(params).reduce(
+        (value, [name, replacement]) =>
+          value.replaceAll(`{${name}}`, String(replacement)),
+        template
+      );
+    },
+  }),
+}));
+
 expect.extend(matchers);
 afterEach(cleanup);
 

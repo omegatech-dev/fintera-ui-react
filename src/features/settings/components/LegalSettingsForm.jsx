@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
+import RichTextEditor from "../../../shared/editor/RichTextEditor";
+import { buildDefaultTermsHtml } from "../../../shared/editor/termsTemplate";
+import {
+  countVisibleCharacters,
+  isRichTextEmpty,
+} from "../../../shared/utils/sanitizeHtml";
 import SettingsSaveBar from "./SettingsSaveBar";
 import SettingsSection from "./SettingsSection";
 import { useSettingsSaveBarRegistration } from "../hooks/useSettingsSaveBarRegistration";
@@ -41,6 +47,79 @@ const isValidUrl = (value) => {
   }
 };
 
+const normalizeTermsContent = (value) => {
+  const html = String(value || "");
+  return isRichTextEmpty(html) ? "" : html.trim();
+};
+
+const termsTemplateButtonClass =
+  "rounded-control border border-line bg-surface px-2.5 py-1.5 text-micro font-semibold text-brand-strong transition-colors hover:bg-brand-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40";
+
+function TermsEditorField({
+  id,
+  label,
+  hint,
+  placeholder,
+  value,
+  onChange,
+  error,
+  count,
+  counterText,
+  maxLength,
+  templateLabel,
+  onUseTemplate,
+  toolbarLabels,
+}) {
+  const labelId = `${id}-label`;
+  const helpId = `${id}-help`;
+  const countId = `${id}-count`;
+  const errorId = `${id}-error`;
+  const overLimit = count > maxLength;
+
+  return (
+    <div>
+      <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+        <span id={labelId} className={`${settingsLabelClass} mb-0`}>
+          {label}
+        </span>
+        <button type="button" onClick={onUseTemplate} className={termsTemplateButtonClass}>
+          {templateLabel}
+        </button>
+      </div>
+      <RichTextEditor
+        id={id}
+        value={value}
+        onChange={onChange}
+        labelId={labelId}
+        describedBy={`${helpId} ${countId} ${errorId}`}
+        invalid={Boolean(error)}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        toolbarLabels={toolbarLabels}
+      />
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <p id={helpId} className={settingsHelperClass}>
+          {hint}
+        </p>
+        <p
+          id={countId}
+          className={
+            overLimit ? `${settingsHelperClass} font-semibold text-danger` : settingsHelperClass
+          }
+          aria-live="polite"
+        >
+          {counterText}
+        </p>
+      </div>
+      {error && (
+        <p id={errorId} role="alert" className={settingsErrorClass}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function LegalSettingsForm() {
   const { t } = useLocale();
   const { showToast } = useToast();
@@ -57,12 +136,20 @@ function LegalSettingsForm() {
     const nextErrors = {};
     const website = String(draft.website || "").trim();
     const effectiveDate = String(draft.terms_effective_date || "").trim();
+    const termsES = normalizeTermsContent(draft.terms_content_es);
+    const termsEN = normalizeTermsContent(draft.terms_content_en);
 
     if (!isValidUrl(website)) {
       nextErrors.website = t("branding.legal.errorWebsite");
     }
     if (effectiveDate && Number.isNaN(new Date(effectiveDate).getTime())) {
       nextErrors.terms_effective_date = t("branding.legal.errorDate");
+    }
+    if (countVisibleCharacters(termsES) > TERMS_MAX_LENGTH) {
+      nextErrors.terms_content_es = t("branding.legal.termsTooLong");
+    }
+    if (countVisibleCharacters(termsEN) > TERMS_MAX_LENGTH) {
+      nextErrors.terms_content_en = t("branding.legal.termsTooLong");
     }
 
     if (Object.keys(nextErrors).length) {
@@ -79,8 +166,8 @@ function LegalSettingsForm() {
         legal_address: String(draft.legal_address || "").trim(),
         website,
         terms_effective_date: effectiveDate,
-        terms_content_es: String(draft.terms_content_es || "").trim(),
-        terms_content_en: String(draft.terms_content_en || "").trim(),
+        terms_content_es: termsES,
+        terms_content_en: termsEN,
       });
       showToast(t("branding.legal.saved"), "success");
     } catch (requestError) {
@@ -108,6 +195,19 @@ function LegalSettingsForm() {
     onDiscard: handleDiscard,
     onSubmit: submitDraft,
   });
+
+  const toolbarLabels = {
+    bold: t("branding.legal.editor.bold"),
+    italic: t("branding.legal.editor.italic"),
+    underline: t("branding.legal.editor.underline"),
+    heading: t("branding.legal.editor.heading"),
+    orderedList: t("branding.legal.editor.orderedList"),
+    bulletList: t("branding.legal.editor.bulletList"),
+    link: t("branding.legal.editor.link"),
+    clean: t("branding.legal.editor.clean"),
+  };
+  const termsEsCount = countVisibleCharacters(draft.terms_content_es);
+  const termsEnCount = countVisibleCharacters(draft.terms_content_en);
 
   return (
     <SettingsSection
@@ -224,61 +324,47 @@ function LegalSettingsForm() {
           </div>
 
           <div className="space-y-4 border-t border-line pt-5">
-            <div>
-              <label htmlFor="legal-terms-es" className={settingsLabelClass}>
-                {t("branding.legal.termsContentEs")}
-              </label>
-              <textarea
-                id="legal-terms-es"
-                rows={10}
-                maxLength={TERMS_MAX_LENGTH}
-                className={`${settingsTextareaClass} ${settingsInputDefaultClass}`}
-                value={draft.terms_content_es || ""}
-                onChange={(event) =>
-                  updateField("terms_content_es", event.target.value)
-                }
-                aria-describedby="legal-terms-es-help legal-terms-es-count"
-              />
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <p id="legal-terms-es-help" className={settingsHelperClass}>
-                  {t("branding.legal.termsContentEsHint")}
-                </p>
-                <p id="legal-terms-es-count" className={settingsHelperClass}>
-                  {t("branding.legal.termsCharacters", {
-                    count: String(draft.terms_content_es || "").length,
-                    max: TERMS_MAX_LENGTH,
-                  })}
-                </p>
-              </div>
-            </div>
+            <TermsEditorField
+              id="legal-terms-es"
+              label={t("branding.legal.termsContentEs")}
+              hint={t("branding.legal.termsContentEsHint")}
+              placeholder={t("branding.legal.termsPlaceholder")}
+              value={draft.terms_content_es || ""}
+              onChange={(html) => updateField("terms_content_es", html || "")}
+              error={errors.terms_content_es}
+              count={termsEsCount}
+              counterText={t("branding.legal.termsCharacters", {
+                count: termsEsCount,
+                max: TERMS_MAX_LENGTH,
+              })}
+              maxLength={TERMS_MAX_LENGTH}
+              templateLabel={t("branding.legal.useDefaultTemplate")}
+              onUseTemplate={() =>
+                updateField("terms_content_es", buildDefaultTermsHtml("es"))
+              }
+              toolbarLabels={toolbarLabels}
+            />
 
-            <div>
-              <label htmlFor="legal-terms-en" className={settingsLabelClass}>
-                {t("branding.legal.termsContentEn")}
-              </label>
-              <textarea
-                id="legal-terms-en"
-                rows={10}
-                maxLength={TERMS_MAX_LENGTH}
-                className={`${settingsTextareaClass} ${settingsInputDefaultClass}`}
-                value={draft.terms_content_en || ""}
-                onChange={(event) =>
-                  updateField("terms_content_en", event.target.value)
-                }
-                aria-describedby="legal-terms-en-help legal-terms-en-count"
-              />
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <p id="legal-terms-en-help" className={settingsHelperClass}>
-                  {t("branding.legal.termsContentEnHint")}
-                </p>
-                <p id="legal-terms-en-count" className={settingsHelperClass}>
-                  {t("branding.legal.termsCharacters", {
-                    count: String(draft.terms_content_en || "").length,
-                    max: TERMS_MAX_LENGTH,
-                  })}
-                </p>
-              </div>
-            </div>
+            <TermsEditorField
+              id="legal-terms-en"
+              label={t("branding.legal.termsContentEn")}
+              hint={t("branding.legal.termsContentEnHint")}
+              placeholder={t("branding.legal.termsPlaceholder")}
+              value={draft.terms_content_en || ""}
+              onChange={(html) => updateField("terms_content_en", html || "")}
+              error={errors.terms_content_en}
+              count={termsEnCount}
+              counterText={t("branding.legal.termsCharacters", {
+                count: termsEnCount,
+                max: TERMS_MAX_LENGTH,
+              })}
+              maxLength={TERMS_MAX_LENGTH}
+              templateLabel={t("branding.legal.useDefaultTemplate")}
+              onUseTemplate={() =>
+                updateField("terms_content_en", buildDefaultTermsHtml("en"))
+              }
+              toolbarLabels={toolbarLabels}
+            />
           </div>
 
           {!inShell && (

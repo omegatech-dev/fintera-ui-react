@@ -1,5 +1,5 @@
 import { useState, useRef, memo, useEffect } from "react";
-import { format, parseISO, isBefore, startOfDay } from "date-fns";
+import { parseISO, isBefore, startOfDay } from "date-fns";
 import { motion } from "framer-motion";
 import PropTypes from "prop-types";
 import { paymentsApi } from "../api";
@@ -7,6 +7,7 @@ import { formatStatus } from "../../../shared/utils/formatStatus";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
 import { getDefaultCurrency } from "../../../shared/utils/formatSettings";
+import { formatCurrency, formatDate } from "../../../shared/utils/formatters";
 import { reservationApprovalBlocked } from "../utils/approval";
 import { Button, Chip, Dialog } from "@/shared/ui";
 
@@ -73,22 +74,8 @@ const paylotLabel = (payment, t) => {
 const currencyLabel = (currency = getDefaultCurrency()) =>
   String(currency).toUpperCase() === "HNL" ? "L" : currency;
 
-const formatMoney = (value, currency = getDefaultCurrency()) => {
-  if (value === null || value === undefined) return "—";
-  return `${currencyLabel(currency)} ${Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-};
-
-const formatShortDate = (dateString, fallback = "—") => {
-  if (!dateString) return fallback;
-  try {
-    return format(parseISO(dateString), "dd MMM, yyyy");
-  } catch {
-    return dateString;
-  }
-};
+const formatMoney = (value, currency = getDefaultCurrency()) =>
+  formatCurrency(value, currency);
 
 const downloadBlob = async (paymentId) => {
   const blob = await paymentsApi.downloadReceipt(paymentId);
@@ -299,7 +286,7 @@ function PaymentItem({
                 meta.isOverdue ? "text-danger" : "text-ink-2"
               }`}
             >
-              {formatShortDate(paymentInfo.due_date)}
+              {formatDate(paymentInfo.due_date)}
             </p>
           </div>
         </div>
@@ -335,7 +322,8 @@ function PaymentItem({
             </p>
             {meta.isOverpayment && (
               <p className="text-micro text-info">
-                +{formatMoney(meta.overpaymentAmount)} {t("payments.overpayment")}
+                +{formatMoney(meta.overpaymentAmount, paymentInfo.contract?.currency)}{" "}
+                {t("payments.overpayment")}
               </p>
             )}
           </div>
@@ -896,17 +884,17 @@ export function PaymentDetailModal({
             <dl className="mt-2 divide-y divide-line">
               {detailRow(t("payments.applicant"), payment.applicant_name || payment.contract?.applicant_user?.full_name || "—")}
               {detailRow(t("payments.propertyLot"), paylotLabel(payment, t))}
-              {detailRow(t("payments.dueDate"), formatShortDate(payment.due_date))}
+              {detailRow(t("payments.dueDate"), formatDate(payment.due_date))}
               {payment.payment_date &&
                 detailRow(
                   t("payments.paymentDate"),
-                  formatShortDate(payment.payment_date),
+                  formatDate(payment.payment_date),
                   "text-info"
                 )}
               {payment.approved_at &&
                 detailRow(
                   t("payments.approvedAt"),
-                  formatShortDate(payment.approved_at),
+                  formatDate(payment.approved_at),
                   "text-brand-strong"
                 )}
               {reference &&

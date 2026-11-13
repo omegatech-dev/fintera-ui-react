@@ -1,5 +1,5 @@
 import ProtoTypes from "prop-types";
-import { Suspense, useCallback, useContext, useState } from "react";
+import { Suspense, useCallback, useContext, useEffect, useState } from "react";
 import { Sidebar } from "../sidebar";
 import { Overlay, OnboardingTour } from "../overlays";
 import { HeaderOne } from "../header";
@@ -43,6 +43,30 @@ function Layout({ bg, overlay, children }) {
     navigate("/signin");
   };
 
+  // On phones the sidebar is an off-canvas drawer; any navigation should
+  // dismiss it. On desktop it stays docked and open.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setSidebar(false);
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || window.innerWidth >= 1024 || !sidebar) {
+      return undefined;
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setSidebar(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [sidebar]);
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       <div className={`layout-wrapper ${sidebar ? "active" : ""} w-full bg-canvas`}>
@@ -52,6 +76,7 @@ function Layout({ bg, overlay, children }) {
               handleActive={() => setSidebar(!sidebar)}
               user={user}
               handleLogout={handleLogout}
+              open={sidebar}
             />
           ) : (
             <div>Sidebar render ...</div>
@@ -63,7 +88,11 @@ function Layout({ bg, overlay, children }) {
               bg || ""
             }`}
           >
-            <HeaderOne handleSidebar={() => setSidebar(!sidebar)} sidebarOpen={sidebar} />
+            <HeaderOne
+              handleSidebar={() => setSidebar(!sidebar)}
+              sidebarOpen={sidebar}
+              onOpenShortcuts={openShortcuts}
+            />
             <Suspense
               fallback={
                 <div className="flex h-[calc(100vh-64px)] w-full items-center justify-center">

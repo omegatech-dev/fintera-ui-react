@@ -124,4 +124,38 @@ describe("ContractDetail actions", () => {
 
     expect(await screen.findByText("payment-schedule-modal")).toBeInTheDocument();
   });
+
+  it("shows receipt reference, origin account and the view action in the schedule tab", async () => {
+    contractsApi.getByGuid.mockResolvedValue({
+      contract: {
+        ...contract,
+        payment_schedule: [
+          {
+            ...contract.payment_schedule[0],
+            status: "paid",
+            has_receipt: true,
+            receipt_url: "/receipts/payment-1.jpg",
+            is_pdf: false,
+            authorization_number: "AUTH-778899",
+            payer_account_name: "BAC Credomatic ****1234",
+            paid_at: "2026-11-05",
+          },
+        ],
+      },
+    });
+    renderDetail();
+    await screen.findByText("contracts.contractNumber");
+
+    fireEvent.click(screen.getByRole("tab", { name: "contracts.scheduleTab" }));
+
+    const viewButtons = await screen.findAllByRole("button", {
+      name: "paymentSchedule.viewReceipt",
+    });
+    expect(viewButtons.length).toBeGreaterThan(0);
+
+    fireEvent.click(viewButtons[0]);
+
+    expect(await screen.findByText("AUTH-778899")).toBeInTheDocument();
+    expect(screen.getByText("BAC Credomatic ****1234")).toBeInTheDocument();
+  });
 });

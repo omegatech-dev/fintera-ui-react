@@ -145,9 +145,9 @@ describe("SellerDashboard", () => {
     ).toBeInTheDocument();
 
     expect(screen.getByText("Ventas del mes")).toBeInTheDocument();
-    expect(screen.getByText(/120,000/)).toBeInTheDocument();
+    expect(screen.getByText("L 120,000")).toBeInTheDocument();
     expect(
-      screen.getByText(/Acumulado 6 meses: .*900,000/)
+      screen.getByText(/Acumulado 6 meses: .*L 900,000/)
     ).toBeInTheDocument();
 
     expect(screen.getByText("Comisión estimada")).toBeInTheDocument();

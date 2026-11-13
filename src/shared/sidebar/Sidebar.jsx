@@ -22,7 +22,7 @@ function roleLabel(role, t) {
   return t(ROLE_KEYS[role] || "header.user");
 }
 
-function Sidebar({ handleActive, user, handleLogout }) {
+function Sidebar({ handleActive, user, handleLogout, open = true }) {
   const { pathname: location } = useLocation();
   const { t } = useLocale();
   const { branding } = useBranding();
@@ -39,12 +39,24 @@ function Sidebar({ handleActive, user, handleLogout }) {
 
   const items = getNavItems(user);
 
+  const closeDrawerOnNavigate = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      handleActive?.();
+    }
+  };
+
   return (
-    <aside className="sidebar-wrapper fixed top-0 z-50 flex h-full w-[264px] flex-col border-r border-line bg-surface">
+    <aside
+      id="app-sidebar"
+      aria-hidden={!open || undefined}
+      inert={!open ? true : undefined}
+      className="sidebar-wrapper fixed top-0 z-50 flex h-full w-[264px] flex-col border-r border-line bg-surface"
+    >
       {/* Brand */}
       <div className="flex h-[82px] shrink-0 items-center gap-2.5 px-5 pb-[22px] pt-[26px]">
         <Link
           to={dashboardPath}
+          onClick={closeDrawerOnNavigate}
           className="flex min-w-0 items-center gap-2.5"
           aria-label={brandName}
         >
@@ -53,12 +65,12 @@ function Sidebar({ handleActive, user, handleLogout }) {
               <BrandingLogo
                 variant="light"
                 className="block h-8 w-auto dark:hidden"
-                alt="logo"
+                alt=""
               />
               <BrandingLogo
                 variant="dark"
                 className="hidden h-8 w-auto dark:block"
-                alt="logo"
+                alt=""
               />
             </>
           ) : (
@@ -77,11 +89,11 @@ function Sidebar({ handleActive, user, handleLogout }) {
         </Link>
 
         <button
-          aria-label="Toggle sidebar"
+          aria-label={t("header.toggleSidebar")}
           type="button"
           onClick={handleActive}
-          title="Toggle sidebar (Ctrl+b)"
-          className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-control text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink focus-visible:outline-hidden"
+          title={t("header.toggleSidebarShortcut")}
+          className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-control text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
         >
           <svg
             width="18"

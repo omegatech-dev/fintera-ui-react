@@ -45,6 +45,27 @@ describe("useKeyboardShortcuts", () => {
     expect(navigate).toHaveBeenCalledWith("/docs");
   });
 
+  it("navigates to create flows with the n chord", () => {
+    const { navigate } = renderShortcuts();
+
+    press("n");
+    press("p");
+    expect(navigate).toHaveBeenCalledWith("/projects/create");
+
+    press("n");
+    press("u");
+    expect(navigate).toHaveBeenCalledWith("/users/create");
+  });
+
+  it("does not expose create actions to sellers", () => {
+    const { navigate } = renderShortcuts({ user: { role: "seller" } });
+
+    press("n");
+    press("p");
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it("supports the seller chord map", () => {
     const { navigate } = renderShortcuts({ user: { role: "seller" } });
 
@@ -133,7 +154,7 @@ describe("useKeyboardShortcuts", () => {
   it("exposes the role shortcuts for the help dialog", () => {
     const { result } = renderShortcuts();
 
-    expect(result.current.shortcuts).toHaveLength(10);
+    expect(result.current.shortcuts).toHaveLength(12);
     expect(result.current.chordTimeout).toBe(1200);
   });
 });

@@ -90,6 +90,11 @@ function Contract() {
     pending: 0,
     approved: 0,
     rejected: 0,
+    cancelled: 0,
+    active: 0,
+    pending_balance: null,
+    overdue: 0,
+    overdue_count: 0,
   });
 
   const [scheduleContract, setScheduleContract] = useState(null);
@@ -124,6 +129,11 @@ function Contract() {
             pending: data.pending,
             approved: data.approved,
             rejected: data.rejected,
+            cancelled: data.cancelled,
+            active: data.active,
+            pending_balance: data.pending_balance,
+            overdue: data.overdue,
+            overdue_count: data.overdue_count,
           });
         }
       } catch (err) {
@@ -258,6 +268,7 @@ function Contract() {
       { value: "", label: t("common.all"), count: stats.total },
       { value: "approved", label: t("contracts.status.approved"), count: stats.approved },
       { value: "pending", label: t("contracts.status.pending"), count: stats.pending },
+      { value: "cancelled", label: t("contracts.status.cancelled"), count: stats.cancelled },
       { value: "rejected", label: t("contracts.status.rejected"), count: stats.rejected },
     ],
     [stats, t]

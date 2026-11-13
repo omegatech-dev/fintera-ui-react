@@ -41,6 +41,14 @@ const Table = (props) => (
   </div>
 );
 
+const TableHeadCell = (props) => (
+  <th
+    scope="col"
+    className="border-b border-line bg-surface-2 px-3 py-2 font-semibold text-ink"
+    {...withoutNode(props)}
+  />
+);
+
 // The page renders the article title as the single h1; drop the leading
 // markdown heading to avoid a duplicate heading.
 const HeadingOne = () => null;
@@ -80,10 +88,7 @@ const components = {
   ),
   table: Table,
   thead: el("thead", "border-b border-line"),
-  th: el(
-    "th",
-    "border-b border-line bg-surface-2 px-3 py-2 font-semibold text-ink",
-  ),
+  th: TableHeadCell,
   td: el(
     "td",
     "border-b border-line px-3 py-2 align-top text-ink-2",

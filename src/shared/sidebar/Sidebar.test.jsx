@@ -167,7 +167,9 @@ describe("shell chrome", () => {
     const handleLogout = vi.fn();
     renderSidebar(Sidebar, "admin", "/", { handleActive, handleLogout });
 
-    fireEvent.click(screen.getByRole("button", { name: "Toggle sidebar" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "header.toggleSidebar" })
+    );
     expect(handleActive).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole("button", { name: "dashboard.logout" }));

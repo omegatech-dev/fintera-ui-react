@@ -3,155 +3,10 @@ import PropTypes from "prop-types";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
 import { projectsApi } from "../api";
+import { analyzeCsv } from "../csvImport";
 import { Banner, Button, Dialog, FileUpload, Toggle } from "@/shared/ui";
 
-const TEMPLATE_HEADERS = [
-  "name",
-  "code",
-  "address",
-  "city",
-  "price_per_square_unit",
-  "lot_count",
-  "measurement_unit",
-  "project_type",
-  "delivery_date",
-  "description",
-];
-
-const TARGET_FIELDS = [
-  {
-    key: "name",
-    labelKey: "name",
-    aliases: ["nombre", "proyecto", "project", "project_name", "nombre_proyecto"],
-  },
-  {
-    key: "code",
-    labelKey: "code",
-    aliases: ["codigo", "code", "clave", "project_code", "codigo_proyecto"],
-  },
-  {
-    key: "address",
-    labelKey: "address",
-    aliases: ["direccion", "address", "ubicacion", "location"],
-  },
-  {
-    key: "city",
-    labelKey: "city",
-    aliases: ["ciudad", "city", "zona", "zone", "municipio"],
-  },
-  {
-    key: "price_per_square_unit",
-    labelKey: "pricePerUnit",
-    aliases: [
-      "precio",
-      "precio_m2",
-      "precio_por_m2",
-      "precio_por_metro_cuadrado",
-      "precio_unidad",
-      "precio_por_unidad",
-      "price_per_unit",
-    ],
-  },
-  {
-    key: "lot_count",
-    labelKey: "lotsCount",
-    aliases: [
-      "lotes",
-      "lots",
-      "lot_count",
-      "lots_count",
-      "cantidad_de_lotes",
-      "cantidad_lotes",
-      "numero_de_lotes",
-      "num_lotes",
-      "total_lotes",
-    ],
-  },
-  {
-    key: "measurement_unit",
-    labelKey: "measurementUnit",
-    aliases: ["unidad", "unidad_medida", "unidad_de_medida", "measurement_unit"],
-  },
-  {
-    key: "project_type",
-    labelKey: "projectType",
-    aliases: ["tipo", "tipo_proyecto", "tipo_de_proyecto", "project_type"],
-  },
-  {
-    key: "delivery_date",
-    labelKey: "deliveryDate",
-    aliases: ["entrega", "fecha", "fecha_entrega", "fecha_de_entrega", "delivery_date"],
-  },
-  {
-    key: "description",
-    labelKey: "description",
-    aliases: ["descripcion", "description", "detalles", "notas"],
-  },
-];
-
-function normalizeHeader(header) {
-  return header
-    .replace(/^\uFEFF/, "")
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[\s-]+/g, "_");
-}
-
-const FIELD_BY_HEADER = new Map();
-TARGET_FIELDS.forEach((field) => {
-  FIELD_BY_HEADER.set(field.key, field);
-  field.aliases.forEach((alias) => FIELD_BY_HEADER.set(normalizeHeader(alias), field));
-});
-
-function parseCsvLine(line) {
-  const values = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let index = 0; index < line.length; index += 1) {
-    const char = line[index];
-
-    if (char === '"') {
-      if (inQuotes && line[index + 1] === '"') {
-        current += '"';
-        index += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === "," && !inQuotes) {
-      values.push(current.trim());
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-
-  values.push(current.trim());
-  return values;
-}
-
-function analyzeCsv(text) {
-  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
-  const headers = parseCsvLine(lines[0] ?? "").filter(Boolean);
-
-  if (!headers.length) {
-    throw new Error("empty-csv");
-  }
-
-  const rows = lines
-    .slice(1)
-    .filter((line) => parseCsvLine(line).some((value) => value.length > 0));
-
-  return {
-    mapping: headers.map((header) => ({
-      header,
-      field: FIELD_BY_HEADER.get(normalizeHeader(header)) ?? null,
-    })),
-    rowCount: rows.length,
-  };
-}
+const EMPTY_RESULT = null;
 
 function CsvImportModal({ open, onClose, onImported }) {
   const { t, locale } = useLocale();
@@ -159,11 +14,14 @@ function CsvImportModal({ open, onClose, onImported }) {
   const [files, setFiles] = useState([]);
   const [mapping, setMapping] = useState([]);
   const [rowCount, setRowCount] = useState(0);
+  const [missingRequired, setMissingRequired] = useState([]);
   const [parseError, setParseError] = useState(false);
   const [uploadKey, setUploadKey] = useState(0);
   const [updateExisting, setUpdateExisting] = useState(false);
   const [skipDuplicates, setSkipDuplicates] = useState(true);
   const [importing, setImporting] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [result, setResult] = useState(EMPTY_RESULT);
   const analysisRef = useRef(0);
 
   const resetFileState = () => {
@@ -171,7 +29,9 @@ function CsvImportModal({ open, onClose, onImported }) {
     setFiles([]);
     setMapping([]);
     setRowCount(0);
+    setMissingRequired([]);
     setParseError(false);
+    setResult(EMPTY_RESULT);
     setUploadKey((key) => key + 1);
   };
 
@@ -185,18 +45,22 @@ function CsvImportModal({ open, onClose, onImported }) {
     analysisRef.current = analysisId;
     setMapping([]);
     setRowCount(0);
+    setMissingRequired([]);
     setParseError(false);
+    setResult(EMPTY_RESULT);
 
     try {
       const text = await file.text();
       if (analysisId !== analysisRef.current) return;
-      const result = analyzeCsv(text);
-      setMapping(result.mapping);
-      setRowCount(result.rowCount);
+      const analysis = analyzeCsv(text);
+      setMapping(analysis.mapping);
+      setRowCount(analysis.rowCount);
+      setMissingRequired(analysis.missingRequired);
     } catch {
       if (analysisId !== analysisRef.current) return;
       setMapping([]);
       setRowCount(0);
+      setMissingRequired([]);
       setParseError(true);
     }
   };
@@ -213,34 +77,54 @@ function CsvImportModal({ open, onClose, onImported }) {
     resetFileState();
   };
 
-  const handleDownloadTemplate = () => {
-    const blob = new Blob([`\uFEFF${TEMPLATE_HEADERS.join(",")}\n`], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download =
-      locale === "en" ? "projects-template.csv" : "plantilla-proyectos.csv";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+  const handleDownloadTemplate = async () => {
+    setDownloading(true);
+    try {
+      const blob = await projectsApi.importTemplate();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download =
+        locale === "en" ? "projects-template.csv" : "plantilla-proyectos.csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      showToast(
+        `${t("projectsPage.templateDownloadError")} ${err.message || ""}`.trim(),
+        "error"
+      );
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handleSubmit = async () => {
     const file = files[0];
-    if (!file || rowCount === 0 || parseError) return;
+    if (!file || rowCount === 0 || parseError || missingRequired.length > 0) {
+      return;
+    }
     setImporting(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("options[update_existing]", updateExisting ? "1" : "0");
-      formData.append("options[skip_duplicates]", skipDuplicates ? "1" : "0");
-      await projectsApi.import(formData);
-      showToast(t("projectsPage.importCompleted"), "success");
+      formData.append("update_existing", updateExisting ? "1" : "0");
+      formData.append("skip_duplicates", skipDuplicates ? "1" : "0");
+
+      const summary = await projectsApi.import(formData);
+      const normalized = {
+        imported: Number(summary?.imported) || 0,
+        updated: Number(summary?.updated) || 0,
+        skipped: Number(summary?.skipped) || 0,
+        errors: Array.isArray(summary?.errors) ? summary.errors : [],
+      };
+      setResult(normalized);
+      showToast(
+        t("projectsPage.importCompleted"),
+        normalized.errors.length > 0 ? "error" : "success"
+      );
       onImported?.();
-      close();
     } catch (err) {
       showToast(`${t("projectsPage.importErrorPrefix")} ${err.message}`, "error");
     } finally {
@@ -248,11 +132,18 @@ function CsvImportModal({ open, onClose, onImported }) {
     }
   };
 
-  const canImport = files.length > 0 && rowCount > 0 && !parseError;
+  const canImport =
+    files.length > 0 &&
+    rowCount > 0 &&
+    !parseError &&
+    missingRequired.length === 0;
   const importLabel =
     mapping.length > 0
       ? t("projectsPage.importCount", { count: rowCount })
       : t("projectsPage.importCSV");
+  const missingLabels = missingRequired
+    .map((field) => t(`projects.${field.labelKey}`))
+    .join(", ");
 
   return (
     <Dialog
@@ -261,18 +152,18 @@ function CsvImportModal({ open, onClose, onImported }) {
       title={t("projectsPage.importCSV")}
       size="md"
       footer={
-        <>
-          <Button variant="secondary" onClick={close} disabled={importing}>
-            {t("common.cancel")}
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            loading={importing}
-            disabled={!canImport}
-          >
-            {importLabel}
-          </Button>
-        </>
+        result ? (
+          <Button onClick={close}>{t("common.close")}</Button>
+        ) : (
+          <>
+            <Button variant="secondary" onClick={close} disabled={importing}>
+              {t("common.cancel")}
+            </Button>
+            <Button onClick={handleSubmit} loading={importing} disabled={!canImport}>
+              {importLabel}
+            </Button>
+          </>
+        )
       }
     >
       <div className="space-y-4">
@@ -288,7 +179,8 @@ function CsvImportModal({ open, onClose, onImported }) {
           <button
             type="button"
             onClick={handleDownloadTemplate}
-            className="text-label font-semibold text-brand hover:underline"
+            disabled={downloading}
+            className="text-label font-semibold text-brand hover:underline disabled:cursor-not-allowed disabled:opacity-60"
           >
             {t("projectsPage.downloadTemplate")}
           </button>
@@ -304,6 +196,12 @@ function CsvImportModal({ open, onClose, onImported }) {
             }
           >
             {t("projectsPage.importError")}
+          </Banner>
+        )}
+
+        {!parseError && missingRequired.length > 0 && (
+          <Banner tone="danger">
+            {t("projectsPage.missingRequiredColumns", { columns: missingLabels })}
           </Banner>
         )}
 
@@ -355,14 +253,15 @@ function CsvImportModal({ open, onClose, onImported }) {
                   </span>
                   <span
                     className={`shrink-0 text-right text-body ${
-                      field
-                        ? "font-semibold text-ink"
-                        : "font-medium text-warning"
+                      field ? "font-semibold text-ink" : "font-medium text-warning"
                     }`}
                   >
-                    {field
-                      ? t(`projects.${field.labelKey}`)
-                      : t("projectsPage.notUsed")}
+                    {field ? t(`projects.${field.labelKey}`) : t("projectsPage.notUsed")}
+                    {field?.required && (
+                      <span className="ml-1 text-micro font-medium text-ink-3">
+                        · {t("projectsPage.requiredColumn")}
+                      </span>
+                    )}
                   </span>
                 </li>
               ))}
@@ -374,6 +273,54 @@ function CsvImportModal({ open, onClose, onImported }) {
           <p className="text-micro font-medium text-ink-3">
             {t("projectsPage.rowsDetected", { count: rowCount })}
           </p>
+        )}
+
+        {result && (
+          <div className="space-y-2">
+            <Banner tone={result.errors.length > 0 ? "danger" : "success"}>
+              {t("projectsPage.importSummary")}
+            </Banner>
+            <dl className="grid grid-cols-3 gap-2 rounded-control border border-line bg-canvas p-3 text-center">
+              <div>
+                <dt className="text-micro font-medium text-ink-3">
+                  {t("projectsPage.importedCount")}
+                </dt>
+                <dd className="text-title font-bold text-ink">{result.imported}</dd>
+              </div>
+              <div>
+                <dt className="text-micro font-medium text-ink-3">
+                  {t("projectsPage.updatedCount")}
+                </dt>
+                <dd className="text-title font-bold text-ink">{result.updated}</dd>
+              </div>
+              <div>
+                <dt className="text-micro font-medium text-ink-3">
+                  {t("projectsPage.skippedCount")}
+                </dt>
+                <dd className="text-title font-bold text-ink">{result.skipped}</dd>
+              </div>
+            </dl>
+            {result.errors.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-label font-semibold text-danger">
+                  {t("projectsPage.rowErrors")}
+                </p>
+                <ul className="max-h-40 space-y-1 overflow-y-auto rounded-control border border-line bg-canvas p-3">
+                  {result.errors.map((error, index) => (
+                    <li
+                      key={`${error.row}-${index}`}
+                      className="text-micro text-ink-2"
+                    >
+                      {t("projectsPage.rowError", {
+                        row: error.row,
+                        message: error.message,
+                      })}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </Dialog>

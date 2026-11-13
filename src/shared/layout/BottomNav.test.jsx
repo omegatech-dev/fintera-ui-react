@@ -20,7 +20,7 @@ const renderNav = (role, path = "/") =>
   );
 
 const navLinks = () =>
-  within(screen.getByRole("navigation", { name: "Navegación principal" })).queryAllByRole(
+  within(screen.getByRole("navigation", { name: "nav.mainNavigation" })).queryAllByRole(
     "link"
   );
 
@@ -42,13 +42,18 @@ describe("BottomNav seller", () => {
       "/vendedor/comisiones",
       "/vendedor/documentos",
     ]);
-    expect(screen.queryByText("Más")).not.toBeInTheDocument();
+    expect(screen.queryByText("common.more")).not.toBeInTheDocument();
   });
 
   it("does not show the admin mobile items", () => {
     renderNav("seller");
 
-    ["Inicio", "Contratos", "Pagos", "Proyectos"].forEach((label) =>
+    [
+      "dashboard.dashboard",
+      "dashboard.contracts",
+      "dashboard.payments",
+      "dashboard.projects",
+    ].forEach((label) =>
       expect(screen.queryByText(label)).not.toBeInTheDocument()
     );
   });
@@ -69,12 +74,14 @@ describe("BottomNav other roles", () => {
     renderNav("admin");
 
     expect(navLinks().map((link) => link.textContent.trim())).toEqual([
-      "Inicio",
-      "Contratos",
-      "Pagos",
-      "Proyectos",
+      "dashboard.dashboard",
+      "dashboard.contracts",
+      "dashboard.payments",
+      "dashboard.projects",
     ]);
-    expect(screen.getByRole("button", { name: "Más" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "common.more" })
+    ).toBeInTheDocument();
     expect(screen.queryByText("seller.myDay")).not.toBeInTheDocument();
   });
 
@@ -82,6 +89,8 @@ describe("BottomNav other roles", () => {
     renderNav("user");
 
     expect(navLinks()).toHaveLength(0);
-    expect(screen.getByRole("button", { name: "Más" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "common.more" })
+    ).toBeInTheDocument();
   });
 });

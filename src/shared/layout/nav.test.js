@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getNavShortcuts, getNavItems } from "./nav";
+import { getActionShortcuts, getNavShortcuts, getNavItems } from "./nav";
 
 const toMap = (shortcuts) =>
   Object.fromEntries(shortcuts.map((entry) => [entry.keys[1], entry.to]));
@@ -64,5 +64,21 @@ describe("navigation shortcut metadata", () => {
       expect(shortcut.to).toBe(item.resolvedTo);
       expect(shortcut.labelKey).toBe(item.labelKey);
     });
+  });
+});
+
+describe("action shortcut metadata", () => {
+  it("exposes create project and add user to admins", () => {
+    const shortcuts = getActionShortcuts({ role: "admin" });
+
+    expect(shortcuts).toEqual([
+      expect.objectContaining({ keys: ["n", "p"], to: "/projects/create" }),
+      expect.objectContaining({ keys: ["n", "u"], to: "/users/create" }),
+    ]);
+  });
+
+  it("does not expose create actions to sellers or regular users", () => {
+    expect(getActionShortcuts({ role: "seller" })).toEqual([]);
+    expect(getActionShortcuts({ role: "user" })).toEqual([]);
   });
 });

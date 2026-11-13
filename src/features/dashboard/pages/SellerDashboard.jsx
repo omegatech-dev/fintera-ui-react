@@ -15,8 +15,13 @@ import {
 import { useLocale } from "../../../contexts/LocaleContext";
 import {
   formatCurrency,
+  formatDate,
   formatLargeNumber,
 } from "../../../shared/utils/formatters";
+import {
+  getFormatSettings,
+  getIntlLocale,
+} from "../../../shared/utils/formatSettings";
 import { formatStatus } from "../../../shared/utils/formatStatus";
 import { Button, Chip, ErrorState, Skeleton } from "@/shared/ui";
 import { dashboardApi } from "../api";
@@ -59,21 +64,65 @@ const STATUS_TONES = {
 const statusTone = (status) =>
   STATUS_TONES[String(status || "").toLowerCase()] || "neutral";
 
-const formatActivityDate = (value, locale) => {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString(locale === "en" ? "en-US" : "es-HN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+const MONTH_KEYS = {
+  jan: "jan",
+  january: "jan",
+  enero: "jan",
+  feb: "feb",
+  february: "feb",
+  febrero: "feb",
+  mar: "mar",
+  march: "mar",
+  marzo: "mar",
+  apr: "apr",
+  april: "apr",
+  abril: "apr",
+  may: "may",
+  mayo: "may",
+  jun: "jun",
+  june: "jun",
+  junio: "jun",
+  jul: "jul",
+  july: "jul",
+  julio: "jul",
+  aug: "aug",
+  august: "aug",
+  ago: "aug",
+  agosto: "aug",
+  sep: "sep",
+  september: "sep",
+  septiembre: "sep",
+  oct: "oct",
+  october: "oct",
+  octubre: "oct",
+  nov: "nov",
+  november: "nov",
+  noviembre: "nov",
+  dec: "dec",
+  december: "dec",
+  dic: "dec",
+  diciembre: "dec",
 };
+
+const localizeChartLabel = (label, t) => {
+  const match = String(label ?? "")
+    .trim()
+    .match(/^([a-zA-ZáéíóúÁÉÍÓÚ]+)/);
+  if (!match) return label;
+  const key = MONTH_KEYS[match[1].toLowerCase()];
+  return key ? t(`common.months.${key}`) : label;
+};
+
+const formatActivityDate = (value) => formatDate(value);
 
 const formatActivityAmount = (value) => {
   if (value === null || value === undefined || value === "") return "—";
   if (typeof value === "number") return formatCurrency(value);
-  return String(value);
+  const raw = String(value);
+  const match = raw.match(/^\s*(?:L|HNL)?\s*([\d.,]+)\s*(?:HNL)?\s*$/i);
+  if (!match) return raw;
+  const numeric = Number(match[1].replace(/,/g, ""));
+  return Number.isFinite(numeric) ? formatCurrency(numeric) : raw;
 };
 
 const customerName = (customer, fallback) => {
@@ -177,15 +226,13 @@ const SellerDashboard = ({ user }) => {
   }, [t, user?.full_name, user?.email]);
 
   const todayLabel = useMemo(() => {
-    const label = new Date().toLocaleDateString(
-      locale === "en" ? "en-US" : "es-HN",
-      {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }
-    );
+    const label = new Date().toLocaleDateString(getIntlLocale(locale), {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: getFormatSettings().timezone,
+    });
     return label.charAt(0).toUpperCase() + label.slice(1);
   }, [locale]);
 
@@ -195,8 +242,11 @@ const SellerDashboard = ({ user }) => {
     [chart?.data]
   );
   const chartLabels = useMemo(
-    () => (Array.isArray(chart?.labels) ? chart.labels : []),
-    [chart?.labels]
+    () =>
+      Array.isArray(chart?.labels)
+        ? chart.labels.map((label) => localizeChartLabel(label, t))
+        : [],
+    [chart?.labels, t]
   );
   const hasChartData = chartLabels.length > 0 && chartValues.length > 0;
 
@@ -294,10 +344,7 @@ const SellerDashboard = ({ user }) => {
             color: "currentColor",
             opacity: 0.7,
             callback(value) {
-              return formatLargeNumber(
-                value,
-                locale === "en" ? "en-US" : "es-HN"
-              );
+              return formatLargeNumber(value, getIntlLocale(locale));
             },
           },
         },
@@ -453,7 +500,7 @@ const SellerDashboard = ({ user }) => {
                               {formatActivityAmount(customer?.amount)}
                             </p>
                             <p className="mt-0.5 text-micro text-ink-3">
-                              {formatActivityDate(customer?.date, locale)}
+                              {formatActivityDate(customer?.date)}
                             </p>
                           </div>
                         </li>

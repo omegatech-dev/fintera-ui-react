@@ -1,23 +1,25 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import AuthContext from "@/contexts/AuthContext";
+import { useLocale } from "@/contexts/LocaleContext";
 import { notificationsApi } from "@/shared/api/notifications";
 
-const timeAgo = (value) => {
+const timeAgo = (value, t) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   const minutes = Math.floor((Date.now() - date.getTime()) / 60000);
-  if (minutes < 1) return "ahora";
-  if (minutes < 60) return `hace ${minutes} min`;
+  if (minutes < 1) return t("common.justNow");
+  if (minutes < 60) return t("common.timeAgo.minutes", { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `hace ${hours} h`;
+  if (hours < 24) return t("common.timeAgo.hours", { count: hours });
   const days = Math.floor(hours / 24);
-  return `hace ${days} d`;
+  return t("common.timeAgo.days", { count: days });
 };
 
 const isUnread = (item) => !item.read_at;
 
 function NotificationsBell() {
   const { token, loading: authLoading } = useContext(AuthContext);
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([]);
   const [filter, setFilter] = useState("all");
@@ -42,7 +44,7 @@ function NotificationsBell() {
           setTimeout(() => load(attempt + 1), 700);
           return;
         }
-        setError("No pudimos cargar las notificaciones.");
+        setError("notifications.loadError");
       } finally {
         setLoading(false);
       }
@@ -81,7 +83,7 @@ function NotificationsBell() {
         current.map((item) => ({ ...item, read_at: item.read_at || now }))
       );
     } catch {
-      setError("No pudimos marcar las notificaciones.");
+      setError("notifications.markAllError");
     }
   };
 
@@ -95,7 +97,7 @@ function NotificationsBell() {
         )
       );
     } catch {
-      setError("No pudimos marcar la notificación.");
+      setError("notifications.markOneError");
     }
   };
 
@@ -106,7 +108,7 @@ function NotificationsBell() {
     <div className="relative" ref={rootRef}>
       <button
         type="button"
-        aria-label="Notificaciones"
+        aria-label={t("notifications.title")}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
@@ -131,12 +133,14 @@ function NotificationsBell() {
       {open && (
         <div
           role="dialog"
-          aria-label="Notificaciones"
-          className="absolute right-0 top-12 z-50 w-80 max-w-[calc(100vw-1.5rem)] rounded-card border border-line bg-surface shadow-pop"
+          aria-label={t("notifications.title")}
+          className="fixed left-3 right-3 top-14 z-50 w-auto rounded-card border border-line bg-surface shadow-pop sm:absolute sm:left-auto sm:right-0 sm:top-12 sm:w-80 sm:max-w-[calc(100vw-1.5rem)]"
         >
           <div className="flex items-center justify-between border-b border-line px-3 py-2.5">
             <div className="flex items-center gap-2">
-              <span className="text-body font-bold text-ink">Notificaciones</span>
+              <span className="text-body font-bold text-ink">
+                {t("notifications.title")}
+              </span>
               {unreadCount > 0 && (
                 <span className="rounded-chip bg-danger-soft px-1.5 text-micro font-bold text-danger">
                   {unreadCount}
@@ -149,14 +153,20 @@ function NotificationsBell() {
               disabled={unreadCount === 0}
               className="text-micro font-semibold text-brand disabled:opacity-50"
             >
-              Marcar leídas
+              {t("notifications.markAllAsRead")}
             </button>
           </div>
 
           <div className="flex gap-1 border-b border-line px-3 py-2">
             {[
-              { value: "all", label: `Todas ${items.length}` },
-              { value: "unread", label: `No leídas ${unreadCount}` },
+              {
+                value: "all",
+                label: t("notifications.allWithCount", { count: items.length }),
+              },
+              {
+                value: "unread",
+                label: t("notifications.unreadWithCount", { count: unreadCount }),
+              },
             ].map((tab) => (
               <button
                 key={tab.value}
@@ -176,25 +186,27 @@ function NotificationsBell() {
 
           <div className="max-h-80 overflow-y-auto">
             {loading && (
-              <p className="px-3 py-4 text-body text-ink-3">Cargando…</p>
+              <p className="px-3 py-4 text-body text-ink-3">
+                {t("notifications.loading")}
+              </p>
             )}
             {!loading && error && (
               <div className="px-3 py-4 text-center">
-                <p className="text-body text-danger">{error}</p>
+                <p className="text-body text-danger">{t(error)}</p>
                 <button
                   type="button"
                   onClick={() => load()}
                   className="mt-2 text-micro font-semibold text-brand"
                 >
-                  Reintentar
+                  {t("common.retry")}
                 </button>
               </div>
             )}
             {!loading && !error && visibleItems.length === 0 && (
               <p className="px-3 py-6 text-center text-body text-ink-3">
                 {filter === "unread"
-                  ? "No hay notificaciones sin leer."
-                  : "No hay notificaciones."}
+                  ? t("notifications.emptyUnread")
+                  : t("notifications.noNotifications")}
               </p>
             )}
             {!loading &&
@@ -217,7 +229,7 @@ function NotificationsBell() {
                     </p>
                     <p className="truncate text-micro text-ink-3">{item.message}</p>
                     <p className="text-micro text-ink-3">
-                      {timeAgo(item.created_at)}
+                      {timeAgo(item.created_at, t)}
                     </p>
                   </div>
                   {isUnread(item) && (
@@ -225,9 +237,11 @@ function NotificationsBell() {
                       type="button"
                       onClick={() => markOne(item.id)}
                       className="shrink-0 self-start text-micro font-semibold text-brand"
-                      aria-label={`Marcar como leída: ${item.title}`}
+                      aria-label={t("notifications.markOneAria", {
+                        title: item.title,
+                      })}
                     >
-                      Leída
+                      {t("notifications.readShort")}
                     </button>
                   )}
                 </div>

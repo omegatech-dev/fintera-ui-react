@@ -24,27 +24,9 @@ import {
   Table,
   Tabs,
 } from "@/shared/ui";
+import { formatCurrency, formatDate } from "@/shared/utils/formatters";
 
 const PER_PAGE = 20;
-
-const formatCurrency = (value) =>
-  `L ${Number(value).toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-
-const formatDate = (dateString) => {
-  if (!dateString) return null;
-  try {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return dateString;
-  }
-};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -573,6 +555,7 @@ function Payments() {
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 placeholder={t("payments.searchPlaceholder")}
+                aria-label={t("common.search")}
                 className="w-full sm:w-72"
               />
               <Input
@@ -582,7 +565,7 @@ function Payments() {
                   setStartDate(event.target.value);
                   setPage(1);
                 }}
-                aria-label={t("filters.startDate") || "Start date"}
+                aria-label={t("filters.startDate")}
                 className="w-full sm:w-44"
               />
               <Input
@@ -592,7 +575,7 @@ function Payments() {
                   setEndDate(event.target.value);
                   setPage(1);
                 }}
-                aria-label={t("filters.endDate") || "End date"}
+                aria-label={t("filters.endDate")}
                 className="w-full sm:w-44"
               />
             </div>

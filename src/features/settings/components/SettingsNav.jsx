@@ -154,14 +154,14 @@ function SettingsNav({ showOrganization = false, ariaLabel }) {
   return (
     <nav
       aria-label={ariaLabel || t("settings.admin.navLabel")}
-      className="flex gap-2 overflow-x-auto pb-1 lg:w-[220px] lg:flex-col lg:gap-4 lg:overflow-visible lg:pb-0"
+      className="grid grid-cols-2 gap-2 pb-1 lg:flex lg:w-[220px] lg:flex-col lg:gap-4 lg:pb-0"
     >
       {groups.map((group) => (
-        <div key={group.label} className="flex shrink-0 flex-col gap-1 lg:shrink">
+        <div key={group.label} className="flex min-w-0 flex-col gap-1 lg:shrink">
           <p className="hidden px-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-ink-3 lg:block">
             {group.label}
           </p>
-          <div className="flex gap-1 lg:flex-col lg:gap-0.5">
+          <div className="grid grid-cols-2 gap-1 lg:flex lg:flex-col lg:gap-0.5">
             {group.items.map((item) => (
               <NavItem
                 key={item.to}

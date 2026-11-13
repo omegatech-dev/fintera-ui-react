@@ -119,6 +119,30 @@ describe("LoginTermsModal", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders formatted HTML terms inside the modal and sanitizes scripts", () => {
+    mockSettings({
+      terms_content_en:
+        '<h2>Responsible use</h2><p>Read the <strong>terms</strong> and <a href="https://acme.test/terms">policy</a>.</p><ol><li>First</li></ol><script>alert(1)</script>',
+      legal_name: "Acme S.A.",
+    });
+
+    render(<LoginTermsModal isActive onClose={() => {}} />);
+
+    const content = document.body.querySelector(".rich-text-content");
+    expect(content).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Responsible use" })
+    ).toBeInTheDocument();
+    expect(content.querySelector("strong")).toHaveTextContent("terms");
+    expect(content.querySelector("ol")).toHaveTextContent("First");
+    expect(
+      screen.getByRole("link", { name: "policy" })
+    ).toHaveAttribute("href", "https://acme.test/terms");
+    expect(content.querySelector("script")).not.toBeInTheDocument();
+    expect(content.innerHTML).not.toContain("alert(1)");
+    expect(screen.getByText(/Acme S\.A\./)).toBeInTheDocument();
+  });
+
   it("keeps the contact details visible with custom terms", () => {
     mockSettings({
       terms_content_en: "Custom terms.",

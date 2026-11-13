@@ -52,11 +52,11 @@ function Summary() {
 
     } catch (error) {
       console.error(error);
-      setFetchError(error.message || "Error fetching data");
+      setFetchError(error.message || t('payments.fetchPaymentsError'));
     } finally {
       setIsLoading(false);
     }
-  }, [user, userId]);
+  }, [user, userId, t]);
 
   useEffect(() => {
     fetchAllData();

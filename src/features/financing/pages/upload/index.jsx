@@ -1,10 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { paymentsApi } from "../../../payments/api";
+import { useLocale } from "../../../../contexts/LocaleContext";
 
 function Upload() {
   const { paymentId } = useParams();
   const navigate = useNavigate();
+  const { t } = useLocale();
 
   const [receiptFile, setReceiptFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -20,7 +22,7 @@ function Upload() {
     e.preventDefault();
 
     if (!receiptFile) {
-      setError('Por favor selecciona un archivo.');
+      setError(t('payments.selectFileToUpload'));
       return;
     }
 
@@ -33,13 +35,13 @@ function Upload() {
       const data = await paymentsApi.uploadReceipt(paymentId, formData);
 
       if (data) {
-        setSuccess(data.message || 'El comprobante se ha subido exitosamente.');
+        setSuccess(data.message || t('payments.paymentSuccessful'));
         setTimeout(() => navigate(-1), 2000);
       } else {
-        setError('Ocurrió un error al subir el comprobante.');
+        setError(t('payments.uploadError'));
       }
     } catch (err) {
-      setError(err.message || 'Error de red. Por favor intenta de nuevo.');
+      setError(err.message || t('payments.networkError'));
     } finally {
       setIsUploading(false);
     }
@@ -48,9 +50,9 @@ function Upload() {
   return (
     <div className="mx-auto w-full max-w-lg">
       <div className="rounded-card border border-line bg-surface p-6">
-        <h1 className="text-page font-bold text-ink">Subir Comprobante de Pago</h1>
+        <h1 className="text-page font-bold text-ink">{t('payments.uploadReceipt')}</h1>
         <p className="mt-1 text-body text-ink-3">
-          Adjunta el comprobante para registrar el pago.
+          {t('payments.uploadReceiptDescription')}
         </p>
 
         {error && (
@@ -67,7 +69,7 @@ function Upload() {
         <form onSubmit={handleUpload} className="mt-5">
           <div className="mb-4">
             <label htmlFor="receipt" className="mb-2 block text-label font-semibold text-ink-2">
-              Selecciona el archivo del comprobante
+              {t('payments.receiptFileLabel')}
             </label>
             <input
               type="file"
@@ -83,7 +85,7 @@ function Upload() {
             disabled={isUploading}
             className="w-full rounded-control bg-brand px-4 py-3 text-label font-semibold text-white transition-colors hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isUploading ? 'Subiendo...' : 'Subir Comprobante'}
+            {isUploading ? t('payments.uploading') : t('payments.uploadReceipt')}
           </button>
         </form>
       </div>

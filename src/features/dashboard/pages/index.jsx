@@ -4,9 +4,15 @@ import AuthContext from "../../../contexts/AuthContext";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { paymentsApi } from "../../payments/api";
 import { contractsApi } from "../../contracts/api";
-import { projectsApi } from "../../projects/api";
+import { analyticsApi } from "../../analytics/api";
 import RecentActivity from "../components/RecentActivity";
 import SellerDashboard from "./SellerDashboard";
+import {
+  getWeekRange,
+  paymentDueWithin,
+  startOfDay,
+  toDateParam,
+} from "./weekRange";
 import { Button, Card, Chip, ErrorState, Skeleton } from "@/shared/ui";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -24,20 +30,13 @@ const formatMoney = (value) => {
 
 const formatDate = (value, locale) => {
   if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
+  const date = startOfDay(value);
+  if (!date) return "—";
   return date.toLocaleDateString(locale === "en" ? "en-US" : "es-HN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
-};
-
-const startOfDay = (value) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  date.setHours(0, 0, 0, 0);
-  return date;
 };
 
 const firstFinite = (...values) => {
@@ -197,13 +196,32 @@ const AdminDashboard = () => {
     setLoading(true);
     setError(null);
 
-    const [paymentsResult, contractsResult, recentPaymentsResult, projectsResult] =
-      await Promise.allSettled([
-        paymentsApi.getStats(),
-        contractsApi.getStats(),
-        paymentsApi.list({ page: 1, per_page: 4, sort: "due_date-asc" }),
-        projectsApi.list({ page: 1, per_page: 100 }),
-      ]);
+    const week = getWeekRange();
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const [
+      paymentsResult,
+      contractsResult,
+      recentPaymentsResult,
+      analyticsResult,
+    ] = await Promise.allSettled([
+      paymentsApi.getStats(),
+      contractsApi.getStats(),
+      paymentsApi.list({
+        page: 1,
+        per_page: 100,
+        sort: "due_date-asc",
+        start_date: toDateParam(week.start),
+        end_date: toDateParam(week.end),
+      }),
+      // Same filters as the Analytics page so occupancy_rate has the exact
+      // same definition in both screens.
+      analyticsApi.getOverview({
+        start_date: toDateParam(monthStart),
+        end_date: toDateParam(monthEnd),
+      }),
+    ]);
 
     if (paymentsResult.status === "fulfilled") {
       setPaymentsStats(paymentsResult.value);
@@ -213,26 +231,17 @@ const AdminDashboard = () => {
     }
     if (recentPaymentsResult.status === "fulfilled") {
       const data = recentPaymentsResult.value || {};
-      setRecentPayments(data.payments || data.data || []);
-      const pagination = data.pagination || {};
-      const total = Number(pagination.count ?? pagination.total);
-      setWeekTotal(Number.isFinite(total) ? total : null);
+      const rows = (data.payments || data.data || []).filter((payment) =>
+        paymentDueWithin(payment, week)
+      );
+      setRecentPayments(rows.slice(0, 4));
+      setWeekTotal(rows.length);
     }
-    if (projectsResult.status === "fulfilled") {
-      const projects =
-        projectsResult.value.projects || projectsResult.value.data || [];
-      const total = projects.reduce(
-        (sum, project) => sum + (Number(project.lot_count) || 0),
-        0
+    if (analyticsResult.status === "fulfilled") {
+      const rate = Number(analyticsResult.value?.occupancy_rate);
+      setOccupancy(
+        Number.isFinite(rate) ? Math.round(rate * 10) / 10 : null
       );
-      const occupied = projects.reduce(
-        (sum, project) =>
-          sum +
-          (Number(project.sold_lots) || 0) +
-          (Number(project.financed_lots) || 0),
-        0
-      );
-      setOccupancy(total > 0 ? Math.round((occupied / total) * 1000) / 10 : null);
     }
 
     if (

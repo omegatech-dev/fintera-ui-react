@@ -1,6 +1,8 @@
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { useGeneralSettings } from "../../../../contexts/generalSettings";
 import { formatDate } from "../../../../shared/utils/formatters";
+import { containsHtml } from "../../../../shared/utils/sanitizeHtml";
+import RichTextContent from "../../../../shared/editor/RichTextContent";
 import { useState, useEffect } from "react";
 import en from "../../../../locales/en.json";
 import es from "../../../../locales/es.json";
@@ -35,7 +37,8 @@ function TermsAndCondition() {
       ? String(settings.terms_content_en || "").trim()
       : String(settings.terms_content_es || "").trim();
   const hasCustomContent = customContent.length > 0;
-  const customParagraphs = hasCustomContent
+  const hasCustomHtml = containsHtml(customContent);
+  const customParagraphs = hasCustomContent && !hasCustomHtml
     ? customContent
         .split(/\n{2,}/)
         .map((paragraph) => paragraph.trim())
@@ -85,16 +88,23 @@ function TermsAndCondition() {
       <div className="mt-4 flex flex-col gap-[18px]">
         {hasCustomContent ? (
           <section className={sectionShell}>
-            <div className="space-y-3">
-              {customParagraphs.map((paragraph, index) => (
-                <p
-                  key={index}
-                  className="whitespace-pre-line text-body leading-relaxed text-ink-2"
-                >
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+            {hasCustomHtml ? (
+              <RichTextContent
+                html={customContent}
+                className="text-body leading-relaxed text-ink-2"
+              />
+            ) : (
+              <div className="space-y-3">
+                {customParagraphs.map((paragraph, index) => (
+                  <p
+                    key={index}
+                    className="whitespace-pre-line text-body leading-relaxed text-ink-2"
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            )}
           </section>
         ) : (
           <>

@@ -129,6 +129,10 @@ function RightSidebar({
       : t("users.profileSummaryNoAccess", { role: roleLabel, date: created })
     : roleLabel;
 
+  const clientsCount =
+    user.clients_count === null || user.clients_count === undefined
+      ? "—"
+      : String(user.clients_count);
   const credit = creditScoreInfo(user.credit_score, t);
   const hasCreditScore =
     loggedUser?.role === "admin" &&
@@ -230,6 +234,7 @@ function RightSidebar({
               label={t("personalInfo.address")}
               value={user.address}
             />
+            <ContactRow label={t("users.clientCount")} value={clientsCount} />
             {hasCreditScore && (
               <ContactRow
                 label={t("users.creditScore")}

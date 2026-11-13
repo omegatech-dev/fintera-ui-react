@@ -1,6 +1,6 @@
 # Atajos de teclado
 
-Los atajos usan un acorde: pulsa **g** y luego una letra. La segunda tecla debe pulsarse en un plazo de aproximadamente 1,2 segundos; si no, el acorde expira y no ocurre nada.
+Los atajos usan un acorde: pulsa **g** para navegar o **n** para crear, y luego la tecla indicada. La segunda tecla debe pulsarse en un plazo de aproximadamente 1,2 segundos; si no, el acorde expira y no ocurre nada.
 
 Pulsa **?** en cualquier momento para abrir la lista de atajos de tu rol. Ciérrala con **Escape**.
 
@@ -18,6 +18,13 @@ Pulsa **?** en cualquier momento para abrir la lista de atajos de tu rol. Ciérr
 | `g` y luego `l` | Auditoría |
 | `g` y luego `g` | Guía de usuario |
 | `g` y luego `s` | Configuración |
+
+## Acciones del administrador
+
+| Atajo | Acción |
+| --- | --- |
+| `n` y luego `p` | Nuevo proyecto |
+| `n` y luego `u` | Agregar usuario |
 
 ## Atajos del vendedor
 

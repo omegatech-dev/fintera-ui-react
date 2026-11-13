@@ -12,22 +12,22 @@ import { getNavItems, isItemActive, isRouteActive } from "./nav";
 import { useLocale } from "../../contexts/LocaleContext";
 
 const ADMIN_ITEMS = [
-  { to: "/", label: "Inicio", icon: faHome, roles: ["admin"] },
+  { to: "/", labelKey: "dashboard.dashboard", icon: faHome, roles: ["admin"] },
   {
     to: "/contracts",
-    label: "Contratos",
+    labelKey: "dashboard.contracts",
     icon: faFileAlt,
     roles: ["admin"],
   },
   {
     to: "/payments",
-    label: "Pagos",
+    labelKey: "dashboard.payments",
     icon: faWallet,
     roles: ["admin"],
   },
   {
     to: "/projects",
-    label: "Proyectos",
+    labelKey: "dashboard.projects",
     icon: faBuilding,
     roles: ["admin"],
   },
@@ -42,7 +42,7 @@ function BottomNav({ role, onOpenMenu }) {
 
     return (
       <nav
-        aria-label="Navegación principal"
+        aria-label={t("nav.mainNavigation")}
         className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         {sellerItems.map((item) => {
@@ -71,7 +71,7 @@ function BottomNav({ role, onOpenMenu }) {
 
   return (
     <nav
-      aria-label="Navegación principal"
+      aria-label={t("nav.mainNavigation")}
       className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {items.map((item) => {
@@ -86,7 +86,7 @@ function BottomNav({ role, onOpenMenu }) {
             }`}
           >
             <FontAwesomeIcon icon={item.icon} className="h-4 w-4" />
-            <span>{item.label}</span>
+            <span>{t(item.labelKey)}</span>
           </Link>
         );
       })}
@@ -96,7 +96,7 @@ function BottomNav({ role, onOpenMenu }) {
         className="flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-semibold text-ink-3"
       >
         <FontAwesomeIcon icon={faBars} className="h-4 w-4" />
-        <span>Más</span>
+        <span>{t("common.more")}</span>
       </button>
     </nav>
   );

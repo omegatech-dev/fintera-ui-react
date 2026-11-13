@@ -5,6 +5,16 @@ import { useLocale } from "@/contexts/LocaleContext";
 const pct = (value, total) =>
   total ? `${Math.round((Number(value || 0) / Number(total)) * 100)}%` : "0%";
 
+const money = (value, locale) => {
+  const amount = Number(value);
+  if (value === null || value === undefined || !Number.isFinite(amount)) {
+    return "—";
+  }
+  return `L ${amount.toLocaleString(locale === "en" ? "en-US" : "es-HN", {
+    maximumFractionDigits: 0,
+  })}`;
+};
+
 const StatCard = ({ label, value, caption, tone = "default" }) => {
   const isDanger = tone === "danger";
   return (
@@ -48,33 +58,35 @@ StatCard.propTypes = {
 };
 
 const ContractStats = memo(function ContractStats({ stats }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const total = Number(stats.total || 0);
+  const active = Number(stats.active ?? stats.approved ?? 0);
+  const cancelled = Number(stats.cancelled || 0);
+  const overdueCount = Number(stats.overdue_count || 0);
+  const hasBalance =
+    stats.pending_balance !== null && stats.pending_balance !== undefined;
 
   const cards = [
     {
-      label: t("contracts.totalContracts"),
-      value: total,
-      caption: t("contracts.showingContracts", {
-        count: stats.approved || 0,
-        total,
-      }),
+      label: t("contracts.activeContracts"),
+      value: active,
+      caption: `${pct(active, total)} ${t("contracts.ofTotal")}`,
     },
     {
-      label: t("contracts.status.pending"),
-      value: stats.pending || 0,
-      caption: `${pct(stats.pending, total)} ${t("contracts.ofTotal")}`,
+      label: t("contracts.pendingBalance"),
+      value: hasBalance ? money(stats.pending_balance, locale) : "—",
+      caption: `${active} ${t("contracts.activeContracts").toLowerCase()}`,
     },
     {
-      label: t("contracts.status.approved"),
-      value: stats.approved || 0,
-      caption: `${pct(stats.approved, total)} ${t("contracts.ofTotal")}`,
-    },
-    {
-      label: t("contracts.status.rejected"),
-      value: stats.rejected || 0,
-      caption: `${pct(stats.rejected, total)} ${t("contracts.ofTotal")}`,
+      label: t("contracts.moratory"),
+      value: money(stats.overdue, locale),
+      caption: t("payments.kpiOverdue", { count: overdueCount }),
       tone: "danger",
+    },
+    {
+      label: t("contracts.status.cancelled"),
+      value: cancelled,
+      caption: `${pct(cancelled, total)} ${t("contracts.ofTotal")}`,
     },
   ];
 
@@ -93,6 +105,11 @@ ContractStats.propTypes = {
     pending: PropTypes.number,
     approved: PropTypes.number,
     rejected: PropTypes.number,
+    cancelled: PropTypes.number,
+    active: PropTypes.number,
+    pending_balance: PropTypes.number,
+    overdue: PropTypes.number,
+    overdue_count: PropTypes.number,
   }).isRequired,
 };
 

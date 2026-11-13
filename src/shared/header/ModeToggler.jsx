@@ -1,8 +1,10 @@
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "../../contexts/ThemeContext";
+import { useLocale } from "../../contexts/LocaleContext";
 
 function ModeToggler() {
   const { theme, setTheme } = useContext(ThemeContext);
+  const { t } = useLocale();
 
   useEffect(() => {
     // Move localStorage validation to useEffect to avoid synchronous access on every render
@@ -28,11 +30,12 @@ function ModeToggler() {
 
   return (
     <button
-      aria-label="Toggle dark mode"
+      aria-label={t("header.toggleDarkMode")}
+      aria-pressed={theme === "dark"}
       type="button"
       id="theme-toggle"
       onClick={toggleMode}
-      className="flex h-10 w-10 items-center justify-center rounded-control border border-line bg-surface text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink"
+      className="flex h-10 w-10 items-center justify-center rounded-control border border-line bg-surface text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
     >
       <span className="block dark:hidden">
         <svg

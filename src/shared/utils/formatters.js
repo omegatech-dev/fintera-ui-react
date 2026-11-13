@@ -21,16 +21,22 @@ export const formatLargeNumber = (num, locale) => {
   return value.toLocaleString(localeCode);
 };
 
+const CURRENCY_PREFIXES = {
+  HNL: "L",
+};
+
 export const formatCurrency = (v, currency = getDefaultCurrency()) => {
   if (v === null || v === undefined || v === "") return "—";
   const num = Number(v);
-  if (isNaN(num)) return v;
+  if (isNaN(num)) return String(v);
   const code = String(currency || getDefaultCurrency()).toUpperCase();
+  const fractionDigits = Number.isInteger(num) ? 0 : 2;
   const formatted = new Intl.NumberFormat(getIntlLocale(), {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
   }).format(num);
-  return `${formatted} ${code}`;
+  const prefix = CURRENCY_PREFIXES[code];
+  return prefix ? `${prefix} ${formatted}` : `${formatted} ${code}`;
 };
 
 const isZeroDate = (value) => {

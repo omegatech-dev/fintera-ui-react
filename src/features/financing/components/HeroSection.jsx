@@ -1,4 +1,5 @@
 import { useLocale } from '@/contexts/LocaleContext';
+import { formatCurrency } from '@/shared/utils/formatters';
 
 function HeroSection({ balance, currency, userName }) {
     const { t } = useLocale();
@@ -36,8 +37,7 @@ function HeroSection({ balance, currency, userName }) {
                     </div>
 
                     <p className="mt-2 text-display font-bold tracking-tight text-brand-strong tabular-nums">
-                        <span className="mr-1 align-top text-section opacity-70">{currency}</span>
-                        {Number(balance || 0).toLocaleString()}
+                        {formatCurrency(balance ?? 0, currency)}
                     </p>
 
                     <span className="mt-3 inline-flex items-center gap-2 rounded-chip bg-surface px-2.5 py-1 text-micro font-semibold uppercase tracking-wide text-brand-strong">

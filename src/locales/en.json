@@ -78,7 +78,8 @@
     "creating": "Creating...",
     "export": "Export",
     "downloadCsv": "Download .csv",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "appName": "Fintera"
   },
   "months": {
     "january": "January",
@@ -290,7 +291,12 @@
       "nameDesc": "Name (Z-A)",
       "dateDesc": "Newest",
       "dateAsc": "Oldest"
-    }
+    },
+    "downloadTemplate": "Download template",
+    "columnMapping": "Column mapping",
+    "notUsed": "Not used",
+    "rowsDetected": "{count} projects will be imported.",
+    "importCount": "Import {count} projects"
   },
   "projects": {
     "squareMeters": "m²",
@@ -383,7 +389,31 @@
     "tabMedia": "Media",
     "availability": "Availability",
     "draft": "Draft",
-    "paymentInstructions": "Payment instructions"
+    "paymentInstructions": "Payment instructions",
+    "tabLots": "Lots",
+    "tabActivity": "Activity",
+    "noActivity": "No recent activity for this project.",
+    "manageMedia": "Manage media",
+    "plans": "Plans",
+    "photos": "Photos",
+    "accounts": "Bank accounts",
+    "noAccounts": "No bank accounts configured yet.",
+    "manageInstructions": "Manage instructions",
+    "defaultAccount": "Default",
+    "recentActivity": "Recent activity",
+    "availableShort": "available",
+    "currency": "Currency",
+    "status": "Status",
+    "noLots": "No lots yet",
+    "formInfo": "Project information",
+    "formPricing": "Prices and lots",
+    "formLocation": "Location and delivery",
+    "publishPanel": "Publishing",
+    "visiblePortal": "Visible in the portal",
+    "draftHint": "Drafts do not appear in the customer portal.",
+    "coverHint": "Add photos from the project Media tab after saving.",
+    "unsavedChanges": "Unsaved changes",
+    "documents": "Documents"
   },
   "lotsTable": {
     "project": "Project",
@@ -529,7 +559,13 @@
     "paymentHistory": "Payment History",
     "upcoming": "Upcoming",
     "accrued": "Accrued",
-    "pastDue": "Past Due"
+    "pastDue": "Past Due",
+    "tabs": {
+      "all": "All",
+      "pending": "Pending",
+      "overdue": "Overdue",
+      "approved": "Approved"
+    }
   },
   "reports": {
     "financialReports": "Financial Reports",
@@ -624,7 +660,28 @@
     "changePhoto": "Change Photo",
     "uploadPhoto": "Upload profile photo",
     "optional": "optional — leave empty to generate and email a temporary password",
-    "imageTooLarge": "The image is too large. Maximum size is 5 MB."
+    "imageTooLarge": "The image is too large. Maximum size is 5 MB.",
+    "listSummary": "{total} users · {admins} admins · {sellers} sellers · {clients} clients",
+    "tableUser": "User",
+    "editUser": "Edit user",
+    "editUserSubtitle": "Update the user's information and role",
+    "userDetail": "View profile",
+    "lastAccess": "Last access",
+    "clientCount": "Clients",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "errorUpdatingUser": "Error updating user",
+    "statusUpdatedTo_active": "User status updated to active",
+    "statusUpdatedTo_inactive": "User status updated to inactive",
+    "delete": "Delete User",
+    "deleteSuccess": "User deleted successfully",
+    "deleteError": "Error deleting user",
+    "deleteActiveContractsError": "Cannot delete a user with active contracts",
+    "confirmDelete": "Are you sure you want to permanently delete {name}? This action cannot be undone.",
+    "passwordEditHint": "Leave empty to keep the current password",
+    "filterAdmins": "Administrators",
+    "filterSellers": "Sellers",
+    "filterClients": "Clients"
   },
   "settings": {
     "personal": "Personal",
@@ -861,7 +918,12 @@
     "promoDescription": "Fintera helps you manage your payments and financing smartly and efficiently.",
     "featureContracts": "Complete contract management",
     "featureAutomated": "Automated processes",
-    "featureSecurity": "Guaranteed security"
+    "featureSecurity": "Guaranteed security",
+    "heroTitle": "Real-estate financing, without friction.",
+    "heroSubtitle": "Projects, lots, contracts and collections in one place.",
+    "bulletContracts": "One place for contracts and payments",
+    "bulletCollections": "Collections and arrears under control",
+    "bulletReports": "Reports ready for decisions"
   },
   "notifications": {
     "title": "Notifications",
@@ -934,7 +996,20 @@
     "contractsSold": "Approved Contracts",
     "errorFetchingData": "Error fetching analytics data",
     "previousYear": "Previous Year",
-    "nextYear": "Next Year"
+    "nextYear": "Next Year",
+    "moraTitle": "Overdue balance",
+    "growthTitle": "Growth by project",
+    "noPrevious": "no data from previous month",
+    "insightOverdue": "{amount} is overdue and pending collection.",
+    "viewCollections": "View collections",
+    "moraBreakdown": "{installments} installments · {clients} clients",
+    "moraCaptionNeutral": "Overdue detail unavailable",
+    "growthSubtitle": "vs. previous month",
+    "growthNoProjects": "No projects to compare yet.",
+    "monthLabel": "Month",
+    "projectLabel": "Project",
+    "sellerLabel": "Seller",
+    "percentageLabel": "Percentage"
   },
   "sellerDashboard": {
     "welcomeBack": "Welcome back",
@@ -973,14 +1048,34 @@
     "saleValue": "Sale Value",
     "amount": "Commission",
     "noData": "No commissions found for this period",
-    "downloadCSV": "Download CSV"
+    "downloadCSV": "Download CSV",
+    "configureRates": "Configure rates",
+    "rulesTitle": "Commission rules",
+    "rulesSubtitle": "Commission rates are configured per project and apply to new contracts.",
+    "defaultRate": "Default rate",
+    "defaultRateHint": "The rate applied depends on the contract's financing type.",
+    "paymentRule": "Payment rule",
+    "paymentRuleHint": "The commission is computed when the contract is approved and stored on the contract.",
+    "approveTrigger": "When the contract is approved",
+    "sellerExceptions": "Per-seller exceptions",
+    "sellerExceptionsHint": "Per-seller exceptions are not available in this version; the project rates apply to every seller.",
+    "noSellers": "No sellers in the selected period.",
+    "rulesNote": "Changes apply to new contracts only; existing contracts keep their rate.",
+    "saveRules": "Save rules",
+    "rulesSaved": "Commission rates saved.",
+    "rulesSaveError": "Could not save the commission rates.",
+    "noProjects": "No projects available.",
+    "projectLabel": "Project",
+    "pay": "Pay"
   },
   "filters": {
     "contractSearchPlaceholder": "Search contracts...",
     "contractStatusPlaceholder": "Filter by status",
     "searchPlaceholder": "Search transactions...",
     "statusPlaceholder": "Filter by status",
-    "all": "All"
+    "all": "All",
+    "startDate": "Start date",
+    "endDate": "End date"
   },
   "contracts": {
     "amount": "Amount",
@@ -1099,7 +1194,17 @@
     "paid": "Paid",
     "rate": "Int. Rate",
     "title": "Contracts",
-    "subtitle": "Financings and reservations by client."
+    "subtitle": "Financings and reservations by client.",
+    "tabNotes": "Notes",
+    "viewApplicant": "View applicant",
+    "viewLot": "View lot and project",
+    "cancelContract": "Cancel contract",
+    "cancelTitle": "Cancel contract #{id}?",
+    "cancelDescription": "The contract will be cancelled and the lot will be available for a new reservation. This action cannot be undone.",
+    "cancelSuccess": "Contract cancelled.",
+    "cancelError": "Could not cancel the contract.",
+    "notesPlaceholder": "Add a note...",
+    "cancelNote": "Cancelled from the contract detail."
   },
   "contractNotes": {
     "generalNotes": "General Notes",
@@ -1266,7 +1371,8 @@
     "admin": "Admin",
     "searchPlaceholder": "Search users by name, email or ID...",
     "selectType": "Select role",
-    "addUser": "Add User"
+    "addUser": "Add User",
+    "client": "Client"
   },
   "lots": {
     "manageLots": "Manage lots and availability",
@@ -1314,7 +1420,23 @@
     "notes": "Notes",
     "additionalNotes": "Additional notes...",
     "measurementUnit": "Measurement Unit",
-    "newLot": "New Lot"
+    "newLot": "New Lot",
+    "noOwner": "Not reserved",
+    "viewProject": "View project",
+    "viewReservation": "View reservation",
+    "searchPlaceholder": "Search lot, code or client",
+    "sortBy": "Sort by",
+    "updatedAt": "Last updated",
+    "sortAscending": "Sort ascending",
+    "sortDescending": "Sort descending",
+    "totalCount": "{count} lots",
+    "availableCount": "{count} available",
+    "priceEach": "{price} each",
+    "availablePlural": "Available",
+    "reservedPlural": "Reserved",
+    "financedPlural": "Financed",
+    "fullyPaidPlural": "Paid",
+    "selected": "Selected"
   },
   "audits": {
     "viewSystemActivity": "View system activity history",
@@ -1673,7 +1795,30 @@
     "tooLong": "Maximum {max} characters",
     "limitHint": "Bank 120, beneficiary 160, account 60 and notes 500 characters.",
     "published": "Published",
-    "draft": "Draft"
+    "draft": "Draft",
+    "subtitle": "Bank accounts and what the customer sees when reserving.",
+    "accountCount": "{count} accounts",
+    "number": "Account number",
+    "holder": "Account holder",
+    "defaultAccount": "Default",
+    "defaultAccountHint": "It will be the first account the customer sees.",
+    "defaultDeleteBlocked": "This is the default account. Mark another account as default before deleting it.",
+    "instructionsTitle": "Instructions for the customer",
+    "instructionsHint": "Shown in the customer portal and in the reservation email.",
+    "instructionsPlaceholder": "Transfer the reservation amount to the default account and upload the receipt in the portal. Include the lot number in the reference.",
+    "instructionsSaved": "Customer instructions updated",
+    "instructionsEmpty": "Add a bank account to edit the customer instructions.",
+    "saveInstructions": "Save instructions",
+    "previewTitle": "Customer preview",
+    "previewEmpty": "Add a default account to see the customer preview.",
+    "reservationAmount": "Reservation amount",
+    "uploadReceipt": "Upload receipt",
+    "uploadReceiptHint": "Upload your receipt after transferring.",
+    "defaultTipTitle": "One default account",
+    "defaultTipText": "The account marked as default is the first one the customer sees.",
+    "accountSheetNote": "It will be shown in the customer portal and in the reservation email.",
+    "typeSavings": "Savings",
+    "typeChecking": "Checking"
   },
   "media": {
     "drawingsHint": "Plans accept SVG, PNG, JPG and PDF (max 50 MB each).",
@@ -1879,5 +2024,12 @@
     "title": "Your customer account lives in the customer portal",
     "description": "Reservations, payments and tracking are now managed in the Fintera customer portal.",
     "action": "Go to the customer portal"
+  },
+  "seller": {
+    "tabCommissions": "Commissions",
+    "registerCollection": "Register collection",
+    "inReview": "In review",
+    "receiptRequired": "Upload the receipt",
+    "collectionNotice": "The payment goes to review; the balance changes only after admin approval."
   }
 }

@@ -78,7 +78,8 @@
     "viewMore": "Ver Más",
     "export": "Exportar",
     "downloadCsv": "Descargar .csv",
-    "refresh": "Actualizar"
+    "refresh": "Actualizar",
+    "appName": "Fintera"
   },
   "months": {
     "january": "Enero",
@@ -290,7 +291,12 @@
       "nameDesc": "Nombre (Z-A)",
       "dateDesc": "Más Recientes",
       "dateAsc": "Más Antiguos"
-    }
+    },
+    "downloadTemplate": "Descargar plantilla",
+    "columnMapping": "Mapeo de columnas",
+    "notUsed": "No se usará",
+    "rowsDetected": "Se importarán {count} proyectos.",
+    "importCount": "Importar {count} proyectos"
   },
   "projects": {
     "squareMeters": "m²",
@@ -383,7 +389,31 @@
     "tabMedia": "Medios",
     "availability": "Disponibilidad",
     "draft": "Borrador",
-    "paymentInstructions": "Instrucciones de pago"
+    "paymentInstructions": "Instrucciones de pago",
+    "tabLots": "Lotes",
+    "tabActivity": "Actividad",
+    "noActivity": "Sin actividad reciente en este proyecto.",
+    "manageMedia": "Gestionar medios",
+    "plans": "Planos",
+    "photos": "Fotos",
+    "accounts": "Cuentas bancarias",
+    "noAccounts": "Aún no hay cuentas bancarias configuradas.",
+    "manageInstructions": "Administrar instrucciones",
+    "defaultAccount": "Predeterminada",
+    "recentActivity": "Actividad reciente",
+    "availableShort": "libres",
+    "currency": "Moneda",
+    "status": "Estado",
+    "noLots": "Aún no hay lotes",
+    "formInfo": "Información del proyecto",
+    "formPricing": "Precios y lotes",
+    "formLocation": "Ubicación y entrega",
+    "publishPanel": "Publicación",
+    "visiblePortal": "Visible en el portal",
+    "draftHint": "Los borradores no aparecen en el portal del cliente.",
+    "coverHint": "Agrega fotos desde la pestaña Medios del proyecto después de guardar.",
+    "unsavedChanges": "Cambios sin guardar",
+    "documents": "Documentos"
   },
   "lotsTable": {
     "project": "Proyecto",
@@ -535,7 +565,13 @@
     "noUpcomingPayments": "No hay pagos próximos",
     "paymentHistory": "Historial de Pagos​",
     "accrued": "interés acumulado",
-    "pastDue": "Vencido"
+    "pastDue": "Vencido",
+    "tabs": {
+      "all": "Todos",
+      "pending": "Por aprobar",
+      "overdue": "Vencidos",
+      "approved": "Aprobados"
+    }
   },
   "reports": {
     "financialReports": "Reportes Financieros",
@@ -637,7 +673,21 @@
     "changePhoto": "Cambiar Foto",
     "uploadPhoto": "Subir foto de perfil",
     "optional": "opcional — dejar vacío para generar y enviar una contraseña temporal",
-    "imageTooLarge": "La imagen es demasiado grande. El tamaño máximo es 5 MB."
+    "imageTooLarge": "La imagen es demasiado grande. El tamaño máximo es 5 MB.",
+    "listSummary": "{total} usuarios · {admins} administradores · {sellers} vendedores · {clients} clientes",
+    "tableUser": "Usuario",
+    "editUser": "Editar usuario",
+    "editUserSubtitle": "Actualiza la información y el rol del usuario",
+    "userDetail": "Ver perfil",
+    "lastAccess": "Último acceso",
+    "clientCount": "Clientes",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "errorUpdatingUser": "Error al actualizar usuario",
+    "passwordEditHint": "Dejar vacío para mantener la contraseña actual",
+    "filterAdmins": "Administradores",
+    "filterSellers": "Vendedores",
+    "filterClients": "Clientes"
   },
   "settings": {
     "personal": "Personal",
@@ -874,7 +924,12 @@
     "promoDescription": "Fintera te ayuda a administrar tus pagos y financiamientos de manera inteligente y eficiente.",
     "featureContracts": "Gestión completa de contratos",
     "featureAutomated": "Procesos automatizados",
-    "featureSecurity": "Seguridad garantizada"
+    "featureSecurity": "Seguridad garantizada",
+    "heroTitle": "Financiamiento inmobiliario, sin fricción.",
+    "heroSubtitle": "Proyectos, lotes, contratos y cobros en un solo lugar.",
+    "bulletContracts": "Un solo lugar para contratos y pagos",
+    "bulletCollections": "Cobros y mora bajo control",
+    "bulletReports": "Reportes listos para decidir"
   },
   "notifications": {
     "title": "Notificaciones",
@@ -947,7 +1002,20 @@
     "contractsSold": "Contratos Aprobados",
     "errorFetchingData": "Error al obtener datos de análisis",
     "previousYear": "Año Anterior",
-    "nextYear": "Año Siguiente"
+    "nextYear": "Año Siguiente",
+    "moraTitle": "Mora acumulada",
+    "growthTitle": "Crecimiento por proyecto",
+    "noPrevious": "sin datos del mes anterior",
+    "insightOverdue": "Hay {amount} en cuotas vencidas por cobrar.",
+    "viewCollections": "Ver cobros",
+    "moraBreakdown": "{installments} cuotas · {clients} clientes",
+    "moraCaptionNeutral": "Sin desglose de cuotas disponible",
+    "growthSubtitle": "vs. mes anterior",
+    "growthNoProjects": "Aún no hay proyectos para comparar.",
+    "monthLabel": "Mes",
+    "projectLabel": "Proyecto",
+    "sellerLabel": "Vendedor",
+    "percentageLabel": "Porcentaje"
   },
   "sellerDashboard": {
     "welcomeBack": "Bienvenido de nuevo",
@@ -987,14 +1055,34 @@
     "saleValue": "Valor Venta",
     "amount": "Comisión",
     "noData": "No se encontraron comisiones para este periodo",
-    "downloadCSV": "Descargar CSV"
+    "downloadCSV": "Descargar CSV",
+    "configureRates": "Configurar tasas",
+    "rulesTitle": "Reglas de comisión",
+    "rulesSubtitle": "Las tasas de comisión se configuran por proyecto y aplican a contratos nuevos.",
+    "defaultRate": "Tasa por defecto",
+    "defaultRateHint": "La tasa aplicada depende del tipo de financiamiento del contrato.",
+    "paymentRule": "Regla de pago",
+    "paymentRuleHint": "La comisión se calcula al aprobar el contrato y se guarda en el contrato.",
+    "approveTrigger": "Al aprobar el contrato",
+    "sellerExceptions": "Excepciones por vendedor",
+    "sellerExceptionsHint": "Las excepciones por vendedor no están disponibles en esta versión; las tasas del proyecto aplican a todos los vendedores.",
+    "noSellers": "No hay vendedores en el periodo seleccionado.",
+    "rulesNote": "Los cambios aplican solo a contratos nuevos; los existentes conservan su tasa.",
+    "saveRules": "Guardar reglas",
+    "rulesSaved": "Tasas de comisión guardadas.",
+    "rulesSaveError": "No se pudieron guardar las tasas de comisión.",
+    "noProjects": "No hay proyectos disponibles.",
+    "projectLabel": "Proyecto",
+    "pay": "Pagar"
   },
   "filters": {
     "contractSearchPlaceholder": "Buscar contratos...",
     "contractStatusPlaceholder": "Filtrar por estado",
     "searchPlaceholder": "Buscar transacciones...",
     "statusPlaceholder": "Filtrar por estado",
-    "all": "Todos"
+    "all": "Todos",
+    "startDate": "Desde",
+    "endDate": "Hasta"
   },
   "contracts": {
     "amount": "Monto​",
@@ -1117,7 +1205,17 @@
     "rate": "Tasa de Int.",
     "completed": "Completado",
     "title": "Contratos",
-    "subtitle": "Financiamientos y reservas por cliente."
+    "subtitle": "Financiamientos y reservas por cliente.",
+    "tabNotes": "Notas",
+    "viewApplicant": "Ver solicitante",
+    "viewLot": "Ver lote y proyecto",
+    "cancelContract": "Cancelar contrato",
+    "cancelTitle": "¿Cancelar el contrato #{id}?",
+    "cancelDescription": "El contrato quedará cancelado y el lote estará disponible para una nueva reserva. Esta acción no se puede deshacer.",
+    "cancelSuccess": "Contrato cancelado.",
+    "cancelError": "No se pudo cancelar el contrato.",
+    "notesPlaceholder": "Agrega una nota...",
+    "cancelNote": "Cancelado desde el detalle del contrato."
   },
   "contractNotes": {
     "generalNotes": "Notas Generales",
@@ -1284,7 +1382,8 @@
     "admin": "Administrador",
     "searchPlaceholder": "Buscar usuarios por nombre, correo o ID...",
     "selectType": "Selecciona rol",
-    "addUser": "Agregar Usuario"
+    "addUser": "Agregar Usuario",
+    "client": "Cliente"
   },
   "lots": {
     "manageLots": "Gestiona lotes y disponibilidad",
@@ -1332,7 +1431,23 @@
     "notes": "Notas",
     "additionalNotes": "Notas adicionales...",
     "measurementUnit": "Unidad de Medida",
-    "newLot": "Nuevo Lote"
+    "newLot": "Nuevo Lote",
+    "noOwner": "Sin reservar",
+    "viewProject": "Ver proyecto",
+    "viewReservation": "Ver reserva",
+    "searchPlaceholder": "Buscar lote, código o cliente",
+    "sortBy": "Ordenar por",
+    "updatedAt": "Actualización",
+    "sortAscending": "Orden ascendente",
+    "sortDescending": "Orden descendente",
+    "totalCount": "{count} lotes",
+    "availableCount": "{count} disponibles",
+    "priceEach": "{price} c/u",
+    "availablePlural": "Disponibles",
+    "reservedPlural": "Reservados",
+    "financedPlural": "Financiados",
+    "fullyPaidPlural": "Pagados",
+    "selected": "Seleccionado"
   },
   "audits": {
     "viewSystemActivity": "Ver historial de actividad del sistema",
@@ -1691,7 +1806,30 @@
     "tooLong": "Máximo {max} caracteres",
     "limitHint": "Banco 120, beneficiario 160, cuenta 60 y notas 500 caracteres.",
     "published": "Publicado",
-    "draft": "Borrador"
+    "draft": "Borrador",
+    "subtitle": "Cuentas bancarias y qué ve el cliente al reservar.",
+    "accountCount": "{count} cuentas",
+    "number": "Número de cuenta",
+    "holder": "Titular",
+    "defaultAccount": "Predeterminada",
+    "defaultAccountHint": "Será la primera cuenta que vea el cliente.",
+    "defaultDeleteBlocked": "Esta es la cuenta predeterminada. Marca otra cuenta como predeterminada antes de eliminarla.",
+    "instructionsTitle": "Instrucciones para el cliente",
+    "instructionsHint": "Se muestran en el portal del cliente y en el correo de la reserva.",
+    "instructionsPlaceholder": "Transfiere el monto de la reserva a la cuenta predeterminada y sube el comprobante en el portal. Indica el número de lote en el concepto.",
+    "instructionsSaved": "Instrucciones del cliente actualizadas",
+    "instructionsEmpty": "Agrega una cuenta bancaria para editar las instrucciones del cliente.",
+    "saveInstructions": "Guardar instrucciones",
+    "previewTitle": "Vista previa del cliente",
+    "previewEmpty": "Agrega una cuenta predeterminada para ver la vista previa del cliente.",
+    "reservationAmount": "Monto de la reserva",
+    "uploadReceipt": "Subir comprobante",
+    "uploadReceiptHint": "Sube tu comprobante después de transferir.",
+    "defaultTipTitle": "Una cuenta predeterminada",
+    "defaultTipText": "La cuenta marcada como predeterminada es la que aparece primero al cliente.",
+    "accountSheetNote": "Se mostrará en el portal del cliente y en el correo de la reserva.",
+    "typeSavings": "Ahorro",
+    "typeChecking": "Corriente"
   },
   "media": {
     "drawingsHint": "Los planos aceptan SVG, PNG, JPG y PDF (máx. 50 MB cada uno).",
@@ -1897,5 +2035,12 @@
     "title": "Tu cuenta de cliente está en el portal de clientes",
     "description": "Las reservas, pagos y el seguimiento ahora se gestionan en el portal de clientes de Fintera.",
     "action": "Ir al portal de clientes"
+  },
+  "seller": {
+    "tabCommissions": "Comisiones",
+    "registerCollection": "Registrar cobro",
+    "inReview": "En revisión",
+    "receiptRequired": "Adjunta el comprobante",
+    "collectionNotice": "El pago queda en revisión; el saldo cambia solo cuando un administrador lo aprueba."
   }
 }

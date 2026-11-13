@@ -10,7 +10,7 @@ function EmptyState({
 }) {
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-2 rounded-card border border-dashed border-line-strong bg-surface-2 px-6 py-10 text-center ${className}`}
+      className={`motion-fade-in flex flex-col items-center justify-center gap-2 rounded-card border border-dashed border-line-strong bg-surface-2 px-6 py-10 text-center ${className}`}
     >
       {icon}
       <p className="text-body-lg font-bold text-ink">{title}</p>

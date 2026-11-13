@@ -5,7 +5,7 @@ function ErrorState({ title = "No pudimos cargar los datos", description, onRetr
   return (
     <div
       role="alert"
-      className={`flex flex-col items-center justify-center gap-2 rounded-card border border-danger/30 bg-danger-soft px-6 py-10 text-center ${className}`}
+      className={`motion-fade-in flex flex-col items-center justify-center gap-2 rounded-card border border-danger/30 bg-danger-soft px-6 py-10 text-center ${className}`}
     >
       <svg
         viewBox="0 0 24 24"

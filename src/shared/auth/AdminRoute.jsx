@@ -22,6 +22,11 @@ const AdminRoute = ({ children }) => {
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
+  const securityPath = `/settings/user/${user.id}/security`;
+  if (user?.must_change_password && user?.id && location.pathname !== securityPath) {
+    return <Navigate to={securityPath} replace />;
+  }
+
   if (!user || user.role !== "admin") {
     return <ForbiddenPage />;
   }

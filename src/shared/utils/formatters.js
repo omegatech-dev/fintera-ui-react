@@ -33,8 +33,13 @@ export const formatCurrency = (v, currency = getDefaultCurrency()) => {
   return `${formatted} ${code}`;
 };
 
+const isZeroDate = (value) => {
+  const raw = String(value || "");
+  return raw.startsWith("0001-01-01") || raw.startsWith("0000-00-00");
+};
+
 export const formatDate = (d) => {
-  if (!d) return "—";
+  if (!d || isZeroDate(d)) return "—";
   const value = /^\d{4}-\d{2}-\d{2}$/.test(String(d))
     ? `${d}T12:00:00`
     : d;
@@ -45,6 +50,24 @@ export const formatDate = (d) => {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: timezone,
+  });
+};
+
+export const formatDateTime = (d) => {
+  if (!d || isZeroDate(d)) return "—";
+  const value = /^\d{4}-\d{2}-\d{2}$/.test(String(d))
+    ? `${d}T12:00:00`
+    : d;
+  const dt = new Date(value);
+  if (isNaN(dt.getTime())) return "—";
+  const { timezone } = getFormatSettings();
+  return dt.toLocaleString(getIntlLocale(), {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
     timeZone: timezone,
   });
 };

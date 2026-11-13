@@ -1,17 +1,16 @@
-import React from 'react';
 import { useLocale } from '../../../contexts/LocaleContext';
 
 function NextPaymentCard({ payments, currency }) {
-    const { t } = useLocale();
+    const { t, locale } = useLocale();
 
     const nextPayment = payments
-        .filter(p => (p.status || '').toLowerCase() !== 'paid' && (p.status || '').toLowerCase() !== 'rejected' && new Date(p.due_date) >= new Date())
+        .filter((p) => (p.status || '').toLowerCase() !== 'paid' && (p.status || '').toLowerCase() !== 'rejected' && new Date(p.due_date) >= new Date())
         .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))[0];
 
     if (!nextPayment) {
         return (
-            <div className="w-full bg-white dark:bg-bgray-900/50 backdrop-blur-xs border border-bgray-200 dark:border-bgray-800 rounded-2xl p-6 flex flex-col justify-center items-center text-center">
-                <p className="text-bgray-500 font-medium">{t('payments.noUpcomingPayments')}</p>
+            <div className="flex w-full flex-col items-center justify-center rounded-card border border-line bg-surface p-6 text-center">
+                <p className="text-body font-medium text-ink-3">{t('payments.noUpcomingPayments')}</p>
             </div>
         );
     }
@@ -23,41 +22,40 @@ function NextPaymentCard({ payments, currency }) {
     const paymentContext = [nextPayment.description, displayProject && displayLot ? `${displayProject} – ${displayLot}` : displayProject || displayLot].filter(Boolean);
 
     return (
-        <div id="financing-next-payment" className="w-full bg-white dark:bg-bgray-900/50 backdrop-blur-xs border border-bgray-200 dark:border-bgray-800 rounded-2xl p-6 shadow-xs hover:shadow-md transition-all group overflow-hidden relative">
-            {/* Dynamic background accent */}
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <svg className="w-24 h-24 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-                </svg>
-            </div>
-
-            <div className="relative z-10">
-                <h3 className="text-sm font-bold text-bgray-500 dark:text-bgray-400 uppercase tracking-widest mb-4">
+        <div
+            id="financing-next-payment"
+            className="w-full rounded-card border border-line bg-surface p-5"
+        >
+            <div className="flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-control bg-warning-soft text-warning">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </span>
+                <h3 className="text-title font-bold text-ink">
                     {t('payments.nextPayment')}
                 </h3>
+            </div>
 
-                <div className="space-y-1">
-                    {paymentContext.length > 0 && (
-                        <p className="text-sm font-medium text-bgray-700 dark:text-bgray-300 mb-2">
-                            {paymentContext.join(' · ')}
-                        </p>
-                    )}
-                    <p className="text-3xl font-black text-bgray-900 dark:text-white">
-                        {currency} {totalDue.toLocaleString()}
+            <div className="mt-4 space-y-1.5">
+                {paymentContext.length > 0 && (
+                    <p className="text-body font-medium text-ink-2">
+                        {paymentContext.join(' · ')}
                     </p>
-                    <div className="flex items-center gap-2 mt-2">
-                        <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
-                        <p className="text-base font-bold text-purple-600 dark:text-purple-400">
-                            {dueDate.toLocaleDateString()}
-                        </p>
-                    </div>
-                </div>
+                )}
+                <p className="text-page font-bold text-ink tabular-nums">
+                    {currency} {totalDue.toLocaleString()}
+                </p>
+                <p className="inline-flex items-center gap-2 rounded-chip bg-warning-soft px-2.5 py-1 text-micro font-semibold text-warning">
+                    <span className="h-1.5 w-1.5 rounded-full bg-warning" aria-hidden="true" />
+                    {dueDate.toLocaleDateString(locale === 'es' ? 'es-HN' : 'en-US')}
+                </p>
+            </div>
 
-                <div className="mt-6 pt-4 border-t border-bgray-100 dark:border-bgray-800">
-                    <p className="text-xs text-bgray-400 leading-relaxed italic">
-                        {t('payments.detailedPaymentInfo')}
-                    </p>
-                </div>
+            <div className="mt-4 border-t border-line pt-3">
+                <p className="text-micro leading-relaxed text-ink-3">
+                    {t('payments.detailedPaymentInfo')}
+                </p>
             </div>
         </div>
     );

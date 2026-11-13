@@ -15,11 +15,8 @@ function LoginForm({
 }) {
   const { t } = useLocale();
   return (
-    <div className="w-full max-w-md">
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-5 rounded-card border border-line bg-surface p-6 shadow-pop sm:p-8"
-      >
+    <div className="w-full">
+      <form onSubmit={handleSubmit} className="space-y-3.5">
         {apiError && <Banner tone="danger">{apiError}</Banner>}
 
         <Field label={t("auth.email")} error={errors.email}>
@@ -48,21 +45,25 @@ function LoginForm({
           />
         </Field>
 
-        <Button type="submit" className="w-full" loading={loading}>
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          className="text-label font-bold text-brand transition-colors hover:text-brand-strong hover:underline"
+        >
+          {t("auth.forgotPassword")}
+        </button>
+
+        <Button
+          type="submit"
+          className="h-[46px] w-full text-body-lg font-bold"
+          loading={loading}
+        >
           {t("auth.signIn")}
         </Button>
 
-        <div className="border-t border-line pt-4 text-center">
-          <p className="mb-2 text-micro text-ink-3">{t("auth.needHelp")}</p>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setModalOpen(true)}
-          >
-            {t("auth.forgotPassword")}
-          </Button>
-        </div>
+        <p className="text-center text-micro font-medium text-ink-3">
+          {t("auth.needHelp")}
+        </p>
       </form>
     </div>
   );

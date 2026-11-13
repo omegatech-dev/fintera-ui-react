@@ -60,11 +60,11 @@ function LogoGuidance() {
   return (
     <section
       aria-labelledby="logo-guidance-title"
-      className="rounded-2xl border border-blue-100 bg-blue-50/60 p-5 dark:border-blue-900/40 dark:bg-blue-950/20"
+      className="rounded-card border border-info/20 bg-info-soft/60 p-4 sm:p-5"
     >
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-control bg-info-soft text-info">
+          <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
             <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
             <path d="M12 11v5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             <circle cx="12" cy="8" r="1" fill="currentColor" />
@@ -73,28 +73,28 @@ function LogoGuidance() {
         <div className="min-w-0">
           <h3
             id="logo-guidance-title"
-            className="text-base font-bold text-bgray-900 dark:text-white"
+            className="text-[15px] font-bold text-ink"
           >
             {t("branding.guidance.title")}
           </h3>
-          <p className="mt-1 text-sm text-bgray-600 dark:text-bgray-300">
+          <p className="mt-0.5 text-label font-medium text-ink-3">
             {t("branding.guidance.description")}
           </p>
         </div>
       </div>
 
-      <dl className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <dl className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {SPECS.map((spec) => (
           <div
             key={spec.key}
-            className="flex items-start gap-3 rounded-xl bg-white/80 p-3.5 dark:bg-darkblack-600/60"
+            className="flex items-start gap-3 rounded-control bg-surface/80 p-3"
           >
-            <span className="mt-0.5 text-blue-600 dark:text-blue-300">{spec.icon}</span>
+            <span className="mt-0.5 text-info">{spec.icon}</span>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-bgray-500 dark:text-bgray-400">
+              <dt className="text-micro font-semibold uppercase tracking-wide text-ink-3">
                 {t(`branding.guidance.${spec.key}Label`)}
               </dt>
-              <dd className="mt-0.5 text-sm font-semibold text-bgray-900 dark:text-white">
+              <dd className="mt-0.5 text-label font-semibold text-ink">
                 {t(`branding.guidance.${spec.key}Value`)}
               </dd>
             </div>
@@ -103,57 +103,28 @@ function LogoGuidance() {
       </dl>
 
       <ul className="mt-4 space-y-2">
-        <li className="flex items-start gap-2 text-sm text-bgray-600 dark:text-bgray-300">
-          <svg
-            viewBox="0 0 20 20"
-            fill="none"
-            className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500"
-            aria-hidden="true"
+        {["tipWordmark", "tipBackground", "tipDarkVariant"].map((tip) => (
+          <li
+            key={tip}
+            className="flex items-start gap-2 text-label font-medium text-ink-2"
           >
-            <path
-              d="M4 10.5l3.2 3.2L16 5.5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          {t("branding.guidance.tipWordmark")}
-        </li>
-        <li className="flex items-start gap-2 text-sm text-bgray-600 dark:text-bgray-300">
-          <svg
-            viewBox="0 0 20 20"
-            fill="none"
-            className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500"
-            aria-hidden="true"
-          >
-            <path
-              d="M4 10.5l3.2 3.2L16 5.5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          {t("branding.guidance.tipBackground")}
-        </li>
-        <li className="flex items-start gap-2 text-sm text-bgray-600 dark:text-bgray-300">
-          <svg
-            viewBox="0 0 20 20"
-            fill="none"
-            className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500"
-            aria-hidden="true"
-          >
-            <path
-              d="M4 10.5l3.2 3.2L16 5.5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          {t("branding.guidance.tipDarkVariant")}
-        </li>
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              className="mt-0.5 h-4 w-4 shrink-0 text-brand"
+              aria-hidden="true"
+            >
+              <path
+                d="M4 10.5l3.2 3.2L16 5.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {t(`branding.guidance.${tip}`)}
+          </li>
+        ))}
       </ul>
     </section>
   );

@@ -166,4 +166,18 @@ describe("normalizeGeneralSettings", () => {
     expect(normalized.legal_name).toBe("Omegatech S. de R.L.");
     expect(normalized.website).toBe("https://omegatech.dev/");
   });
+
+  it("keeps editable terms content and defaults it to empty", () => {
+    const normalized = normalizeGeneralSettings({
+      terms_content_es: "  Primer párrafo.\n\nSegundo párrafo.  ",
+    });
+
+    expect(normalized.terms_content_es).toBe(
+      "Primer párrafo.\n\nSegundo párrafo."
+    );
+    expect(normalized.terms_content_en).toBe("");
+
+    expect(normalizeGeneralSettings({}).terms_content_es).toBe("");
+    expect(normalizeGeneralSettings({}).terms_content_en).toBe("");
+  });
 });

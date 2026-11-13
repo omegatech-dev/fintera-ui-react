@@ -1,39 +1,54 @@
-import { motion } from 'framer-motion';
+import PropTypes from "prop-types";
+import { Card } from "@/shared/ui";
 
 const PaymentScheduleHeader = ({ paidSteps, totalSteps, overdueSteps, progressPercent, t }) => {
-    return (
-        <div className="bg-white dark:bg-darkblack-600 rounded-[2rem] p-6 border border-gray-100 dark:border-darkblack-500 shadow-2xl shadow-blue-500/5">
-            <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-8">
-                <div className="space-y-2">
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">{t('paymentSchedule.summary')}</p>
-                    <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-                        {paidSteps} <span className="text-gray-300 dark:text-gray-600 font-medium">/</span> {totalSteps}
-                        <span className="text-sm font-bold text-gray-400 ml-2">{t('paymentSchedule.completed')}</span>
-                    </h4>
-                </div>
+  const remaining = totalSteps - paidSteps;
 
-                <div className="flex gap-8">
-                    <div className="text-right">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-rose-400 mb-1">{t('paymentSchedule.overdue')}</p>
-                        <p className="text-lg font-black text-rose-500">{overdueSteps}</p>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-1">{t('paymentSchedule.remaining')}</p>
-                        <p className="text-lg font-black text-blue-500">{totalSteps - paidSteps}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="relative h-3 bg-gray-100 dark:bg-darkblack-500 rounded-full overflow-hidden">
-                <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercent}%` }}
-                    transition={{ duration: 1, ease: "circOut" }}
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.5)]"
-                />
-            </div>
+  return (
+    <Card bodyClassName="p-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-micro font-bold uppercase tracking-wide text-ink-3">
+            {t("paymentSchedule.summary")}
+          </p>
+          <p className="text-section font-bold text-ink">
+            {paidSteps} <span className="text-ink-3">/ {totalSteps}</span>{" "}
+            <span className="text-label font-semibold text-ink-3">
+              {t("paymentSchedule.completed")}
+            </span>
+          </p>
         </div>
-    );
+        <div className="flex gap-6 text-right">
+          <div>
+            <p className="text-micro font-bold uppercase tracking-wide text-danger">
+              {t("paymentSchedule.overdue")}
+            </p>
+            <p className="text-title font-bold text-danger">{overdueSteps}</p>
+          </div>
+          <div>
+            <p className="text-micro font-bold uppercase tracking-wide text-ink-3">
+              {t("paymentSchedule.remaining")}
+            </p>
+            <p className="text-title font-bold text-ink">{remaining}</p>
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-2">
+        <div
+          className="h-full rounded-full bg-brand transition-all"
+          style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
+        />
+      </div>
+    </Card>
+  );
+};
+
+PaymentScheduleHeader.propTypes = {
+  paidSteps: PropTypes.number.isRequired,
+  totalSteps: PropTypes.number.isRequired,
+  overdueSteps: PropTypes.number.isRequired,
+  progressPercent: PropTypes.number.isRequired,
+  t: PropTypes.func.isRequired,
 };
 
 export default PaymentScheduleHeader;

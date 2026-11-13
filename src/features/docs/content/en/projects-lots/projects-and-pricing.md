@@ -19,9 +19,10 @@ A lot's price is based on its **area** and the project's **price per square unit
 
 ## Publishing
 
-A project can be **published** (visible in the customer portal) or unpublished. Publishing is an admin action; sellers see the current state but do not change it.
+A project can be **published** (visible in the customer portal) or a **draft** (not visible). Publishing is an admin action; sellers see the current state but do not change it.
 
 ## Related
 
+- [Projects list and project detail](/docs/projects-list-and-detail)
 - [Lots and their statuses](/docs/lots-and-statuses)
 - [Financing types](/docs/financing-types)

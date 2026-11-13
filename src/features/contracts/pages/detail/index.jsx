@@ -1,19 +1,26 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faArrowLeft,
   faBan,
   faBell,
+  faCheckCircle,
   faDownload,
   faEllipsisVertical,
+  faExclamationTriangle,
   faLocationDot,
+  faReceipt,
   faRotateLeft,
   faUser,
+  faWallet,
 } from "@fortawesome/free-solid-svg-icons";
 import AuthContext from "@/contexts/AuthContext";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useToast } from "@/contexts/ToastContext";
 import { sanitizeHtml } from "@/shared/utils/sanitizeHtml";
+import { formatStatus } from "@/shared/utils/formatStatus";
+import { formatDate } from "@/shared/utils/formatters";
 import { contractsApi } from "../../api";
 import {
   Button,
@@ -27,46 +34,91 @@ import {
   Tabs,
 } from "@/shared/ui";
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
+import CreditScoreCard from "../../components/CreditScoreCard";
+import DocumentsTab from "../../components/ContractDetails/tabs/DocumentsTab";
+import PaymentScheduleModal from "../../components/PaymentScheduleModal";
 
-const money = (value) =>
-  `L ${Number(value || 0).toLocaleString("es-HN", {
+const money = (value) => {
+  if (value === null || value === undefined || value === "") return "—";
+  return `L ${Number(value || 0).toLocaleString("es-HN", {
     maximumFractionDigits: 2,
   })}`;
-
-const formatDate = (value) => {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString("es-HN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
 };
 
-const FINANCING = {
-  direct: "Directo",
-  bank: "Bancario",
-  cash: "Contado",
+const STATUS_TONES = {
+  approved: "success",
+  pending: "warning",
+  submitted: "warning",
+  rejected: "danger",
+  cancelled: "danger",
+  canceled: "danger",
+  closed: "neutral",
+  paid: "success",
+  overdue: "danger",
 };
 
-const STATUS = {
-  approved: { label: "Aprobado", tone: "success" },
-  pending: { label: "Pendiente", tone: "warning" },
-  submitted: { label: "En revisión", tone: "warning" },
-  rejected: { label: "Rechazado", tone: "danger" },
-  cancelled: { label: "Cancelado", tone: "danger" },
-  closed: { label: "Cerrado", tone: "neutral" },
-  paid: { label: "Pagada", tone: "success" },
-  overdue: { label: "Vencida", tone: "danger" },
+const BANNER_TONES = {
+  approved: {
+    wrap: "border-brand/25 bg-brand-soft",
+    title: "text-brand-strong",
+    icon: "text-brand",
+  },
+  pending: {
+    wrap: "border-warning/25 bg-warning-soft",
+    title: "text-warning",
+    icon: "text-warning",
+  },
+  submitted: {
+    wrap: "border-warning/25 bg-warning-soft",
+    title: "text-warning",
+    icon: "text-warning",
+  },
+  rejected: {
+    wrap: "border-danger/25 bg-danger-soft",
+    title: "text-danger",
+    icon: "text-danger",
+  },
+  cancelled: {
+    wrap: "border-danger/25 bg-danger-soft",
+    title: "text-danger",
+    icon: "text-danger",
+  },
+  canceled: {
+    wrap: "border-danger/25 bg-danger-soft",
+    title: "text-danger",
+    icon: "text-danger",
+  },
+  closed: {
+    wrap: "border-line bg-surface-2",
+    title: "text-ink-2",
+    icon: "text-ink-3",
+  },
 };
-
-function StatusChip({ status }) {
-  const config = STATUS[status] || { label: status || "—", tone: "neutral" };
-  return <Chip tone={config.tone}>{config.label}</Chip>;
-}
 
 const isHtml = (value) => /<\/?[a-z][\s\S]*>/i.test(value || "");
+
+function StatusChip({ status, t }) {
+  return (
+    <Chip tone={STATUS_TONES[status] || "neutral"}>
+      {formatStatus(status, t)}
+    </Chip>
+  );
+}
+
+function KpiCard({ label, value, caption, valueClassName = "text-ink", index = 0 }) {
+  return (
+    <div
+      className="motion-fade-up flex min-h-[96px] flex-col justify-center gap-1 rounded-card border border-line bg-surface px-4 py-3.5"
+      style={{ animationDelay: `${45 + index * 45}ms` }}
+    >
+      <p className="text-micro font-bold uppercase tracking-wide text-ink-3">{label}</p>
+      <p className={`text-[21px] font-bold leading-tight tabular-nums ${valueClassName}`}>
+        {value}
+      </p>
+      <p className="text-micro font-medium text-ink-3">{caption}</p>
+    </div>
+  );
+}
 
 function ContractDetail() {
   const { guid } = useParams();
@@ -77,19 +129,31 @@ function ContractDetail() {
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tab, setTab] = useState("resumen");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const validTabs = ["resumen", "cronograma", "pagos", "documentos", "notas"];
+  const tab = validTabs.includes(requestedTab) ? requestedTab : "resumen";
+  const setTab = (next) =>
+    setSearchParams(
+      (previous) => {
+        previous.set("tab", next);
+        return previous;
+      },
+      { replace: true }
+    );
   const [noteDraft, setNoteDraft] = useState("");
   const [editingNote, setEditingNote] = useState(false);
   const [savingNote, setSavingNote] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showPayments, setShowPayments] = useState(false);
 
   const tabs = useMemo(
     () => [
-      { value: "resumen", label: "Resumen" },
-      { value: "cronograma", label: "Cronograma" },
-      { value: "pagos", label: "Pagos" },
-      { value: "documentos", label: "Documentos" },
-      { value: "notas", label: t("contracts.tabNotes") || "Notas" },
+      { value: "resumen", label: t("common.overview") },
+      { value: "cronograma", label: t("contracts.scheduleTab") },
+      { value: "pagos", label: t("contracts.paymentsTab") },
+      { value: "documentos", label: t("contracts.documents") },
+      { value: "notas", label: t("contracts.tabNotes") },
     ],
     [t]
   );
@@ -124,48 +188,84 @@ function ContractDetail() {
     [schedule]
   );
 
-  const columns = useMemo(
+  const pendingInstallments = useMemo(
+    () =>
+      schedule.filter(
+        (item) =>
+          item.status !== "paid" &&
+          (item.number ||
+            item.type === "installment" ||
+            item.payment_type === "installment" ||
+            /cuota/i.test(item.description || ""))
+      ).length,
+    [schedule]
+  );
+
+  const scheduleColumns = useMemo(
     () => [
       {
         key: "description",
-        header: "Concepto",
+        header: t("contracts.description"),
         render: (row) => row.description || "—",
       },
       {
         key: "due_date",
-        header: "Vence",
+        header: t("paymentSchedule.date"),
         render: (row) => formatDate(row.due_date),
       },
       {
         key: "amount",
-        header: "Monto",
+        header: t("paymentSchedule.amount"),
         align: "right",
         render: (row) => money(row.amount),
       },
       {
         key: "status",
-        header: "Estado",
-        render: (row) => <StatusChip status={row.status} />,
+        header: t("common.status"),
+        render: (row) => <StatusChip status={row.status} t={t} />,
       },
     ],
-    []
+    [t]
+  );
+
+  const ledgerRows = useMemo(() => {
+    let running = 0;
+    return (contract?.ledger_entries || []).map((entry) => {
+      running += Number(entry.amount || 0);
+      return { ...entry, running_balance: running };
+    });
+  }, [contract]);
+
+  const ledgerTotals = useMemo(
+    () =>
+      ledgerRows.reduce(
+        (acc, entry) => {
+          const amount = Number(entry.amount || 0);
+          if (amount < 0) acc.charges += Math.abs(amount);
+          if (amount > 0) acc.payments += amount;
+          acc.balance += amount;
+          return acc;
+        },
+        { charges: 0, payments: 0, balance: 0 }
+      ),
+    [ledgerRows]
   );
 
   const ledgerColumns = useMemo(
     () => [
       {
         key: "entry_date",
-        header: "Fecha",
+        header: t("paymentSchedule.date"),
         render: (row) => formatDate(row.entry_date),
       },
       {
         key: "description",
-        header: "Descripción",
+        header: t("contracts.description"),
         render: (row) => row.description || "—",
       },
       {
         key: "amount",
-        header: "Monto",
+        header: t("paymentSchedule.amount"),
         align: "right",
         render: (row) => (
           <span className={row.amount < 0 ? "text-danger" : "text-brand-strong"}>
@@ -173,8 +273,18 @@ function ContractDetail() {
           </span>
         ),
       },
+      {
+        key: "running_balance",
+        header: t("contracts.balance"),
+        align: "right",
+        render: (row) => (
+          <span className="text-body text-ink-2">
+            {money(Math.abs(row.running_balance))}
+          </span>
+        ),
+      },
     ],
-    []
+    [t]
   );
 
   const handleSaveNote = async () => {
@@ -220,6 +330,7 @@ function ContractDetail() {
   };
 
   const handleDownloadPdf = async () => {
+    if (!contract?.id) return;
     try {
       const blob = await contractsApi.downloadPdf(contract.id);
       const url = window.URL.createObjectURL(blob);
@@ -231,17 +342,17 @@ function ContractDetail() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      showToast(err?.message || "No pudimos descargar el PDF", "error");
+      showToast(err?.message || t("contracts.pdfError"), "error");
     }
   };
 
   const handleSendReminder = async () => {
-    if (!contract.guid) return;
+    if (!contract?.guid) return;
     try {
       await contractsApi.sendReminder(contract.guid);
-      showToast("Recordatorio enviado al cliente", "success");
+      showToast(t("contracts.reminderSent"), "success");
     } catch (err) {
-      showToast(err?.message || "No pudimos enviar el recordatorio", "error");
+      showToast(err?.message || t("contracts.reminderError"), "error");
     }
   };
 
@@ -274,10 +385,11 @@ function ContractDetail() {
 
   if (loading) {
     return (
-      <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
-        <div className="mx-auto max-w-6xl space-y-4">
+      <main className="page-shell min-h-screen w-full bg-canvas px-4 pb-8 sm:px-6 xl:px-[48px] xl:pb-[48px]">
+        <div className="mx-auto w-full max-w-[1600px] space-y-4">
           <Skeleton rows={2} />
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
+            <Skeleton rows={3} />
             <Skeleton rows={3} />
             <Skeleton rows={3} />
             <Skeleton rows={3} />
@@ -289,12 +401,16 @@ function ContractDetail() {
 
   if (error === "not-found") {
     return (
-      <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
+      <main className="page-shell min-h-screen w-full bg-canvas px-4 pb-8 sm:px-6 xl:px-[48px] xl:pb-[48px]">
         <div className="mx-auto max-w-2xl">
           <EmptyState
-            title="Contrato no encontrado"
-            description="El enlace puede haber cambiado o el contrato fue eliminado."
-            action={<Button onClick={() => navigate("/contracts")}>Volver a contratos</Button>}
+            title={t("contracts.notFoundTitle")}
+            description={t("contracts.notFoundDescription")}
+            action={
+              <Button onClick={() => navigate("/contracts")}>
+                {t("contracts.backToContracts")}
+              </Button>
+            }
           />
         </div>
       </main>
@@ -303,11 +419,11 @@ function ContractDetail() {
 
   if (error) {
     return (
-      <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
+      <main className="page-shell min-h-screen w-full bg-canvas px-4 pb-8 sm:px-6 xl:px-[48px] xl:pb-[48px]">
         <div className="mx-auto max-w-2xl">
           <ErrorState
-            title="No pudimos cargar el contrato"
-            description="Revisa tu conexión e intenta de nuevo."
+            title={t("contracts.loadErrorTitle")}
+            description={t("contracts.loadErrorDescription")}
             onRetry={load}
           />
         </div>
@@ -328,6 +444,18 @@ function ContractDetail() {
   const isClosed = status === "closed";
   const isAdmin = user?.role === "admin";
   const canEditNote = isAdmin && Boolean(contract.project_id && contract.lot_id);
+  const canRegisterPayment =
+    user?.role !== "seller" && !isCancelled && !isClosed;
+  const banner = BANNER_TONES[status] || BANNER_TONES.closed;
+  const bannerTitle = isCancelled
+    ? t("contracts.status.cancelled")
+    : isClosed
+      ? t("contracts.status.closed")
+      : status === "approved"
+        ? t("contracts.approvedWelcome")
+        : status === "rejected"
+          ? t("contracts.rejectedNotice")
+          : t("contracts.pendingReview");
 
   const actionItems = [];
 
@@ -362,14 +490,14 @@ function ContractDetail() {
   }
 
   actionItems.push({
-    label: t("contracts.downloadPdf") || "Descargar PDF",
+    label: t("contracts.downloadPdf"),
     icon: <FontAwesomeIcon icon={faDownload} className="w-3.5" />,
     onSelect: handleDownloadPdf,
   });
 
   if (isAdmin && !isCancelled && !isClosed) {
     actionItems.push({
-      label: t("contracts.sendReminder") || "Enviar recordatorio",
+      label: t("contracts.sendReminder"),
       icon: <FontAwesomeIcon icon={faBell} className="w-3.5" />,
       onSelect: handleSendReminder,
     });
@@ -378,7 +506,7 @@ function ContractDetail() {
   if (isAdmin && (isCancelled || isClosed)) {
     actionItems.push({
       label: t("paymentSchedule.reopenContract"),
-      icon: <FontAwesomeIcon icon={faRotateLeft} className="w-3.5" />,
+      icon: <FontAwesomeIcon rotate={180} icon={faRotateLeft} className="w-3.5" />,
       onSelect: handleReopen,
     });
   }
@@ -392,30 +520,56 @@ function ContractDetail() {
     });
   }
 
+  const recentEntries = (contract.ledger_entries || []).slice(0, 4);
+  const upcoming = schedule.filter((item) => item.status !== "paid").slice(0, 4);
+
+  const registerPayment = () => {
+    if (canRegisterPayment) {
+      setShowPayments(true);
+    } else {
+      navigate("/payments");
+    }
+  };
+
   return (
-    <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
-      <div className="mx-auto max-w-6xl space-y-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <Link to="/contracts" className="text-label font-semibold text-ink-3">
-              ← Contratos
+    <main className="page-shell min-h-screen w-full bg-canvas px-4 pb-40 sm:px-6 sm:pb-8 xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto w-full max-w-[1600px] space-y-5">
+        <div className="motion-fade-up flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <Link
+              to="/contracts"
+              className="inline-flex items-center gap-2 text-label font-semibold text-ink-3 hover:text-ink-2"
+            >
+              <FontAwesomeIcon icon={faArrowLeft} />
+              {t("contracts.backToContracts")}
             </Link>
-            <div className="mt-1 flex items-center gap-3">
+            <div className="mt-1 flex flex-wrap items-center gap-3">
               <h1 className="text-page font-bold text-ink">
-                Contrato #{contract.id}
+                {t("contracts.contractNumber", { id: contract.id })}
               </h1>
-              <StatusChip status={contract.status} />
+              <StatusChip status={status} t={t} />
             </div>
             <p className="text-body text-ink-3">
-              {contract.lot_name} · {contract.project_name} ·{" "}
-              {contract.applicant_name}
+              {[contract.lot_name, contract.project_name, contract.applicant_name]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="secondary" onClick={() => navigate("/contracts")}>
-              Volver
+            <Button
+              variant="secondary"
+              className="hidden sm:inline-flex"
+              onClick={handleDownloadPdf}
+            >
+              <FontAwesomeIcon icon={faDownload} />
+              {t("contracts.downloadPdf")}
             </Button>
-            <Button onClick={() => navigate("/payments")}>Registrar pago</Button>
+            {canRegisterPayment && (
+              <Button onClick={registerPayment}>
+                <FontAwesomeIcon icon={faWallet} />
+                {t("contracts.registerPayment")}
+              </Button>
+            )}
             {actionItems.length > 0 && (
               <Menu
                 label={t("common.actions")}
@@ -426,105 +580,313 @@ function ContractDetail() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Card title="Total del contrato">
-            <p className="text-page font-bold text-ink">{money(total)}</p>
-            <p className="text-micro text-ink-3">
-              {contract.payment_term} meses ·{" "}
-              {FINANCING[contract.financing_type] || contract.financing_type || "—"}
-            </p>
-          </Card>
-          <Card title="Pagado">
-            <p className="text-page font-bold text-brand-strong">{money(paid)}</p>
-            <p className="text-micro text-ink-3">
-              {total ? Math.round((paid / total) * 100) : 0}% del total
-            </p>
-          </Card>
-          <Card title={hasCredit ? "Saldo a favor" : "Saldo"}>
-            <p className={`text-page font-bold ${hasCredit ? "text-brand-strong" : "text-ink"}`}>
-              {money(Math.abs(balance))}
-            </p>
-            <p className="text-micro text-ink-3">
-              {hasCredit ? "A favor del cliente" : "Saldo pendiente"}
-            </p>
-          </Card>
-          <Card title="Próximo pago">
-            <p className="text-page font-bold text-warning">
-              {nextPayment ? formatDate(nextPayment.due_date) : "—"}
-            </p>
-            <p className="text-micro text-ink-3">
-              {nextPayment
-                ? `${money(nextPayment.amount)} · ${nextPayment.installment_number ? `cuota ${nextPayment.installment_number}` : "próxima cuota"}`
-                : "Sin pagos pendientes"}
-            </p>
-          </Card>
+        <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
+          <KpiCard
+            label={t("contracts.totalValue")}
+            value={money(total)}
+            caption={`${contract.payment_term || 0} ${t("contracts.months").toLowerCase()} · ${contract.interest_rate ?? 0}%`}
+            index={0}
+          />
+          <KpiCard
+            label={t("contracts.paid")}
+            value={money(paid)}
+            valueClassName="text-brand-strong"
+            caption={`${total ? Math.round((paid / total) * 100) : 0}% ${t("contracts.ofTotal")}`}
+            index={1}
+          />
+          <KpiCard
+            label={hasCredit ? t("contracts.balanceInFavor") : t("contracts.balance")}
+            value={money(Math.abs(balance))}
+            caption={
+              hasCredit
+                ? t("contracts.balanceInFavor")
+                : t("contracts.installmentsRemaining", { count: pendingInstallments })
+            }
+            index={2}
+          />
+          <KpiCard
+            label={t("contracts.nextPayment")}
+            value={nextPayment ? formatDate(nextPayment.due_date) : "—"}
+            valueClassName={nextPayment ? "text-warning" : "text-ink"}
+            caption={
+              nextPayment
+                ? `${money(nextPayment.amount)}${nextPayment.installment_number ? ` · ${t("contracts.installmentOf", { current: nextPayment.installment_number, total: contract.payment_term || schedule.length })}` : ""}`
+                : t("contracts.noNextPayment")
+            }
+            index={3}
+          />
         </div>
 
-        <Tabs items={tabs} value={tab} onChange={setTab} />
+        <Tabs
+          items={tabs}
+          value={tab}
+          onChange={setTab}
+          className="motion-fade-up [animation-delay:225ms]"
+        />
 
         {tab === "resumen" && (
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card title="Solicitante">
-              <dl className="space-y-2 text-body">
-                <div className="flex justify-between gap-3">
-                  <dt className="text-ink-3">Nombre</dt>
-                  <dd className="font-semibold text-ink">{contract.applicant_name}</dd>
+          <div className="motion-fade-up grid gap-4 [animation-delay:60ms] xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="space-y-3.5">
+              <div className={`rounded-card border p-4 ${banner.wrap}`}>
+                <div className="flex items-start gap-3">
+                  <FontAwesomeIcon
+                    icon={
+                      status === "approved"
+                        ? faCheckCircle
+                        : status === "rejected" || isCancelled
+                          ? faExclamationTriangle
+                          : faReceipt
+                    }
+                    className={`mt-0.5 ${banner.icon}`}
+                  />
+                  <div>
+                    <p className={`text-body-lg font-bold ${banner.title}`}>
+                      {bannerTitle}
+                    </p>
+                    <p className="mt-1 text-label text-ink-2">
+                      {nextPayment
+                        ? `${t("contracts.nextPayment")}: ${formatDate(nextPayment.due_date)} · ${money(nextPayment.amount)}`
+                        : t("contracts.noNextPayment")}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-ink-3">Teléfono</dt>
-                  <dd className="font-semibold text-ink">{contract.applicant_phone || "—"}</dd>
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line/60 pt-3 text-micro text-ink-3">
+                  <span>
+                    {t("contracts.paid")}: {money(paid)}
+                  </span>
+                  <span>
+                    {contract.payment_term || 0} {t("contracts.months").toLowerCase()}
+                  </span>
+                  {contract.created_at && (
+                    <span>
+                      {t("contracts.created")}: {formatDate(contract.created_at)}
+                    </span>
+                  )}
                 </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-ink-3">Identidad</dt>
-                  <dd className="font-semibold text-ink">{contract.applicant_identity || "—"}</dd>
+              </div>
+
+              <Card
+                title={t("contracts.upcomingPayments")}
+                action={
+                  <button
+                    type="button"
+                    onClick={() => setTab("cronograma")}
+                    className="text-label font-semibold text-brand-strong hover:underline"
+                  >
+                    {t("common.viewAll")}
+                  </button>
+                }
+                bodyClassName="px-5 pb-2 pt-3"
+              >
+                {upcoming.length === 0 ? (
+                  <p className="py-4 text-body text-ink-3">{t("contracts.noScheduleDescription")}</p>
+                ) : (
+                  <ul className="divide-y divide-line">
+                    {upcoming.map((row) => (
+                      <li
+                        key={row.id}
+                        className="flex flex-wrap items-center justify-between gap-3 py-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-body font-semibold text-ink">
+                            {row.description || t("contracts.installment")}
+                          </p>
+                          <p className="text-label text-ink-3">{formatDate(row.due_date)}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-body font-semibold text-ink">
+                            {money(row.amount)}
+                          </span>
+                          <StatusChip status={row.status} t={t} />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+
+              <Card
+                title={t("contracts.recentActivity")}
+                action={
+                  <button
+                    type="button"
+                    onClick={() => setTab("pagos")}
+                    className="text-label font-semibold text-brand-strong hover:underline"
+                  >
+                    {t("common.viewAll")}
+                  </button>
+                }
+                bodyClassName="px-5 pb-2 pt-3"
+              >
+                {recentEntries.length === 0 ? (
+                  <p className="py-4 text-body text-ink-3">{t("contracts.activityEmpty")}</p>
+                ) : (
+                  <ul className="divide-y divide-line">
+                    {recentEntries.map((row) => (
+                      <li
+                        key={row.id}
+                        className="flex flex-wrap items-center justify-between gap-3 py-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-label font-semibold text-ink-2">
+                            {row.description || "—"}
+                          </p>
+                          <p className="text-micro text-ink-3">{formatDate(row.entry_date)}</p>
+                        </div>
+                        <span
+                          className={`text-label font-semibold ${
+                            row.amount < 0 ? "text-danger" : "text-brand-strong"
+                          }`}
+                        >
+                          {money(Math.abs(Number(row.amount || 0)))}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </div>
+
+            <div className="space-y-3.5">
+              <Card title={t("contracts.clientCard")} bodyClassName="px-5 pb-5 pt-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-info-soft text-title font-bold uppercase text-info">
+                    {contract.applicant_name?.charAt(0) || "?"}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-body-lg font-bold text-ink">
+                      {contract.applicant_name || "—"}
+                    </p>
+                    <p className="truncate text-micro text-ink-3">
+                      {contract.applicant_identity || "—"}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-ink-3">Crédito</dt>
-                  <dd className="font-semibold text-ink">{contract.applicant_credit_score ?? "—"}</dd>
+                <dl className="mt-3 space-y-1.5 border-t border-line pt-3 text-label">
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-ink-3">{t("contractDetailsModal.phone")}</dt>
+                    <dd className="font-semibold text-ink">
+                      {contract.applicant_phone || "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-ink-3">{t("contractDetailsModal.identity")}</dt>
+                    <dd className="font-semibold text-ink">
+                      {contract.applicant_identity || "—"}
+                    </dd>
+                  </div>
+                </dl>
+                {contract.applicant_credit_score !== undefined &&
+                  contract.applicant_credit_score !== null && (
+                    <div className="mt-3">
+                      <CreditScoreCard creditScore={contract.applicant_credit_score} />
+                    </div>
+                  )}
+              </Card>
+
+              <Card title={t("contracts.termsCard")} bodyClassName="px-5 pb-5 pt-3">
+                <dl className="space-y-1.5 text-label">
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-ink-3">{t("contracts.financingType")}</dt>
+                    <dd className="font-bold capitalize text-ink">
+                      {contract.financing_type
+                        ? t(`contracts.financingTypes.${contract.financing_type.toLowerCase()}`) ||
+                          contract.financing_type
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-ink-3">{t("contracts.months")}</dt>
+                    <dd className="font-bold text-ink">
+                      {contract.payment_term || "—"}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-ink-3">{t("contracts.rate")}</dt>
+                    <dd className="font-bold text-ink">
+                      {contract.interest_rate ?? 0}%
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-ink-3">{t("contracts.reserve")}</dt>
+                    <dd className="font-bold text-ink">
+                      {money(contract.reserve_amount)}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-ink-3">{t("contracts.downPayment")}</dt>
+                    <dd className="font-bold text-ink">
+                      {money(contract.down_payment)}
+                    </dd>
+                  </div>
+                </dl>
+              </Card>
+
+              <Card title={t("contracts.documentsCard")} bodyClassName="px-5 pb-5 pt-3">
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleDownloadPdf}
+                    className="flex w-full items-center justify-between gap-3 rounded-control border border-line px-3 py-2 text-left hover:bg-surface-2"
+                  >
+                    <span className="text-label font-semibold text-ink">
+                      {t("contracts.downloadPdf")}
+                    </span>
+                    <FontAwesomeIcon icon={faDownload} className="text-ink-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTab("documentos")}
+                    className="flex w-full items-center justify-between gap-3 rounded-control border border-line px-3 py-2 text-left hover:bg-surface-2"
+                  >
+                    <span className="text-label font-semibold text-ink">
+                      {t("contracts.documents")}
+                    </span>
+                    <span className="text-micro text-ink-3">
+                      {
+                        (contract.payment_schedule || []).filter((row) => row.has_receipt)
+                          .length
+                      }
+                    </span>
+                  </button>
                 </div>
-              </dl>
-            </Card>
-            <Card title="Lote y proyecto">
-              <dl className="space-y-2 text-body">
-                <div className="flex justify-between gap-3">
-                  <dt className="text-ink-3">Lote</dt>
-                  <dd className="font-semibold text-ink">{contract.lot_name}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-ink-3">Proyecto</dt>
-                  <dd className="font-semibold text-ink">{contract.project_name}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-ink-3">Área</dt>
-                  <dd className="font-semibold text-ink">
-                    {contract.lot_area} {contract.lot_measurement_unit || "m²"}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-ink-3">Precio del lote</dt>
-                  <dd className="font-semibold text-ink">{money(contract.lot_price)}</dd>
-                </div>
-              </dl>
-            </Card>
+              </Card>
+            </div>
           </div>
         )}
 
         {tab === "cronograma" && (
-          <Card title="Cronograma de pagos">
+          <Card
+            title={t("contracts.paymentSchedule")}
+            action={
+              <span className="text-label text-ink-3">
+                {t("contracts.installmentsRemaining", { count: pendingInstallments })}
+              </span>
+            }
+            bodyClassName="p-4 pt-3"
+            className="motion-fade-up [animation-delay:60ms]"
+          >
             <Table
-              columns={columns}
+              columns={scheduleColumns}
               rows={schedule}
               getRowKey={(row) => row.id}
-              empty={<EmptyState title="Sin cronograma" description="Este contrato no tiene cuotas generadas." />}
+              empty={
+                <EmptyState
+                  title={t("contracts.noScheduleTitle")}
+                  description={t("contracts.noScheduleDescription")}
+                />
+              }
               mobileCard={(row) => (
                 <div className="flex items-center justify-between gap-3 rounded-card border border-line bg-surface p-3">
-                  <div>
-                    <p className="text-body font-semibold text-ink">{row.description}</p>
+                  <div className="min-w-0">
+                    <p className="truncate text-body font-semibold text-ink">
+                      {row.description}
+                    </p>
                     <p className="text-micro text-ink-3">{formatDate(row.due_date)}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-body font-semibold text-ink">{money(row.amount)}</p>
-                    <StatusChip status={row.status} />
+                    <StatusChip status={row.status} t={t} />
                   </div>
                 </div>
               )}
@@ -533,16 +895,24 @@ function ContractDetail() {
         )}
 
         {tab === "pagos" && (
-          <Card title="Libro mayor">
+          <div className="motion-fade-up grid gap-3.5 [animation-delay:60ms] xl:grid-cols-[minmax(0,1fr)_340px]">
+          <Card title={t("contracts.ledgerEntries")} bodyClassName="p-4 pt-3">
             <Table
               columns={ledgerColumns}
-              rows={contract.ledger_entries || []}
+              rows={ledgerRows}
               getRowKey={(row) => row.id}
-              empty={<EmptyState title="Sin movimientos" description="Aún no hay movimientos en el libro mayor." />}
+              empty={
+                <EmptyState
+                  title={t("contracts.noLedgerTitle")}
+                  description={t("contracts.noLedgerDescription")}
+                />
+              }
               mobileCard={(row) => (
                 <div className="flex items-center justify-between gap-3 rounded-card border border-line bg-surface p-3">
-                  <div>
-                    <p className="text-body font-semibold text-ink">{row.description}</p>
+                  <div className="min-w-0">
+                    <p className="truncate text-body font-semibold text-ink">
+                      {row.description}
+                    </p>
                     <p className="text-micro text-ink-3">{formatDate(row.entry_date)}</p>
                   </div>
                   <p className="text-body font-semibold text-ink">{money(row.amount)}</p>
@@ -550,35 +920,66 @@ function ContractDetail() {
               )}
             />
           </Card>
+          <div className="space-y-3.5">
+            <Card title={t("contracts.accountSummary")} bodyClassName="px-5 pb-5 pt-3">
+              <dl className="space-y-2 text-body">
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-3">{t("contracts.totalCharges")}</dt>
+                  <dd className="font-semibold text-danger">{money(ledgerTotals.charges)}</dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-3">{t("contracts.totalPayments")}</dt>
+                  <dd className="font-semibold text-brand-strong">{money(ledgerTotals.payments)}</dd>
+                </div>
+                <div className="flex justify-between gap-3 border-t border-line pt-2">
+                  <dt className="font-semibold text-ink">{t("contracts.balance")}</dt>
+                  <dd className="font-bold text-ink">{money(Math.abs(ledgerTotals.balance))}</dd>
+                </div>
+              </dl>
+            </Card>
+            <Card title={t("contracts.notes")} bodyClassName="px-5 pb-5 pt-3">
+              <p className="line-clamp-6 text-body text-ink-2">
+                {noteContent ? noteContent.replace(/<[^>]*>/g, " ") : t("contracts.noNotes")}
+              </p>
+            </Card>
+          </div>
+          </div>
         )}
 
         {tab === "documentos" && (
-          <Card title="Documentos">
-            <ul className="space-y-2">
-              {(contract.payment_schedule || [])
-                .filter((row) => row.has_receipt)
-                .map((row) => (
-                  <li
-                    key={row.id}
-                    className="flex items-center justify-between gap-3 rounded-control border border-line bg-surface-2 px-3 py-2 text-body"
-                  >
-                    <span className="text-ink-2">
-                      Comprobante · {row.description}
-                    </span>
-                    <span className="text-micro text-ink-3">
-                      {formatDate(row.paid_at || row.due_date)}
-                    </span>
-                  </li>
-                ))}
-              {!(contract.payment_schedule || []).some((row) => row.has_receipt) && (
-                <li className="text-body text-ink-3">Sin comprobantes adjuntos.</li>
-              )}
-            </ul>
-          </Card>
+          <div className="motion-fade-up space-y-3.5 [animation-delay:60ms]">
+            <DocumentsTab contract={contract} />
+            <Card title={t("contracts.receipts")} bodyClassName="px-5 pb-5 pt-3">
+              <ul className="space-y-2">
+                {(contract.payment_schedule || [])
+                  .filter((row) => row.has_receipt)
+                  .map((row) => (
+                    <li
+                      key={row.id}
+                      className="flex items-center justify-between gap-3 rounded-control border border-line bg-surface-2 px-3 py-2 text-body"
+                    >
+                      <span className="text-ink-2">
+                        {t("paymentSchedule.paid")} · {row.description}
+                      </span>
+                      <span className="text-micro text-ink-3">
+                        {formatDate(row.paid_at || row.due_date)}
+                      </span>
+                    </li>
+                  ))}
+                {!(contract.payment_schedule || []).some((row) => row.has_receipt) && (
+                  <li className="text-body text-ink-3">{t("contracts.noReceipts")}</li>
+                )}
+              </ul>
+            </Card>
+          </div>
         )}
 
         {tab === "notas" && (
-          <Card title={t("contracts.notes")}>
+          <Card
+            title={t("contracts.notes")}
+            bodyClassName="px-5 pb-5 pt-3"
+            className="motion-fade-up [animation-delay:60ms]"
+          >
             {editingNote ? (
               <div className="space-y-3">
                 <textarea
@@ -645,6 +1046,27 @@ function ContractDetail() {
           </Card>
         )}
       </div>
+
+      {canRegisterPayment && (
+        <div className="fixed inset-x-0 bottom-[calc(64px+env(safe-area-inset-bottom))] z-30 border-t border-line bg-surface p-3 sm:hidden">
+          <Button className="w-full" onClick={registerPayment}>
+            <FontAwesomeIcon icon={faWallet} />
+            {t("contracts.registerPayment")}
+          </Button>
+        </div>
+      )}
+
+      {showPayments && (
+        <PaymentScheduleModal
+          contract={contract}
+          open={showPayments}
+          onClose={() => setShowPayments(false)}
+          onPaymentSuccess={() => {
+            setShowPayments(false);
+            load();
+          }}
+        />
+      )}
     </main>
   );
 }

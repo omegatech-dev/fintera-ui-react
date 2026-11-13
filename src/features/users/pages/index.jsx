@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 import debounce from "lodash.debounce";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -251,6 +252,23 @@ function Users() {
   }, []);
 
   useEffect(() => {
+    if (!selectedUser) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setSelectedUser(null);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedUser]);
+
+  useEffect(() => {
     if (location.state?.selectedUserId || location.state?.selectedUserName) {
       const userFromState = {
         id: location.state.selectedUserId,
@@ -405,7 +423,7 @@ function Users() {
       return (
         <div className="flex min-w-0 items-center gap-3">
           <div
-            className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-label font-bold text-white ${getAvatarColor(
+            className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-micro font-bold text-white ${getAvatarColor(
               user.full_name
             )}`}
           >
@@ -452,13 +470,17 @@ function Users() {
     (user) => {
       const active = isActiveUser(user);
       return (
-        <span className="inline-flex items-center gap-2">
+        <span className="inline-flex items-center gap-1.5">
           <span
-            className={`h-2 w-2 rounded-full ${
+            className={`h-[7px] w-[7px] rounded-full ${
               active ? "bg-brand" : "bg-ink-3"
             }`}
           />
-          <span className="text-body text-ink-2">
+          <span
+            className={`text-label font-semibold ${
+              active ? "text-brand-strong" : "text-ink-3"
+            }`}
+          >
             {t(active ? "common.active" : "common.inactive")}
           </span>
         </span>
@@ -536,14 +558,16 @@ function Users() {
     [counts, t]
   );
 
+  const countLabel = (count, singularKey, pluralKey) =>
+    `${count} ${t(count === 1 ? singularKey : pluralKey)}`;
   const subtitle =
     counts.total != null
-      ? t("users.listSummary", {
-          total: counts.total,
-          admins: counts.admin ?? 0,
-          sellers: counts.seller ?? 0,
-          clients: counts.user ?? 0,
-        })
+      ? [
+          countLabel(counts.total, "users.userSingular", "users.userPlural"),
+          countLabel(counts.admin ?? 0, "users.adminSingular", "users.adminPlural"),
+          countLabel(counts.seller ?? 0, "users.sellerSingular", "users.sellerPlural"),
+          countLabel(counts.user ?? 0, "users.clientSingular", "users.clientPlural"),
+        ].join(" · ")
       : t("users.manageSystemUsers");
 
   const hasFilters = Boolean(searchTerm || roleFilter || showAll);
@@ -562,13 +586,15 @@ function Users() {
       variants={pageVariants}
       initial="initial"
       animate="animate"
-      className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell dark:bg-darkblack-700 min-h-screen"
+      className="min-h-screen w-full bg-canvas px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px]"
     >
       <div className="max-w-[1600px] mx-auto space-y-5">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-page font-bold text-ink">{t("users.title")}</h1>
-            <p className="text-body text-ink-3">{subtitle}</p>
+            <h1 className="text-page font-bold tracking-tight text-ink">
+              {t("users.title")}
+            </h1>
+            <p className="mt-1 text-body text-ink-3">{subtitle}</p>
           </div>
           <Button onClick={() => navigate("/users/create")}>
             <FontAwesomeIcon icon={faPlus} />
@@ -576,73 +602,71 @@ function Users() {
           </Button>
         </div>
 
-        <Card bodyClassName="p-4">
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="relative flex-1 sm:max-w-md">
-                <svg
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.35-4.35"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <Input
-                  value={searchInput}
-                  onChange={handleSearchChange}
-                  placeholder={t("userFilter.searchPlaceholder")}
-                  aria-label={t("userFilter.searchPlaceholder")}
-                  className="pl-9"
-                />
-              </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleStatusToggle}
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:w-80">
+              <svg
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
               >
-                {showAll ? t("users.showActiveOnly") : t("users.showAll")}
-              </Button>
+                <path
+                  d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.35-4.35"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <Input
+                value={searchInput}
+                onChange={handleSearchChange}
+                placeholder={t("userFilter.searchPlaceholder")}
+                aria-label={t("userFilter.searchPlaceholder")}
+                className="h-10 pl-9"
+              />
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              {roleChips.map((chip) => {
-                const active = roleFilter === chip.value;
-                return (
-                  <button
-                    key={chip.value || "all"}
-                    type="button"
-                    onClick={() => handleRoleChange(chip.value)}
-                    aria-pressed={active}
-                    className={`inline-flex h-8 items-center gap-2 rounded-chip border px-3 text-label font-semibold transition-colors ${
-                      active
-                        ? "border-brand bg-brand-soft text-brand-strong"
-                        : "border-line bg-surface text-ink-2 hover:bg-surface-2"
-                    }`}
-                  >
-                    {chip.label}
-                    {chip.count != null && (
-                      <span
-                        className={`rounded-chip px-1.5 text-micro ${
-                          active
-                            ? "bg-surface text-brand-strong"
-                            : "bg-surface-2 text-ink-3"
-                        }`}
-                      >
-                        {chip.count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleStatusToggle}
+            >
+              {showAll ? t("users.showActiveOnly") : t("users.showAll")}
+            </Button>
           </div>
-        </Card>
+
+          <div className="flex flex-wrap gap-1.5">
+            {roleChips.map((chip) => {
+              const active = roleFilter === chip.value;
+              return (
+                <button
+                  key={chip.value || "all"}
+                  type="button"
+                  onClick={() => handleRoleChange(chip.value)}
+                  aria-pressed={active}
+                  className={`inline-flex h-[30px] items-center gap-1.5 rounded-chip border px-3 text-label font-semibold transition-colors ${
+                    active
+                      ? "border-brand bg-brand-soft text-brand-strong"
+                      : "border-line bg-surface text-ink-2 hover:bg-surface-2"
+                  }`}
+                >
+                  {chip.label}
+                  {chip.count != null && (
+                    <span
+                      className={`rounded-chip px-1.5 text-micro ${
+                        active
+                          ? "bg-surface text-brand-strong"
+                          : "bg-surface-2 text-ink-3"
+                      }`}
+                    >
+                      {chip.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {error && (
           <ErrorState
@@ -723,28 +747,47 @@ function Users() {
         </Card>
       </div>
 
-      <AnimatePresence>
-        {selectedUser && (
+      {createPortal(
+        <AnimatePresence>
+          {selectedUser && (
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 50 }}
-            className="2xl:relative fixed inset-0 2xl:inset-auto z-50 2xl:z-0 flex justify-end 2xl:block"
+            className="fixed inset-0 z-[70] flex justify-end"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={(event) => {
-              if (event.target === event.currentTarget && window.innerWidth < 1536) {
-                setSelectedUser(null);
-              }
+              if (event.target === event.currentTarget) setSelectedUser(null);
             }}
           >
-            <div className="h-full 2xl:h-auto 2xl:sticky 2xl:top-[156px] w-[400px] max-w-full">
+            <div
+              className="absolute inset-0 bg-ink/30 backdrop-blur-[1px]"
+              aria-hidden="true"
+            />
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label={t("users.userDrawerTitle")}
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.24, ease: "easeOut" }}
+              className="relative h-full w-[460px] max-w-full border-l border-line bg-surface shadow-pop"
+            >
               <RightSidebar
                 user={selectedUser}
                 onClose={() => setSelectedUser(null)}
+                onToggleStatus={handleToggleStatus}
+                onResend={handleResendConfirmation}
+                onDelete={
+                  currentUser?.role === "admin" ? handleDelete : undefined
+                }
               />
-            </div>
+            </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </motion.main>
   );
 }

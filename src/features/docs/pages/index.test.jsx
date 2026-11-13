@@ -34,6 +34,8 @@ describe("Documentation page", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("General settings and branding")).toBeInTheDocument();
     expect(screen.getByText("Approving, rejecting, and undoing payments")).toBeInTheDocument();
+    expect(screen.getByText("Users and roles")).toBeInTheDocument();
+    expect(screen.getByText("Audit log")).toBeInTheDocument();
   });
 
   it("hides admin-only articles from sellers", async () => {
@@ -43,8 +45,14 @@ describe("Documentation page", () => {
       await screen.findByRole("heading", { name: "System overview and roles" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Financing types: direct, bank, and cash")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "My day" }).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByRole("link", { name: "Terms and conditions" }).length,
+    ).toBeGreaterThan(0);
     expect(screen.queryByText("General settings and branding")).toBeNull();
     expect(screen.queryByText("Approving, rejecting, and undoing payments")).toBeNull();
+    expect(screen.queryByText("Users and roles")).toBeNull();
+    expect(screen.queryByText("Audit log")).toBeNull();
   });
 
   it("filters the article list with search", async () => {
@@ -68,5 +76,30 @@ describe("Documentation page", () => {
       "href",
       "#the-formula",
     );
+  });
+
+  it("renders a new article and builds its table of contents", async () => {
+    renderDocs("seller", "/docs/seller-collections");
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Collections and receipts",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole("link", { name: "Registering a collection" }),
+    ).toHaveAttribute("href", "#registering-a-collection");
+  });
+
+  it("finds new articles with search", async () => {
+    const user = userEvent.setup();
+    renderDocs("admin");
+
+    await screen.findByRole("heading", { name: "System overview and roles" });
+    await user.type(screen.getByRole("searchbox"), "payout");
+
+    expect(
+      await screen.findByText("Commissions and payouts"),
+    ).toBeInTheDocument();
   });
 });

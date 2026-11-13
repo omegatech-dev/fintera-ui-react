@@ -19,9 +19,10 @@ El precio de un lote se basa en su **área** y en el **precio por unidad cuadrad
 
 ## Publicación
 
-Un proyecto puede estar **publicado** (visible en el portal de clientes) o no publicado. Publicar es una acción de administrador; los vendedores ven el estado actual pero no lo cambian.
+Un proyecto puede estar **publicado** (visible en el portal de clientes) o ser un **borrador** (no visible). Publicar es una acción de administrador; los vendedores ven el estado actual pero no lo cambian.
 
 ## Relacionado
 
+- [Lista y detalle de proyectos](/docs/projects-list-and-detail)
 - [Lotes y sus estados](/docs/lots-and-statuses)
 - [Tipos de financiamiento](/docs/financing-types)

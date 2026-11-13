@@ -77,7 +77,7 @@ export default function ProjectDrawingsPanel({ projectId, canManage }) {
   const handleDelete = async (drawing) => {
     const confirmed = await confirmDialog({
       title: t("media.deleteConfirm", { name: drawing.name }),
-      confirmLabel: t("common.delete") || "Eliminar",
+      confirmLabel: t("common.delete"),
     });
     if (!confirmed) return;
     try {

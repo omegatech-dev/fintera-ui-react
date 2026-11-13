@@ -27,7 +27,7 @@ const STATUS_TONES = {
 };
 
 const PER_PAGE = 20;
-const GRID_CLASS = "grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+const GRID_CLASS = "grid gap-4 md:grid-cols-2";
 
 function LotsList() {
   const { id: projectId } = useParams();
@@ -221,7 +221,8 @@ function LotsList() {
     [t]
   );
 
-  const displayTotal = summary.total || total;
+  const hasFilters = Boolean(searchTerm || statusFilter);
+  const displayTotal = hasFilters ? total : summary.total || total;
   const priceLabel =
     summary.price !== null && summary.price !== undefined
       ? `${Number(summary.price).toLocaleString()} ${getDefaultCurrency()}`
@@ -233,10 +234,12 @@ function LotsList() {
   ]
     .filter(Boolean)
     .join(" · ");
+  const pageStart = displayTotal > 0 ? (page - 1) * PER_PAGE + 1 : 0;
+  const pageEnd = Math.min(page * PER_PAGE, displayTotal);
 
   return (
-    <main className="w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
-      <div className="mx-auto max-w-7xl space-y-5">
+    <main className="page-shell min-h-screen w-full bg-canvas px-6 pb-6 xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <nav
@@ -244,7 +247,7 @@ function LotsList() {
               className="flex flex-wrap items-center gap-1 text-label font-medium text-ink-3"
             >
               <Link to="/projects" className="transition-colors hover:text-ink">
-                {t("dashboard.projects")}
+                {t("projectsPage.title")}
               </Link>
               <span aria-hidden="true">/</span>
               <Link
@@ -257,10 +260,10 @@ function LotsList() {
             <h1 className="mt-1 text-page font-bold tracking-tight text-ink">
               {t("projects.lots")}
             </h1>
-            <p className="mt-1 text-body text-ink-3">{subtitle}</p>
+            <p className="mt-1 text-body font-medium text-ink-3">{subtitle}</p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             <Button
               variant="secondary"
               onClick={() => navigate(`/projects/${projectId}`)}
@@ -277,7 +280,7 @@ function LotsList() {
         </header>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-full sm:w-72">
+          <div className="relative w-full sm:w-[320px]">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -296,7 +299,8 @@ function LotsList() {
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder={t("lots.searchPlaceholder")}
-              className="h-10 pl-9"
+              aria-label={t("lots.searchPlaceholder")}
+              className="h-10 max-h-10 pl-9"
             />
           </div>
 
@@ -309,7 +313,7 @@ function LotsList() {
                   type="button"
                   onClick={() => handleFilterChange(chip.value)}
                   aria-pressed={active}
-                  className={`inline-flex h-8 items-center gap-1.5 rounded-chip px-3 text-label font-semibold transition-colors ${
+                  className={`inline-flex h-[30px] items-center gap-1.5 rounded-chip px-3 text-label font-semibold transition-colors ${
                     active
                       ? "bg-brand-soft text-brand-strong"
                       : "border border-line bg-surface text-ink-2 hover:bg-surface-2"
@@ -332,7 +336,7 @@ function LotsList() {
                 value={sort.field}
                 onChange={handleSortFieldChange}
                 aria-label={t("lots.sortBy")}
-                className="h-10"
+                className="h-10 max-h-10"
               >
                 {sortOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -364,10 +368,10 @@ function LotsList() {
           />
         ) : loading ? (
           <div className={GRID_CLASS}>
-            {Array.from({ length: 8 }).map((_, index) => (
+            {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="rounded-card border border-line bg-surface p-4"
+                className="min-h-[176px] rounded-card border border-line bg-surface p-4"
               >
                 <Skeleton rows={4} />
               </div>
@@ -395,20 +399,37 @@ function LotsList() {
                 />
               ))}
             </div>
-            {totalPages > 1 && (
-              <Pagination
-                page={page}
-                pageCount={totalPages}
-                total={total}
-                perPage={PER_PAGE}
-                onPageChange={handlePageChange}
-              />
-            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
+              <p className="text-label font-medium text-ink-3">
+                {t("projects.showingLots", {
+                  start: pageStart,
+                  end: pageEnd,
+                  total: displayTotal,
+                })}
+              </p>
+              {totalPages > 1 && (
+                <Pagination
+                  page={page}
+                  pageCount={totalPages}
+                  total={displayTotal}
+                  perPage={PER_PAGE}
+                  onPageChange={handlePageChange}
+                  className="py-0 [&>span:first-child]:hidden"
+                />
+              )}
+            </div>
           </>
         )}
       </div>
 
-      <LotDetailsModal lot={detailsLot} onClose={() => setDetailsLot(null)} />
+      <LotDetailsModal
+        lot={detailsLot}
+        onClose={() => setDetailsLot(null)}
+        onReserve={() => detailsLot && handleReserve(detailsLot)}
+        onEdit={() => detailsLot && handleEdit(detailsLot)}
+        isAdmin={userRole === "admin"}
+      />
     </main>
   );
 }

@@ -58,6 +58,20 @@ describe("audit model labels", () => {
     expect(formatAuditModel(null, t)).toBe("");
     expect(formatAuditEvent("", t)).toBe("");
   });
+
+  it("has past-tense action labels for every event", () => {
+    Object.keys(en.audits.events).forEach((event) => {
+      expect(en.audits.past[event]).toBeTruthy();
+      expect(es.audits.past[event]).toBeTruthy();
+    });
+  });
+
+  it("has an entity phrase for every known model", () => {
+    AUDIT_MODELS.forEach((model) => {
+      expect(en.audits.entityPhrases[model]).toBeTruthy();
+      expect(es.audits.entityPhrases[model]).toBeTruthy();
+    });
+  });
 });
 
 describe("audit event labels", () => {

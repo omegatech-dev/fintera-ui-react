@@ -8,7 +8,7 @@ import {
   faHome,
   faPercent,
   faSliders,
-  faStar,
+  faSun,
   faUsers,
   faWallet,
 } from "@fortawesome/free-solid-svg-icons";
@@ -17,30 +17,71 @@ import {
 // `to` may be a string or a (user) => string resolver. `match` extends the
 // active prefixes beyond `to`; `exclude` removes prefixes from the match.
 export const NAV_ITEMS = [
-  { to: "/", labelKey: "dashboard.dashboard", icon: faHome, roles: ["admin", "seller"], exact: true },
-  { to: "/payments", labelKey: "dashboard.payments", icon: faWallet, roles: ["admin"] },
+  {
+    to: "/",
+    labelKey: "dashboard.dashboard",
+    icon: faHome,
+    roles: ["admin"],
+    exact: true,
+    shortcut: "d",
+  },
+  {
+    to: "/payments",
+    labelKey: "dashboard.payments",
+    icon: faWallet,
+    roles: ["admin"],
+    shortcut: "p",
+  },
   {
     to: "/commissions",
     labelKey: "dashboard.commissions",
     icon: faPercent,
-    roles: ["admin", "seller"],
-    toFor: (user) => (user?.role === "seller" ? "/vendedor/comisiones" : "/commissions"),
-    match: ["/commissions", "/vendedor/comisiones"],
+    roles: ["admin"],
+    match: ["/commissions"],
+    shortcut: "m",
   },
   {
-    to: "/vendedor/clientes",
-    labelKey: "dashboard.workspace",
-    icon: faStar,
-    roles: ["seller"],
-    match: ["/vendedor"],
-    exclude: ["/vendedor/comisiones"],
+    to: "/contracts",
+    labelKey: "dashboard.contracts",
+    icon: faFileAlt,
+    roles: ["admin"],
+    shortcut: "c",
   },
-  { to: "/contracts", labelKey: "dashboard.contracts", icon: faFileAlt, roles: ["admin", "seller"] },
-  { to: "/projects", labelKey: "dashboard.projects", icon: faBuilding, roles: ["admin", "seller"] },
-  { to: "/users", labelKey: "dashboard.users", icon: faUsers, roles: ["admin"] },
-  { to: "/analytics", labelKey: "dashboard.analytics", icon: faChartColumn, roles: ["admin"] },
-  { to: "/audits", labelKey: "dashboard.audits", icon: faClipboardList, roles: ["admin"] },
-  { to: "/docs", labelKey: "docs.title", icon: faBookOpen, roles: ["admin", "seller"] },
+  {
+    to: "/projects",
+    labelKey: "dashboard.projects",
+    icon: faBuilding,
+    roles: ["admin"],
+    shortcut: "r",
+  },
+  {
+    to: "/users",
+    labelKey: "dashboard.users",
+    icon: faUsers,
+    roles: ["admin"],
+    shortcut: "u",
+  },
+  {
+    to: "/analytics",
+    labelKey: "dashboard.analytics",
+    icon: faChartColumn,
+    roles: ["admin"],
+    shortcut: "a",
+  },
+  {
+    to: "/audits",
+    labelKey: "dashboard.audits",
+    icon: faClipboardList,
+    roles: ["admin"],
+    shortcut: "l",
+  },
+  {
+    to: "/docs",
+    labelKey: "docs.title",
+    icon: faBookOpen,
+    roles: ["admin"],
+    shortcut: "g",
+  },
   {
     to: "/settings",
     labelKey: "settings.admin.nav",
@@ -48,6 +89,7 @@ export const NAV_ITEMS = [
     roles: ["admin"],
     match: ["/settings"],
     exclude: ["/settings/user/"],
+    shortcut: "s",
   },
 ];
 
@@ -59,6 +101,51 @@ export const USER_NAV_ITEMS = [
     icon: faHandHoldingDollar,
     roles: ["user"],
     match: ["/financing/user"],
+  },
+];
+
+// Sellers get a focused workspace: day overview, clients, collections,
+// commissions and documents. Admin-only sections are intentionally absent.
+export const SELLER_NAV_ITEMS = [
+  {
+    to: "/",
+    labelKey: "seller.myDay",
+    icon: faSun,
+    roles: ["seller"],
+    exact: true,
+    shortcut: "d",
+  },
+  {
+    to: "/vendedor/clientes",
+    labelKey: "seller.myClients",
+    icon: faUsers,
+    roles: ["seller"],
+    match: ["/vendedor/clientes"],
+    shortcut: "c",
+  },
+  {
+    to: "/vendedor/cobros",
+    labelKey: "seller.collections",
+    icon: faWallet,
+    roles: ["seller"],
+    match: ["/vendedor/cobros"],
+    shortcut: "b",
+  },
+  {
+    to: "/vendedor/comisiones",
+    labelKey: "seller.tabCommissions",
+    icon: faPercent,
+    roles: ["seller"],
+    match: ["/vendedor/comisiones"],
+    shortcut: "m",
+  },
+  {
+    to: "/vendedor/documentos",
+    labelKey: "seller.documents",
+    icon: faBookOpen,
+    roles: ["seller"],
+    match: ["/vendedor/documentos"],
+    shortcut: "o",
   },
 ];
 
@@ -86,8 +173,25 @@ export function isItemActive(item, user, pathname) {
 
 export function getNavItems(user) {
   const role = user?.role;
-  const source = role === "user" ? USER_NAV_ITEMS : NAV_ITEMS;
+  const source =
+    role === "user"
+      ? USER_NAV_ITEMS
+      : role === "seller"
+        ? SELLER_NAV_ITEMS
+        : NAV_ITEMS;
   return source
     .filter((item) => item.roles.includes(role))
     .map((item) => ({ ...item, resolvedTo: resolveTo(item, user) }));
+}
+
+// Chord shortcuts (g + letter) resolved from the same source as the sidebar so
+// routes and roles can never drift from the visible navigation.
+export function getNavShortcuts(user) {
+  return getNavItems(user)
+    .filter((item) => Boolean(item.shortcut))
+    .map((item) => ({
+      keys: ["g", item.shortcut],
+      labelKey: item.labelKey,
+      to: item.resolvedTo,
+    }));
 }

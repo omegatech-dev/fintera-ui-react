@@ -20,9 +20,9 @@ import {
   ErrorState,
   Input,
   Pagination,
-  SegmentedControl,
   Skeleton,
   Table,
+  Tabs,
 } from "@/shared/ui";
 
 const PER_PAGE = 20;
@@ -51,16 +51,44 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } },
 };
+
+const KPI_TONES = {
+  default: "border-line bg-surface",
+  danger: "border-danger-soft bg-danger-soft/40",
+  warning: "border-warning-soft bg-warning-soft/50",
+};
+
+const KPI_VALUE_TONES = {
+  default: "text-ink",
+  danger: "text-danger",
+  warning: "text-warning",
+};
+
+function StatCard({ label, value, caption, tone = "default", loading }) {
+  return (
+    <div className={`rounded-card border p-5 ${KPI_TONES[tone]}`}>
+      <p className="text-micro font-bold uppercase tracking-wide text-ink-3">
+        {label}
+      </p>
+      <p
+        className={`mt-2 text-page font-bold tabular-nums ${KPI_VALUE_TONES[tone]}`}
+      >
+        {loading ? "—" : value}
+      </p>
+      {caption && <p className="mt-1 text-micro text-ink-3">{caption}</p>}
+    </div>
+  );
+}
 
 function Payments() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -221,8 +249,20 @@ function Payments() {
   const columns = useMemo(
     () => [
       {
+        key: "applicant",
+        header: t("payments.client"),
+        sortable: true,
+        render: (payment) => (
+          <p className="truncate text-body font-semibold text-ink">
+            {payment.applicant_name ||
+              payment.contract?.applicant_user?.full_name ||
+              "—"}
+          </p>
+        ),
+      },
+      {
         key: "description",
-        header: t("payments.description"),
+        header: t("payments.concept"),
         sortable: true,
         render: (payment) => (
           <div className="min-w-0">
@@ -239,53 +279,8 @@ function Payments() {
         ),
       },
       {
-        key: "applicant",
-        header: t("payments.applicant"),
-        sortable: true,
-        render: (payment) => (
-          <div className="min-w-0">
-            <p className="truncate text-body text-ink">
-              {payment.applicant_name ||
-                payment.contract?.applicant_user?.full_name ||
-                "-"}
-            </p>
-          </div>
-        ),
-      },
-      {
-        key: "amount",
-        header: t("payments.totalAmount"),
-        sortable: true,
-        align: "right",
-        render: (payment) => {
-          const meta = getPaymentMeta(payment, t);
-          return (
-            <div className="text-right">
-              <p
-                className={`text-body-lg font-bold ${
-                  meta.isOverdue ? "text-danger-strong" : "text-ink"
-                }`}
-              >
-                {formatCurrency(meta.totalAmount)}
-              </p>
-              {Number(payment.interest_amount) > 0 && (
-                <p className="text-micro text-danger-strong">
-                  +{formatCurrency(payment.interest_amount)} {t("payments.accrued")}
-                </p>
-              )}
-              {meta.isOverpayment && (
-                <p className="text-micro text-info">
-                  +{formatCurrency(meta.overpaymentAmount)}{" "}
-                  {t("payments.overpayment")}
-                </p>
-              )}
-            </div>
-          );
-        },
-      },
-      {
         key: "due_date",
-        header: t("payments.dueDate"),
+        header: t("payments.dueShort"),
         sortable: true,
         render: (payment) => {
           const meta = getPaymentMeta(payment, t);
@@ -293,14 +288,46 @@ function Payments() {
             <div>
               <p
                 className={`text-body ${
-                  meta.isOverdue ? "font-semibold text-danger-strong" : "text-ink-2"
+                  meta.isOverdue
+                    ? "font-semibold text-danger"
+                    : "text-ink-2"
                 }`}
               >
                 {formatDate(payment.due_date)}
               </p>
               {meta.isOverdue && (
-                <p className="text-micro text-danger-strong">
-                  {t("payments.pastDue")}
+                <p className="text-micro text-danger">{t("payments.pastDue")}</p>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        key: "amount",
+        header: t("payments.amountShort"),
+        sortable: true,
+        align: "right",
+        render: (payment) => {
+          const meta = getPaymentMeta(payment, t);
+          return (
+            <div className="text-right">
+              <p
+                className={`text-body-lg font-bold tabular-nums ${
+                  meta.isOverdue ? "text-danger" : "text-ink"
+                }`}
+              >
+                {formatCurrency(meta.totalAmount)}
+              </p>
+              {Number(payment.interest_amount) > 0 && (
+                <p className="text-micro text-danger">
+                  +{formatCurrency(payment.interest_amount)}{" "}
+                  {t("payments.accrued")}
+                </p>
+              )}
+              {meta.isOverpayment && (
+                <p className="text-micro text-info">
+                  +{formatCurrency(meta.overpaymentAmount)}{" "}
+                  {t("payments.overpayment")}
                 </p>
               )}
             </div>
@@ -328,7 +355,7 @@ function Payments() {
                 <>
                   <Button
                     size="sm"
-                    variant="secondary"
+                    variant="primary"
                     disabled={meta.approvalBlocked}
                     title={
                       meta.approvalBlocked
@@ -350,13 +377,15 @@ function Payments() {
               )}
               <Button
                 size="sm"
-                variant="ghost"
+                variant="secondary"
                 onClick={() => {
                   setSelectedPayment(payment);
                   setShowDetailModal(true);
                 }}
               >
-                {t("common.view")}
+                {meta.statusLower === "paid" && meta.hasReceipt
+                  ? t("payments.receipt")
+                  : t("payments.viewPayment")}
               </Button>
             </div>
           );
@@ -441,86 +470,101 @@ function Payments() {
     [showToast, t]
   );
 
+  const tabLabel = (label, count, active) => (
+    <span className="inline-flex items-center gap-1.5">
+      {label}
+      <span
+        className={`rounded-chip px-1.5 text-micro font-bold ${
+          active ? "bg-brand-soft text-brand-strong" : "bg-surface-2 text-ink-3"
+        }`}
+      >
+        {count}
+      </span>
+    </span>
+  );
+
+  const tabs = [
+    { value: "", label: t("payments.tabs.all"), count: statusCounts.all },
+    {
+      value: "submitted",
+      label: t("payments.tabs.pending"),
+      count: statusCounts.submitted,
+    },
+    {
+      value: "overdue",
+      label: t("payments.tabs.overdue"),
+      count: statusCounts.overdue,
+    },
+    {
+      value: "paid",
+      label: t("payments.tabs.approved"),
+      count: statusCounts.paid,
+    },
+  ];
+
   return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell bg-bgray-50 dark:bg-darkblack-700 min-h-screen">
-      <div className="max-w-[1600px] mx-auto">
+    <main className="min-h-screen w-full bg-canvas px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto max-w-[1600px]">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="space-y-8"
+          className="space-y-5"
         >
-          {/* Header Stats Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                label: t("payments.pendingPaidMonthly"),
-                value: stats.pending,
-                color: "amber",
-                icon: (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                ),
-              },
-              {
-                label: t("payments.totalPaidThisMonth"),
-                value: stats.paidThisMonth,
-                color: "blue",
-                icon: (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                ),
-              },
-              {
-                label: t("payments.overdueTotal"),
-                value: stats.overdue,
-                color: "rose",
-                icon: (
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                ),
-              },
-            ].map((card, idx) => (
-              <motion.div
-                key={idx}
-                variants={itemVariants}
-                className="bg-white dark:bg-darkblack-600 rounded-2xl p-6 shadow-xs border border-gray-100 dark:border-darkblack-500 flex items-center space-x-4"
-              >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-${card.color}-500 text-white shadow-lg text-xl`}>
-                  {card.icon}
-                </div>
-                <div>
-                  <p className="text-bgray-500 dark:text-bgray-400 text-sm font-medium">{card.label}</p>
-                  <h3 className="text-2xl font-bold text-bgray-900 dark:text-white leading-none mt-1">
-                    {loadingStats ? "..." : formatCurrency(card.value)}
-                  </h3>
-                </div>
-              </motion.div>
-            ))}
+          <header className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 className="text-page font-bold tracking-tight text-ink">
+                {t("payments.title")}
+              </h1>
+              <p className="mt-1 text-body text-ink-3">
+                {t("payments.summary", {
+                  pending: statusCounts.submitted,
+                  overdue: formatCurrency(stats.overdue),
+                })}
+              </p>
+            </div>
+          </header>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <motion.div variants={itemVariants}>
+              <StatCard
+                label={t("payments.totalPaidThisMonth")}
+                value={formatCurrency(stats.paidThisMonth)}
+                caption={t("payments.kpiPaid", { count: statusCounts.paid })}
+                loading={loadingStats}
+              />
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <StatCard
+                label={t("payments.pendingPaidMonthly")}
+                value={formatCurrency(stats.pending)}
+                caption={t("payments.kpiPending", {
+                  count: statusCounts.submitted,
+                })}
+                loading={loadingStats}
+              />
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <StatCard
+                label={t("payments.overdueTotal")}
+                value={formatCurrency(stats.overdue)}
+                caption={t("payments.kpiOverdue", {
+                  count: statusCounts.overdue,
+                })}
+                tone="danger"
+                loading={loadingStats}
+              />
+            </motion.div>
           </div>
 
           <motion.div variants={itemVariants} className="space-y-4">
-            <SegmentedControl
+            <Tabs
+              items={tabs.map((tab) => ({
+                value: tab.value,
+                label: tabLabel(tab.label, tab.count, tab.value === status),
+              }))}
               value={status}
               onChange={handleFilterChange}
-              options={[
-                { value: "", label: `${t("payments.tabs.all")} ${statusCounts.all}` },
-                {
-                  value: "submitted",
-                  label: `${t("payments.tabs.pending")} ${statusCounts.submitted}`,
-                },
-                {
-                  value: "overdue",
-                  label: `${t("payments.tabs.overdue")} ${statusCounts.overdue}`,
-                },
-                {
-                  value: "paid",
-                  label: `${t("payments.tabs.approved")} ${statusCounts.paid}`,
-                },
-              ]}
             />
 
             <div className="flex flex-wrap items-center gap-3">
@@ -528,7 +572,7 @@ function Payments() {
                 type="search"
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
-                placeholder={t("filters.searchPlaceholder")}
+                placeholder={t("payments.searchPlaceholder")}
                 className="w-full sm:w-72"
               />
               <Input
@@ -603,7 +647,7 @@ function Payments() {
                     )}
                   />
                   {totalPages > 1 && (
-                    <div className="px-5 pb-4">
+                    <div className="border-t border-line px-5">
                       <Pagination
                         page={page}
                         pageCount={totalPages}
@@ -622,6 +666,15 @@ function Payments() {
           {showDetailModal && selectedPayment && (
             <PaymentDetailModal
               payment={selectedPayment}
+              userRole={userRole}
+              onApprove={() => {
+                setApprovalPayment(selectedPayment);
+                setShowDetailModal(false);
+              }}
+              onReject={() => {
+                setRejectionPayment(selectedPayment);
+                setShowDetailModal(false);
+              }}
               onClose={() => {
                 setShowDetailModal(false);
                 setSelectedPayment(null);

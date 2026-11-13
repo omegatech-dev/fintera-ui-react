@@ -9,43 +9,43 @@ function SignUp() {
   const portalUrl = CUSTOMER_PORTAL_URL;
 
   return (
-    <section className="bg-white dark:bg-darkblack-500">
-      <div className="flex flex-col lg:flex-row justify-between min-h-screen">
+    <section className="bg-surface">
+      <div className="flex min-h-screen flex-col justify-between lg:flex-row">
         {/* Left */}
-        <div className="lg:w-1/2 px-5 xl:pl-12 pt-10">
+        <div className="px-5 pt-10 lg:w-1/2 xl:pl-12">
           <header>
-            <Link to="/" className="">
+            <Link to="/">
               <BrandingLogo variant="light" className="block dark:hidden" alt="logo" />
               <BrandingLogo variant="dark" className="hidden dark:block" alt="logo" />
             </Link>
           </header>
 
-          <div className="max-w-[460px] m-auto pt-24 pb-16">
-            <header className="text-center mb-8">
-              <h2 className="text-bgray-900 dark:text-white text-4xl font-semibold font-poppins mb-2">
+          <div className="m-auto max-w-[460px] pb-16 pt-24">
+            <header className="mb-8 text-center">
+              <h2 className="mb-2 text-page font-bold text-ink">
                 Sign up for an account
               </h2>
-              <p className="font-urbanis text-base font-medium text-bgray-600 dark:text-darkblack-300">
+              <p className="text-body font-medium text-ink-3">
                 Send, spend and save smarter
               </p>
             </header>
 
             {portalUrl && (
-              <p className="mb-6 rounded-lg border border-success-300/40 bg-success-50 px-4 py-3 text-center text-sm font-medium text-bgray-800 dark:bg-darkblack-400 dark:text-bgray-50">
+              <p className="mb-6 rounded-control border border-brand/30 bg-brand-soft px-4 py-3 text-center text-body font-medium text-ink-2">
                 ¿Eres cliente?{" "}
                 <a
                   href={portalUrl}
-                  className="font-semibold text-success-300 underline"
+                  className="font-semibold text-brand-strong underline"
                 >
                   Crea tu cuenta en el portal de clientes →
                 </a>
               </p>
             )}
             {/* Google & Apple Button  */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col gap-4 md:flex-row">
               <a
                 href="#"
-                className="inline-flex justify-center items-center gap-x-2 border border-bgray-300 dark:border-darkblack-400 rounded-lg px-6 py-4 text-base text-bgray-900 dark:text-white font-medium"
+                className="inline-flex items-center justify-center gap-x-2 rounded-control border border-line-strong px-6 py-3.5 text-body-lg font-medium text-ink"
               >
                 <svg
                   width="23"
@@ -71,14 +71,14 @@ function SignUp() {
                     fill="#EB4335"
                   />
                 </svg>
-                <span> Sign In with Google </span>{" "}
+                <span> Sign In with Google </span>
               </a>
               <a
                 href="#"
-                className="inline-flex justify-center items-center gap-x-2 border border-bgray-300 dark:border-darkblack-400 rounded-lg px-6 py-4 text-base text-bgray-900 dark:text-white font-medium"
+                className="inline-flex items-center justify-center gap-x-2 rounded-control border border-line-strong px-6 py-3.5 text-body-lg font-medium text-ink"
               >
                 <svg
-                  className="fill-bgray-900 dark:fill-white"
+                  className="fill-ink"
                   width="21"
                   height="22"
                   viewBox="0 0 21 22"
@@ -90,12 +90,12 @@ function SignUp() {
                 <span> Sign In with Apple </span>
               </a>
             </div>
-            <div className="relative mt-6 mb-5">
+            <div className="relative mb-5 mt-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-darkblack-400"></div>
+                <div className="w-full border-t border-line"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white dark:bg-darkblack-500 px-2 text-base text-bgray-600">
+              <div className="relative flex justify-center text-body">
+                <span className="bg-surface px-2 text-body text-ink-3">
                   Or continue with
                 </span>
               </div>
@@ -104,40 +104,28 @@ function SignUp() {
             {/* Form  */}
             <SignUpForm />
             {/* Form Bottom  */}
-            <p className="text-center text-bgray-900 dark:text-bgray-50 text-base font-medium pt-7">
+            <p className="pt-7 text-center text-body font-medium text-ink">
               Already have an account?
               <Link to="/signin" className="font-semibold underline">
-                Sign In
+                {" "}Sign In
               </Link>
             </p>
-            <nav className="flex items-center justify-center flex-wrap gap-x-11 pt-24">
-              <Link
-                to="#"
-                className="text-sm text-bgray-700 dark:text-bgray-50"
-              >
+            <nav className="flex flex-wrap items-center justify-center gap-x-11 pt-24">
+              <Link to="#" className="text-label text-ink-2">
                 Terms & Condition
               </Link>
-              <Link
-                to="#"
-                className="text-sm text-bgray-700 dark:text-bgray-50"
-              >
+              <Link to="#" className="text-label text-ink-2">
                 Privacy Policy
               </Link>
-              <Link
-                to="#"
-                className="text-sm text-bgray-700 dark:text-bgray-50"
-              >
+              <Link to="#" className="text-label text-ink-2">
                 Help
               </Link>
-              <Link
-                to="#"
-                className="text-sm text-bgray-700 dark:text-bgray-50"
-              >
+              <Link to="#" className="text-label text-ink-2">
                 English
               </Link>
             </nav>
             {/* Copyright  */}
-            <p className="text-bgray-600 dark:text-darkblack-300 text-center text-sm mt-6">
+            <p className="mt-6 text-center text-micro text-ink-3">
               &copy; 2023 Bankco. All Right Reserved.
             </p>
           </div>

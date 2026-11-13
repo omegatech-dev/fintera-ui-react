@@ -27,7 +27,7 @@ function RightSide() {
   return (
     <div className="hidden lg:flex relative min-h-screen overflow-hidden w-full">
       {/* Enhanced blue background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 animate-slow-pulse"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0B3B24] via-[#0B3B24] to-[#14532D] animate-slow-pulse"></div>
 
       {/* Subtle background elements */}
       <div className="absolute inset-0">

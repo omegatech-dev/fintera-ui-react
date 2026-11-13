@@ -64,16 +64,16 @@ function CreateUser() {
   };
 
   return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell dark:bg-darkblack-700 min-h-screen">
-      <div className="mx-auto max-w-4xl space-y-6">
-        <div>
-          <h1 className="text-page font-bold text-ink">
+    <main className="min-h-screen w-full bg-canvas px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto max-w-4xl space-y-4">
+        <header>
+          <h1 className="text-page font-bold tracking-tight text-ink">
             {t("users.createUserTitle")}
           </h1>
-          <p className="text-body text-ink-3">
+          <p className="mt-1 text-body text-ink-3">
             {t("users.subtitle") || "Fill in the details to create a new user"}
           </p>
-        </div>
+        </header>
 
         <UserForm
           onSubmit={handleSubmit}

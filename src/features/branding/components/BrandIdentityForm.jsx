@@ -7,11 +7,11 @@ import {
   getBundledLogo,
   resolveBrandingAssetUrl,
 } from "../../../shared/branding/brandingUtils";
-import { SettingsSaveBar } from "../../../shared/ui";
 import { ACCEPTED_TYPES, getFileValidationError } from "../logoRules";
 import LogoGuidance from "./LogoGuidance";
 import LogoUploadCard from "./LogoUploadCard";
 import BrandPreview from "./BrandPreview";
+import BrandSaveBar from "./BrandSaveBar";
 
 function BrandIdentityForm() {
   const { t } = useLocale();
@@ -151,48 +151,51 @@ function BrandIdentityForm() {
 
   return (
     <div className="w-full">
-      <header className="mb-6">
-        <h2 className="text-2xl font-bold text-bgray-900 dark:text-white">
-          {t("branding.brandIdentity.title")}
-        </h2>
-        <p className="mt-1 text-bgray-500 dark:text-bgray-400 font-medium">
-          {t("branding.brandIdentity.subtitle")}
-        </p>
-      </header>
+      <form onSubmit={handleSubmit} className="space-y-[18px]">
+        <section aria-labelledby="brand-logos-title">
+          <h2
+            id="brand-logos-title"
+            className="text-[15px] font-bold text-ink"
+          >
+            {t("branding.logosTitle")}
+          </h2>
+          <p className="mt-0.5 text-label font-medium text-ink-3">
+            {t("branding.logosSubtitle")}
+          </p>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2">
+            <LogoUploadCard
+              label={t("branding.lightLogo")}
+              hint={t("branding.lightLogoHint")}
+              savedSrc={savedLightSrc}
+              fallbackSrc={getBundledLogo("light")}
+              pendingPreview={previews.light}
+              pendingFile={lightFile}
+              hasPendingFile={Boolean(lightFile)}
+              markedForRemoval={removeLight}
+              error={errors.light}
+              onSelect={(file) => handleSelect("light", file)}
+              onClear={() => handleClear("light")}
+              labels={slotLabels}
+            />
+            <LogoUploadCard
+              label={t("branding.darkLogo")}
+              hint={t("branding.darkLogoHint")}
+              savedSrc={savedDarkSrc}
+              fallbackSrc={lightForDarkSrc}
+              pendingPreview={previews.dark}
+              pendingFile={darkFile}
+              hasPendingFile={Boolean(darkFile)}
+              markedForRemoval={removeDark}
+              error={errors.dark}
+              onSelect={(file) => handleSelect("dark", file)}
+              onClear={() => handleClear("dark")}
+              labels={slotLabels}
+            />
+          </div>
+        </section>
+
         <LogoGuidance />
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <LogoUploadCard
-            label={t("branding.lightLogo")}
-            hint={t("branding.lightLogoHint")}
-            savedSrc={savedLightSrc}
-            fallbackSrc={getBundledLogo("light")}
-            pendingPreview={previews.light}
-            pendingFile={lightFile}
-            hasPendingFile={Boolean(lightFile)}
-            markedForRemoval={removeLight}
-            error={errors.light}
-            onSelect={(file) => handleSelect("light", file)}
-            onClear={() => handleClear("light")}
-            labels={slotLabels}
-          />
-          <LogoUploadCard
-            label={t("branding.darkLogo")}
-            hint={t("branding.darkLogoHint")}
-            savedSrc={savedDarkSrc}
-            fallbackSrc={lightForDarkSrc}
-            pendingPreview={previews.dark}
-            pendingFile={darkFile}
-            hasPendingFile={Boolean(darkFile)}
-            markedForRemoval={removeDark}
-            error={errors.dark}
-            onSelect={(file) => handleSelect("dark", file)}
-            onClear={() => handleClear("dark")}
-            labels={slotLabels}
-          />
-        </div>
 
         <BrandPreview
           lightSrc={lightSrc}
@@ -201,7 +204,7 @@ function BrandIdentityForm() {
           darkUsesFallback={darkUsesFallback}
         />
 
-        <SettingsSaveBar
+        <BrandSaveBar
           visible={hasChanges}
           saving={saving}
           onDiscard={resetForm}

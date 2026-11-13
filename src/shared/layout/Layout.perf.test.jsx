@@ -17,6 +17,9 @@ vi.mock('../header', () => ({
   HeaderOne: () => <div>HeaderOne</div>,
   HeaderTwo: () => <div>HeaderTwo</div>,
 }));
+vi.mock('./BottomNav', () => ({
+  default: () => <nav>BottomNav</nav>,
+}));
 
 describe('Layout Performance', () => {
   const mockUser = { name: 'Test User' };

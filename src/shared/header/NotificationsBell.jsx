@@ -110,7 +110,7 @@ function NotificationsBell() {
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="relative flex h-11 w-11 items-center justify-center rounded-control text-ink-3 hover:bg-surface-2"
+        className="relative flex h-10 w-10 items-center justify-center rounded-control border border-line bg-surface text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink"
       >
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5">
           <path

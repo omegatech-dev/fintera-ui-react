@@ -1,11 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faChevronLeft,
-  faImage,
-  faUniversity,
-} from "@fortawesome/free-solid-svg-icons";
+import { faImage } from "@fortawesome/free-solid-svg-icons";
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import { projectsApi } from "../../api";
 import ProjectForm from "../../components/ProjectForm";
@@ -52,7 +48,6 @@ function EditProject() {
 
   const [values, setValues] = useState(INITIAL_VALUES);
   const [baseline, setBaseline] = useState(null);
-  const [availableLots, setAvailableLots] = useState(0);
   const [reservedLots, setReservedLots] = useState(0);
   const [soldLots, setSoldLots] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -100,7 +95,6 @@ function EditProject() {
         setValues(nextValues);
         setBaseline(JSON.stringify(nextValues));
         setIsPublished(Boolean(pdata.is_published));
-        setAvailableLots(pdata.available_lots || 0);
         setReservedLots(pdata.reserved_lots || 0);
         setSoldLots(pdata.sold_lots || 0);
       } catch (err) {
@@ -140,7 +134,7 @@ function EditProject() {
     if (next === values.measurement_unit) return;
     const confirmed = await confirmDialog({
       title: t("projects.measurementUnitChangeWarning"),
-      confirmLabel: t("common.continue") || "Continuar",
+      confirmLabel: t("common.continue"),
       tone: "primary",
     });
     if (confirmed) {
@@ -206,7 +200,7 @@ function EditProject() {
     if (!navigator.clipboard?.writeText) return;
     navigator.clipboard.writeText(values.guid);
     showToast(
-      t("common.copiedToClipboard") || "Copiado al portapapeles",
+      t("common.copiedToClipboard"),
       "success"
     );
   };
@@ -224,37 +218,26 @@ function EditProject() {
     );
   }
 
-  const stats = [
-    {
-      label: t("projects.availableLots"),
-      value: availableLots,
-      className: "text-success-400",
-    },
-    {
-      label: t("projects.reservedLots"),
-      value: reservedLots,
-      className: "text-warning",
-    },
-    {
-      label: t("projects.soldLots"),
-      value: soldLots,
-      className: "text-ink-3",
-    },
-  ];
-
   return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell min-h-screen bg-bgray-50 dark:bg-darkblack-700">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <div className="flex flex-col gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="self-start"
-            onClick={() => navigate(-1)}
+    <main className="page-shell min-h-screen w-full bg-canvas px-6 pb-6 xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6">
+        <div className="flex flex-col gap-1">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex flex-wrap items-center gap-1 text-label font-medium text-ink-3"
           >
-            <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
-            {t("common.back")}
-          </Button>
+            <button
+              type="button"
+              onClick={() => navigate("/projects")}
+              className="transition-colors hover:text-ink"
+            >
+              {t("projectsPage.title")}
+            </button>
+            <span aria-hidden="true">/</span>
+            <span className="truncate text-ink-2">
+              {values.name || t("projects.editProject")}
+            </span>
+          </nav>
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-page font-bold tracking-tight text-ink">
               {t("projects.editProject")}
@@ -265,14 +248,14 @@ function EditProject() {
                 : t("projects.unpublished")}
             </Chip>
           </div>
-          <p className="text-body text-ink-3">
+          <p className="text-body font-medium text-ink-3">
             {t("projects.updateProjectInfo")}
           </p>
         </div>
 
         {error && <Banner tone="danger">{error}</Banner>}
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
           <div className="min-w-0">
             <ProjectForm
               formId="project-edit-form"
@@ -290,9 +273,14 @@ function EditProject() {
           <aside className="flex flex-col gap-4">
             <Card title={t("projects.publishPanel")}>
               <div className="flex items-center justify-between gap-3">
-                <p className="text-body font-semibold text-ink">
-                  {t("projects.visiblePortal")}
-                </p>
+                <div className="min-w-0">
+                  <p className="text-body font-semibold text-ink">
+                    {t("projects.visiblePortal")}
+                  </p>
+                  <p className="mt-2 text-micro text-ink-3">
+                    {t("projects.draftHint")}
+                  </p>
+                </div>
                 <Toggle
                   checked={isPublished}
                   onChange={handleVisibilityToggle}
@@ -300,20 +288,6 @@ function EditProject() {
                   disabled={changingVisibility}
                 />
               </div>
-              <p className="mt-2 text-micro text-ink-3">
-                {t("projects.draftHint")}
-              </p>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="mt-4 w-full"
-                onClick={handleVisibilityToggle}
-                disabled={changingVisibility}
-              >
-                {isPublished
-                  ? t("projects.unpublish")
-                  : t("projects.publish")}
-              </Button>
             </Card>
 
             <Card title={t("projects.coverPhoto")}>
@@ -330,40 +304,6 @@ function EditProject() {
                 onClick={() => navigate(`/projects/${id}?tab=media`)}
               >
                 {t("projects.manageMedia")}
-              </Button>
-            </Card>
-
-            <Card title={t("projects.availability")}>
-              <dl className="grid grid-cols-3 gap-3">
-                {stats.map((stat) => (
-                  <div key={stat.label}>
-                    <dt className="text-micro font-bold uppercase tracking-wide text-ink-3">
-                      {stat.label}
-                    </dt>
-                    <dd
-                      className={`text-section font-black tabular-nums ${stat.className}`}
-                    >
-                      {stat.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </Card>
-
-            <Card title={t("paymentInstructions.title")}>
-              <p className="text-micro text-ink-3">
-                {t("paymentInstructions.description")}
-              </p>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="mt-3 w-full"
-                onClick={() =>
-                  navigate(`/projects/${id}/payment-instructions`)
-                }
-              >
-                <FontAwesomeIcon icon={faUniversity} aria-hidden="true" />
-                {t("paymentInstructions.title")}
               </Button>
             </Card>
           </aside>

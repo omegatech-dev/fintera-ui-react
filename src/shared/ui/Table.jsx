@@ -60,7 +60,7 @@ function Table({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {rows.map((row, index) => (
             <tr
               key={getRowKey(row)}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
@@ -68,9 +68,9 @@ function Table({
                 onRowClick ? (event) => handleRowKeyDown(event, row) : undefined
               }
               tabIndex={onRowClick ? 0 : undefined}
-              className={`border-b border-line/70 last:border-0 ${
+              className={`border-b border-line/70 transition-colors duration-150 last:border-0 ${
                 onRowClick ? "cursor-pointer hover:bg-surface-2" : ""
-              }`}
+              } ${index < 8 ? "motion-fade-in" : ""}`}
             >
               {columns.map((column) => (
                 <td
@@ -88,11 +88,13 @@ function Table({
       </table>
 
       <div className="flex flex-col gap-2 md:hidden">
-        {rows.map((row) => (
+        {rows.map((row, index) => (
           <div
             key={getRowKey(row)}
             onClick={onRowClick ? () => onRowClick(row) : undefined}
-            className={onRowClick ? "cursor-pointer" : undefined}
+            className={`transition-colors duration-150 ${
+              onRowClick ? "cursor-pointer" : ""
+            } ${index < 8 ? "motion-fade-in" : ""}`}
           >
             {mobileCard ? mobileCard(row) : null}
           </div>

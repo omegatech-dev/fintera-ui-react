@@ -13,6 +13,8 @@ When you approve a payment:
 
 By default the approved amount is the installment plus its interest. You can lower or raise it; any excess above the obligation is treated as a capital repayment. Approving a **capital repayment** payment applies the whole amount to pending installments.
 
+A **reservation** payment cannot be approved until the contract itself is approved. The Approve button stays disabled in that case.
+
 ## Reject
 
 Only **submitted** payments can be rejected. Enter a reason so the customer knows what to fix. The customer can upload a new receipt.
@@ -29,5 +31,6 @@ Use it to correct an accidental approval, then re-approve or reject.
 
 ## Related
 
+- [Payments inbox and review queue](/docs/payment-inbox)
 - [Capital repayments and readjustments](/docs/capital-repayments)
 - [Payment types and statuses](/docs/payment-types-and-statuses)

@@ -63,7 +63,7 @@ const GrowthByProject = memo(({ projects, performance, t }) => {
                     </span>
                 }
                 className="h-full"
-                bodyClassName="flex flex-col gap-3 p-5"
+                bodyClassName="flex flex-col gap-3 px-4 pb-4 pt-2"
             >
                 {rows.length === 0 ? (
                     <p className="text-body text-ink-3">
@@ -71,9 +71,9 @@ const GrowthByProject = memo(({ projects, performance, t }) => {
                     </p>
                 ) : (
                     rows.map((row) => (
-                        <div key={row.key} className="flex items-center gap-3">
+                        <div key={row.key} className="flex items-center gap-2.5">
                             <span
-                                className="w-36 shrink-0 truncate text-label font-semibold text-ink-2"
+                                className="w-40 shrink-0 truncate text-micro font-semibold text-ink-2"
                                 title={row.name}
                             >
                                 {row.name}
@@ -89,7 +89,7 @@ const GrowthByProject = memo(({ projects, performance, t }) => {
                                 />
                             </div>
                             <span
-                                className={`w-24 shrink-0 text-right text-label font-bold ${row.growth !== null && row.growth < 0
+                                className={`w-16 shrink-0 text-right text-micro font-bold ${row.growth !== null && row.growth < 0
                                         ? "text-danger"
                                         : row.growth !== null
                                             ? "text-brand-strong"

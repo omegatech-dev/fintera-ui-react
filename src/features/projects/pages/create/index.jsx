@@ -1,16 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faChevronLeft,
-  faImage,
-} from "@fortawesome/free-solid-svg-icons";
+import { faImage } from "@fortawesome/free-solid-svg-icons";
 import { projectsApi } from "../../api";
 import ProjectForm from "../../components/ProjectForm";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useGeneralSettings } from "@/contexts/generalSettings";
 import { getDefaultCurrency } from "@/shared/utils/formatSettings";
-import { Button, Card, SaveBar } from "@/shared/ui";
+import { Card, Chip, SaveBar } from "@/shared/ui";
 
 const INITIAL_VALUES = {
   name: "",
@@ -92,29 +89,34 @@ function CreateProject() {
   };
 
   return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell min-h-screen bg-bgray-50 dark:bg-darkblack-700">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <div className="flex flex-col gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="self-start"
-            onClick={() => navigate(-1)}
+    <main className="page-shell min-h-screen w-full bg-canvas px-6 pb-6 xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6">
+        <div className="flex flex-col gap-1">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex flex-wrap items-center gap-1 text-label font-medium text-ink-3"
           >
-            <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
-            {t("common.back")}
-          </Button>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="transition-colors hover:text-ink"
+            >
+              {t("projectsPage.title")}
+            </button>
+            <span aria-hidden="true">/</span>
+            <span className="text-ink-2">{t("projects.createNewProject")}</span>
+          </nav>
           <div>
             <h1 className="text-page font-bold tracking-tight text-ink">
               {t("projects.createNewProject")}
             </h1>
-            <p className="text-body text-ink-3">
+            <p className="mt-1 text-body font-medium text-ink-3">
               {t("projects.fillProjectInfo")}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
           <div className="min-w-0">
             <ProjectForm
               formId="project-create-form"
@@ -127,6 +129,18 @@ function CreateProject() {
           </div>
 
           <aside className="flex flex-col gap-4">
+            <Card title={t("projects.publishPanel")}>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-body font-semibold text-ink">
+                  {t("projects.visiblePortal")}
+                </p>
+                <Chip tone="neutral">{t("projects.draft")}</Chip>
+              </div>
+              <p className="mt-2 text-micro text-ink-3">
+                {t("projects.newProjectDraftHint")}
+              </p>
+            </Card>
+
             <Card title={t("projects.coverPhoto")}>
               <div className="flex aspect-[4/3] items-center justify-center rounded-control border border-dashed border-line-strong bg-surface-2 text-ink-3">
                 <FontAwesomeIcon icon={faImage} size="2x" aria-hidden="true" />

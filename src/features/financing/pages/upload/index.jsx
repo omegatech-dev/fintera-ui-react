@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { paymentsApi } from "../../../payments/api";
 
 function Upload() {
-  const { paymentId } = useParams(); // Extract paymentId from the URL
+  const { paymentId } = useParams();
   const navigate = useNavigate();
 
   const [receiptFile, setReceiptFile] = useState(null);
@@ -11,13 +11,11 @@ function Upload() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Handle file input change
   const handleFileChange = (e) => {
     setReceiptFile(e.target.files[0]);
-    setError(''); // Clear previous errors
+    setError('');
   };
 
-  // Handle file upload submission
   const handleUpload = async (e) => {
     e.preventDefault();
 
@@ -29,18 +27,15 @@ function Upload() {
     setIsUploading(true);
 
     try {
-      // Prepare the form data for the upload
       const formData = new FormData();
       formData.append('receipt', receiptFile);
 
-      // Send the file to the backend
       const data = await paymentsApi.uploadReceipt(paymentId, formData);
 
       if (data) {
         setSuccess(data.message || 'El comprobante se ha subido exitosamente.');
-        setTimeout(() => navigate(-1), 2000); // Redirect back after 2 seconds
+        setTimeout(() => navigate(-1), 2000);
       } else {
-        // Should catch handle failure
         setError('Ocurrió un error al subir el comprobante.');
       }
     } catch (err) {
@@ -51,35 +46,47 @@ function Upload() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Subir Comprobante de Pago</h1>
+    <div className="mx-auto w-full max-w-lg">
+      <div className="rounded-card border border-line bg-surface p-6">
+        <h1 className="text-page font-bold text-ink">Subir Comprobante de Pago</h1>
+        <p className="mt-1 text-body text-ink-3">
+          Adjunta el comprobante para registrar el pago.
+        </p>
 
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      {success && <div className="text-green-500 mb-4">{success}</div>}
+        {error && (
+          <p role="alert" className="mt-4 rounded-control border border-danger/30 bg-danger-soft px-3 py-2 text-body text-danger">
+            {error}
+          </p>
+        )}
+        {success && (
+          <p role="status" className="mt-4 rounded-control border border-brand/30 bg-brand-soft px-3 py-2 text-body text-brand-strong">
+            {success}
+          </p>
+        )}
 
-      <form onSubmit={handleUpload}>
-        <div className="mb-4">
-          <label htmlFor="receipt" className="block text-sm font-medium text-gray-700">
-            Selecciona el archivo del comprobante
-          </label>
-          <input
-            type="file"
-            id="receipt"
-            accept=".pdf,.jpg,.png"
-            onChange={handleFileChange}
-            className="mt-2 block w-full text-sm text-gray-500 border-gray-300 rounded-md"
-          />
-        </div>
+        <form onSubmit={handleUpload} className="mt-5">
+          <div className="mb-4">
+            <label htmlFor="receipt" className="mb-2 block text-label font-semibold text-ink-2">
+              Selecciona el archivo del comprobante
+            </label>
+            <input
+              type="file"
+              id="receipt"
+              accept=".pdf,.jpg,.png"
+              onChange={handleFileChange}
+              className="block w-full rounded-control border border-line-strong bg-surface-2 px-3 py-2 text-body text-ink-2 file:mr-3 file:rounded-chip file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:text-label file:font-semibold file:text-brand-strong"
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={isUploading}
-          className={`px-4 py-2 rounded bg-blue-500 text-white font-bold ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
-            }`}
-        >
-          {isUploading ? 'Subiendo...' : 'Subir Comprobante'}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={isUploading}
+            className="w-full rounded-control bg-brand px-4 py-3 text-label font-semibold text-white transition-colors hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isUploading ? 'Subiendo...' : 'Subir Comprobante'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

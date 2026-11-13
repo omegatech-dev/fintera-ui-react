@@ -1,144 +1,145 @@
 import { memo, useMemo } from "react";
-import { motion } from "framer-motion";
 import { Bar } from "react-chartjs-2";
 import PropTypes from "prop-types";
 import ChartDataTable from "./ChartDataTable";
 
-const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-        y: 0,
-        opacity: 1,
-        transition: { type: "spring", stiffness: 100, damping: 12 },
-    },
-};
-
-const SellerPerformance = memo(({ sellersPerformance, sellerChartOptions, t, formatCurrency }) => {
+const SellerPerformance = memo(
+  ({ sellersPerformance, sellerChartOptions, t, formatCurrency }) => {
     const sellerPerformanceChartData = useMemo(() => {
-        if (!sellersPerformance || sellersPerformance.length === 0) return { labels: [], datasets: [] };
+      if (!sellersPerformance || sellersPerformance.length === 0)
+        return { labels: [], datasets: [] };
 
-        const labels = sellersPerformance.map(s => s.seller_name);
-        const salesData = sellersPerformance.map(s => s.total_sales);
-        const contractsData = sellersPerformance.map(s => s.active_contracts);
-
-        return {
-            labels,
-            datasets: [
-                {
-                    type: 'bar',
-                    label: t("analytics.totalSales"),
-                    data: salesData,
-                    backgroundColor: "rgba(59, 130, 246, 0.8)",
-                    borderColor: "rgb(59, 130, 246)",
-                    borderWidth: 1,
-                    borderRadius: 8,
-                    yAxisID: 'y',
-                },
-                {
-                    type: 'line',
-                    label: t("analytics.contractsSold"),
-                    data: contractsData,
-                    borderColor: "rgb(13, 148, 136)", // Teal-600
-                    backgroundColor: "rgba(13, 148, 136, 0.2)",
-                    borderWidth: 3,
-                    pointRadius: 5,
-                    pointHoverRadius: 8,
-                    fill: false,
-                    tension: 0.4,
-                    yAxisID: 'y1',
-                }
-            ],
-        };
+      return {
+        labels: sellersPerformance.map((seller) => seller.seller_name),
+        datasets: [
+          {
+            type: "bar",
+            label: t("analytics.totalSales"),
+            data: sellersPerformance.map((seller) => seller.total_sales),
+            backgroundColor: "rgba(22, 163, 74, 0.75)",
+            borderColor: "rgb(22, 163, 74)",
+            borderWidth: 1,
+            borderRadius: 6,
+            yAxisID: "y",
+          },
+          {
+            type: "line",
+            label: t("analytics.contractsSold"),
+            data: sellersPerformance.map((seller) => seller.active_contracts),
+            borderColor: "rgb(29, 78, 216)",
+            backgroundColor: "rgba(29, 78, 216, 0.15)",
+            borderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: false,
+            tension: 0.4,
+            yAxisID: "y1",
+          },
+        ],
+      };
     }, [sellersPerformance, t]);
 
-    const topSellers = useMemo(() =>
-        [...sellersPerformance].sort((a, b) => b.total_sales - a.total_sales).slice(0, 3),
-        [sellersPerformance]
+    const topSellers = useMemo(
+      () =>
+        [...sellersPerformance]
+          .sort((a, b) => b.total_sales - a.total_sales)
+          .slice(0, 3),
+      [sellersPerformance]
     );
 
     return (
-        <motion.section
-            id="seller-performance-section"
-            variants={itemVariants}
-            role="region"
-            aria-label={t("analytics.sellerPerformance")}
-            className="bg-white/80 dark:bg-darkblack-600/80 backdrop-blur p-8 rounded-[2.5rem] shadow-2xl border border-white/50 dark:border-darkblack-500/50 overflow-hidden relative"
+      <section
+        id="seller-performance-section"
+        role="region"
+        aria-label={t("analytics.sellerPerformance")}
+        className="rounded-card border border-line bg-surface p-5"
+      >
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <h3 className="text-title font-bold text-ink">
+              {t("analytics.sellerPerformance")}
+            </h3>
+            <p className="mt-0.5 text-label text-ink-3">
+              {t("analytics.salesBySeller")}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5 rounded-control bg-surface-2 px-2.5 py-1.5">
+              <span className="h-2 w-2 rounded-full bg-brand" />
+              <span className="text-micro font-semibold text-ink-2">
+                {t("analytics.totalSales")}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-control bg-surface-2 px-2.5 py-1.5">
+              <span className="h-2 w-2 rounded-full bg-info" />
+              <span className="text-micro font-semibold text-ink-2">
+                {t("analytics.contractsSold")}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="mt-4 h-[320px] w-full text-ink-2"
+          role="img"
+          aria-label={t("analytics.sellerPerformance")}
         >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
-                <div>
-                    <h3 className="text-2xl font-black flex items-center gap-3 text-gray-900 dark:text-white">
-                        <div className="w-3 h-8 bg-gradient-to-b from-blue-500 to-teal-600 rounded-full shadow-lg shadow-blue-500/20"></div>
-                        <span>{t("analytics.sellerPerformance")}</span>
-                    </h3>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium ml-6">
-                        {t("analytics.salesBySeller")}
-                    </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tighter">{t("analytics.totalSales")}</span>
-                    </div>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-teal-500/10 rounded-xl border border-teal-500/20">
-                        <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-                        <span className="text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-tighter">{t("analytics.contractsSold")}</span>
-                    </div>
-                </div>
-            </div>
+          <Bar data={sellerPerformanceChartData} options={sellerChartOptions} />
+        </div>
 
+        <ChartDataTable
+          caption={t("analytics.sellerPerformance")}
+          columns={[
+            t("analytics.sellerLabel"),
+            t("analytics.totalSales"),
+            t("analytics.contractsSold"),
+          ]}
+          rows={sellersPerformance.map((seller) => [
+            seller.seller_name,
+            formatCurrency(seller.total_sales),
+            seller.active_contracts,
+          ])}
+        />
+
+        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {topSellers.map((seller, index) => (
             <div
-                className="h-[450px] w-full relative group"
-                role="img"
-                aria-label={t("analytics.sellerPerformance")}
+              key={seller.seller_id}
+              className="flex items-center gap-3 rounded-control border border-line bg-surface-2 p-3"
             >
-                <Bar data={sellerPerformanceChartData} options={sellerChartOptions} />
-
-                {/* Background glow decoration */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-tr from-blue-500/5 via-transparent to-teal-500/5 pointer-events-none -z-10 blur-3xl"></div>
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-label font-bold text-brand-strong">
+                {index + 1}
+              </div>
+              <div className="min-w-0">
+                <h4 className="truncate text-label font-semibold text-ink">
+                  {seller.seller_name}
+                </h4>
+                <div className="mt-0.5 flex items-center gap-1.5 text-micro font-semibold">
+                  <span className="text-brand-strong">
+                    {formatCurrency(seller.total_sales)}
+                  </span>
+                  <span className="h-1 w-1 rounded-full bg-line-strong" />
+                  <span className="text-info">
+                    {seller.active_contracts}{" "}
+                    {t("analytics.contractsSold")}
+                  </span>
+                </div>
+              </div>
             </div>
-
-            <ChartDataTable
-                caption={t("analytics.sellerPerformance")}
-                columns={[
-                    t("analytics.sellerLabel"),
-                    t("analytics.totalSales"),
-                    t("analytics.contractsSold"),
-                ]}
-                rows={sellersPerformance.map((seller) => [
-                    seller.seller_name,
-                    formatCurrency(seller.total_sales),
-                    seller.active_contracts,
-                ])}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
-                {topSellers.map((seller, idx) => (
-                    <div key={seller.seller_id} className="p-4 rounded-2xl bg-slate-50 dark:bg-darkblack-700/50 border border-slate-100 dark:border-darkblack-500/50 flex items-center gap-4 transition-all hover:scale-[1.02]">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-white bg-gradient-to-br ${idx === 0 ? "from-yellow-400 to-orange-500 shadow-orange-500/20" : idx === 1 ? "from-slate-300 to-slate-500 shadow-slate-500/20" : "from-amber-600 to-amber-800 shadow-amber-800/20"} shadow-lg`}>
-                            {idx + 1}
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-gray-900 dark:text-white truncate max-w-[150px]">{seller.seller_name}</h4>
-                            <div className="flex items-center gap-2 text-xs font-semibold mt-0.5">
-                                <span className="text-blue-600 dark:text-blue-400 font-bold">{formatCurrency(seller.total_sales)}</span>
-                                <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                                <span className="text-teal-600 dark:text-teal-400 font-bold">{seller.active_contracts} {t("analytics.contractsSold")}</span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </motion.section>
+          ))}
+        </div>
+      </section>
     );
-});
+  }
+);
 
 SellerPerformance.displayName = "SellerPerformance";
 
 SellerPerformance.propTypes = {
-    sellersPerformance: PropTypes.array,
-    sellerChartOptions: PropTypes.object.isRequired,
-    t: PropTypes.func.isRequired,
-    formatCurrency: PropTypes.func.isRequired,
+  sellersPerformance: PropTypes.array,
+  sellerChartOptions: PropTypes.object.isRequired,
+  t: PropTypes.func.isRequired,
+  formatCurrency: PropTypes.func.isRequired,
 };
 
 export default SellerPerformance;

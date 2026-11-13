@@ -5,6 +5,8 @@ export const contractsApi = {
     getByGuid: (guid) => apiClient.get(`/api/v1/contracts/${guid}`),
     getStats: () => apiClient.get('/api/v1/contracts/stats'),
     downloadPdf: (contractId) => apiClient.get('/api/v1/reports/user_promise_contract_pdf', { params: { contract_id: contractId }, responseType: 'blob' }),
+    downloadCustomerRecord: (contractId) => apiClient.get('/api/v1/reports/customer_record_pdf', { params: { contract_id: contractId }, responseType: 'blob' }),
+    downloadDocument: (documentName, params) => apiClient.get(`/api/v1/reports/${documentName}`, { params, responseType: 'blob' }),
     sendReminder: (guid) => apiClient.post(`/api/v1/contracts/${guid}/reminder`, {}),
 
     getDetails: (projectId, lotId, contractId) => apiClient.get(`/api/v1/projects/${projectId}/lots/${lotId}/contracts/${contractId}`),

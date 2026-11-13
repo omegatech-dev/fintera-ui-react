@@ -30,6 +30,18 @@ function LoginTermsModal({ isActive, onClose }) {
     return Array.isArray(value) ? value : [];
   };
 
+  const customContent =
+    locale === "en"
+      ? String(settings.terms_content_en || "").trim()
+      : String(settings.terms_content_es || "").trim();
+  const hasCustomContent = customContent.length > 0;
+  const customParagraphs = hasCustomContent
+    ? customContent
+        .split(/\n{2,}/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean)
+    : [];
+
   const sections = [
     {
       title: t("termsAndConditions.sections.acceptanceTitle"),
@@ -74,11 +86,6 @@ function LoginTermsModal({ isActive, onClose }) {
       title: t("termsAndConditions.sections.amendmentsTitle"),
       body: t("termsAndConditions.sections.amendments"),
     },
-    {
-      title: t("termsAndConditions.sections.contactInformationTitle"),
-      body: t("termsAndConditions.sections.contactInformation.content"),
-      contact: true,
-    },
   ];
 
   const contactRows = [
@@ -105,51 +112,72 @@ function LoginTermsModal({ isActive, onClose }) {
       <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1 text-body text-ink-2">
         <p>{t("termsAndConditions.sections.welcome")}</p>
 
-        {sections.map((section, index) => (
-          <section key={index}>
-            <h3 className="mb-1 text-body font-semibold text-ink">
-              {index + 1}. {section.title}
-            </h3>
-            {section.body && <p className="text-body leading-relaxed">{section.body}</p>}
-            {section.points && section.points.length > 0 && (
-              <ul className="mt-1 space-y-1">
-                {section.points.map((point, pointIndex) => (
-                  <li key={pointIndex} className="flex items-start gap-2">
-                    <span className="mt-0.5 text-brand-strong">•</span>
-                    <span className="leading-relaxed">{point}</span>
-                  </li>
-                ))}
-              </ul>
+        {hasCustomContent ? (
+          <div className="space-y-3">
+            {customParagraphs.map((paragraph, index) => (
+              <p key={index} className="whitespace-pre-line leading-relaxed">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        ) : (
+          sections.map((section, index) => (
+            <section key={index}>
+              <h3 className="mb-1 text-body font-semibold text-ink">
+                {index + 1}. {section.title}
+              </h3>
+              {section.body && (
+                <p className="text-body leading-relaxed">{section.body}</p>
+              )}
+              {section.points && section.points.length > 0 && (
+                <ul className="mt-1 space-y-1">
+                  {section.points.map((point, pointIndex) => (
+                    <li key={pointIndex} className="flex items-start gap-2">
+                      <span className="mt-0.5 text-brand-strong">•</span>
+                      <span className="leading-relaxed">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ))
+        )}
+
+        <section>
+          <h3 className="mb-1 text-body font-semibold text-ink">
+            {hasCustomContent
+              ? t("termsAndConditions.sections.contactInformationTitle")
+              : `11. ${t("termsAndConditions.sections.contactInformationTitle")}`}
+          </h3>
+          <p className="text-body leading-relaxed">
+            {t("termsAndConditions.sections.contactInformation.content")}
+          </p>
+          <div className="mt-1 space-y-1">
+            {contactRows.map(([key, value]) => (
+              <p key={key}>
+                <span className="font-semibold text-ink">
+                  {t(`termsAndConditions.sections.contactInformation.${key}`)}:{" "}
+                </span>
+                {value}
+              </p>
+            ))}
+            {settings.website && (
+              <p>
+                <span className="font-semibold text-ink">
+                  {t("termsAndConditions.sections.contactInformation.website")}:{" "}
+                </span>
+                <a
+                  href={settings.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-brand-strong hover:underline"
+                >
+                  {settings.website}
+                </a>
+              </p>
             )}
-            {section.contact && (
-              <div className="mt-1 space-y-1">
-                {contactRows.map(([key, value]) => (
-                  <p key={key}>
-                    <span className="font-semibold text-ink">
-                      {t(`termsAndConditions.sections.contactInformation.${key}`)}:{" "}
-                    </span>
-                    {value}
-                  </p>
-                ))}
-                {settings.website && (
-                  <p>
-                    <span className="font-semibold text-ink">
-                      {t("termsAndConditions.sections.contactInformation.website")}:{" "}
-                    </span>
-                    <a
-                      href={settings.website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium text-brand-strong hover:underline"
-                    >
-                      {settings.website}
-                    </a>
-                  </p>
-                )}
-              </div>
-            )}
-          </section>
-        ))}
+          </div>
+        </section>
 
         <p className="border-t border-line pt-3 text-micro text-ink-3">
           {t("termsAndConditions.footerNote")}

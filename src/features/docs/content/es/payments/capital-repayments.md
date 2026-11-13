@@ -18,10 +18,11 @@ Después de un abono a capital, las filas afectadas pueden mostrar el estado **r
 
 ## Quién puede hacer qué
 
-- **Administradores** pueden aplicar un abono a capital a un contrato.
-- **Vendedores** deben entender el efecto: después de un abono a capital, las cuotas futuras pueden desaparecer o reducirse, y el saldo baja de inmediato.
+- **Administradores** pueden aplicar un abono a capital a un contrato y ver el efecto en el libro mayor.
+- **Vendedores** deben entender el efecto: después de un abono a capital, las cuotas futuras pueden desaparecer o reducirse, y el saldo baja de inmediato. Registran comprobantes, pero no aprueban el movimiento.
 
 ## Relacionado
 
 - [Aprobar, rechazar y deshacer pagos](/docs/approving-payments)
 - [Tipos y estados de pago](/docs/payment-types-and-statuses)
+- [Lista, detalle y acciones del contrato](/docs/contract-detail-and-actions)

@@ -1,12 +1,20 @@
 import { useState, useEffect, useContext, useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AuthContext from "../../../../../contexts/AuthContext";
 import { projectsApi } from "../../../api";
 import { useLocale } from "../../../../../contexts/LocaleContext";
 import LotPhotosPanel from "../../../components/media/LotPhotosPanel";
 import { areaUnitLabel, linearUnitLabel } from "../../../../../shared/utils/units";
 import { getDefaultCurrency } from "../../../../../shared/utils/formatSettings";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  Banner,
+  Card,
+  Chip,
+  Field,
+  Input,
+  SaveBar,
+  Skeleton,
+} from "@/shared/ui";
 
 // ---- Area conversion factors (from m2) ----
 const M2_TO_FT2_FACTOR = 10.7639;
@@ -15,6 +23,14 @@ const AREA_CONVERSION_FROM_M2 = {
   m2: 1,
   ft2: M2_TO_FT2_FACTOR,
   vara2: M2_TO_VARA2_FACTOR,
+};
+
+const STATUS_TONES = {
+  available: "success",
+  reserved: "warning",
+  financed: "info",
+  fully_paid: "neutral",
+  sold: "neutral",
 };
 
 function EditLot() {
@@ -42,7 +58,7 @@ function EditLot() {
   const [overridePriceValue, setOverridePriceValue] = useState("");
   const [overrideArea, setOverrideArea] = useState(false);
   const [overrideAreaValue, setOverrideAreaValue] = useState("");
-  const [_ser_verPrice_, setServerPrice] = useState(null);
+  const [_serverPrice_, setServerPrice] = useState(null);
   const [_serverArea_, setServerArea] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -56,7 +72,6 @@ function EditLot() {
       setError(null);
       try {
         const rawData = await projectsApi.getLot(project_id, lot_id);
-        // Handle wrapped responses (e.g. { lot: ... } or { data: ... })
         const data = rawData.lot || rawData.data || rawData;
 
         setName(data.name || "");
@@ -64,7 +79,6 @@ function EditLot() {
         setLength(data.length ?? 0);
         setWidth(data.width ?? 0);
         setMeasurementUnit(data.measurement_unit || data.unit || "m2");
-        // setBalance(data.balance || 0);
         setStatus(data.status || "");
         setAddress(data.address || "");
         setRegistrationNumber(data.registration_number || data.registrationNumber || "");
@@ -73,16 +87,17 @@ function EditLot() {
         setEast(data.east || "");
         setWest(data.west || "");
         setSouth(data.south || "");
-        // Handle price - check effective_price if available, otherwise price
         if (data.price != null) setServerPrice(data.price);
         if (data.area != null) setServerArea(data.area);
 
-        // Initialize overrides
         if (data.override_price != null && data.override_price > 0) {
           setOverridePriceValue(String(data.override_price));
           setOverridePrice(true);
-        } else if (data.effective_price != null && data.price != null && Math.abs(data.effective_price - data.price) > 0.1) {
-          // Fallback: if effective_price differs significantly from base price
+        } else if (
+          data.effective_price != null &&
+          data.price != null &&
+          Math.abs(data.effective_price - data.price) > 0.1
+        ) {
           setOverridePriceValue(String(data.effective_price));
           setOverridePrice(true);
         }
@@ -91,7 +106,6 @@ function EditLot() {
           setOverrideAreaValue(String(data.override_area));
           setOverrideArea(true);
         } else if (data.area != null && data.length != null && data.width != null) {
-          // Fallback: Check if area doesn't match length * width
           const calcArea = data.length * data.width;
           if (Math.abs(calcArea - data.area) > 0.1) {
             setOverrideAreaValue(String(data.area));
@@ -107,8 +121,8 @@ function EditLot() {
           if (!data.measurement_unit && pdata.measurement_unit) {
             setMeasurementUnit(pdata.measurement_unit);
           }
-        } catch (e) {
-          console.error("Error fetching project info", e);
+        } catch (projectError) {
+          console.error("Error fetching project info", projectError);
         }
       } catch (err) {
         setError(err.message);
@@ -131,9 +145,10 @@ function EditLot() {
     return +(areaM2 * factor).toFixed(2);
   }, [areaM2, measurementUnit, overrideArea, overrideAreaValue]);
 
-  const calculatedPrice = useMemo(() => {
-    return +(displayedArea * Number(projectPricePerUnit || 0)).toFixed(2);
-  }, [displayedArea, projectPricePerUnit]);
+  const calculatedPrice = useMemo(
+    () => +(displayedArea * Number(projectPricePerUnit || 0)).toFixed(2),
+    [displayedArea, projectPricePerUnit]
+  );
 
   const effectivePricePreview = useMemo(() => {
     if (overridePrice && Number(overridePriceValue) > 0) return Number(overridePriceValue);
@@ -141,6 +156,7 @@ function EditLot() {
   }, [overridePrice, overridePriceValue, calculatedPrice]);
 
   const fmtNum = (num) => new Intl.NumberFormat().format(num);
+  const currency = getDefaultCurrency();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -150,14 +166,14 @@ function EditLot() {
     setFieldErrors({});
 
     const fe = {};
-    if (!name.trim()) fe.name = "Nombre requerido";
-    if (!(Number(length) > 0)) fe.length = "Longitud debe ser > 0";
-    if (!(Number(width) > 0)) fe.width = "Anchura debe ser > 0";
+    if (!name.trim()) fe.name = t("lots.errorNameRequired");
+    if (!(Number(length) > 0)) fe.length = t("lots.errorLengthPositive");
+    if (!(Number(width) > 0)) fe.width = t("lots.errorWidthPositive");
     if (overridePrice && overridePriceValue && !(Number(overridePriceValue) > 0)) {
-      fe.override_price = "Precio override debe ser > 0";
+      fe.override_price = t("lots.errorOverridePricePositive");
     }
     if (overrideArea && overrideAreaValue && !(Number(overrideAreaValue) > 0)) {
-      fe.override_area = "Área override debe ser > 0";
+      fe.override_area = t("lots.errorOverrideAreaPositive");
     }
     if (Object.keys(fe).length) {
       setFieldErrors(fe);
@@ -173,16 +189,20 @@ function EditLot() {
           width: Number(width),
           price: calculatedPrice,
           area: displayedArea,
-          ...(overridePrice && overridePriceValue ? { override_price: Number(overridePriceValue) } : { override_price: null }),
-          ...(overrideArea && overrideAreaValue ? { override_area: Number(overrideAreaValue) } : { override_area: null }),
+          ...(overridePrice && overridePriceValue
+            ? { override_price: Number(overridePriceValue) }
+            : { override_price: null }),
+          ...(overrideArea && overrideAreaValue
+            ? { override_area: Number(overrideAreaValue) }
+            : { override_area: null }),
           address: address || "",
           registration_number: registrationNumber || "",
           note: note || "",
           north: north || "",
           east: east || "",
           west: west || "",
-          south: south || ""
-        }
+          south: south || "",
+        },
       });
 
       navigate(`/projects/${project_id}/lots`);
@@ -190,359 +210,352 @@ function EditLot() {
       if (err.status === 422 && err.errors) {
         setServerErrors(err.errors);
       } else {
-        setError(err.message || "Error updating lot");
+        setError(err.message || t("lots.errorUpdateLot"));
       }
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return (
-    <div className="flex h-screen w-full items-center justify-center bg-white dark:bg-darkblack-700">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-success-300 border-t-transparent" />
-        <p className="text-bgray-500 font-bold uppercase tracking-widest text-xs animate-pulse">{t("lots.loading")}</p>
-      </div>
-    </div>
-  );
+  if (loading) {
+    return (
+      <main className="page-shell min-h-screen w-full bg-canvas px-6 pb-6 xl:px-[48px] xl:pb-[48px]">
+        <div className="mx-auto w-full max-w-[1600px]">
+          <Skeleton rows={8} />
+        </div>
+      </main>
+    );
+  }
+
+  const statusKey = String(status || "").toLowerCase();
+  const translatedStatus = statusKey ? t(`status.${statusKey}`) : "";
+  const statusLabel =
+    translatedStatus && translatedStatus !== `status.${statusKey}`
+      ? translatedStatus
+      : status || "—";
+  const boundaries = [
+    { label: t("lots.north"), value: north, setter: setNorth },
+    { label: t("lots.south"), value: south, setter: setSouth },
+    { label: t("lots.east"), value: east, setter: setEast },
+    { label: t("lots.west"), value: west, setter: setWest },
+  ];
 
   return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell dark:bg-darkblack-700 min-h-screen">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="max-w-4xl mx-auto bg-white dark:bg-darkblack-600 shadow-2xl rounded-[2.5rem] border border-bgray-200 dark:border-darkblack-400 overflow-hidden relative"
-      >
-        <div className="absolute top-0 right-0 w-64 h-64 bg-success-300/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
-
-        <form id="lot-edit-form" onSubmit={handleSubmit}>
-          {/* Header Section */}
-          <div className="p-8 lg:p-12 border-b border-bgray-100 dark:border-darkblack-400 bg-bgray-50/50 dark:bg-darkblack-500/50">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <motion.h2
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="text-4xl font-black text-bgray-900 dark:text-white tracking-tight mb-2"
-                >
-                  {t("lots.editLot")}
-                </motion.h2>
-                <div className="flex items-center gap-2">
-                  <span className="bg-success-50 dark:bg-success-900/30 text-success-600 dark:text-success-400 px-3 py-1 rounded-full text-xs font-bold border border-success-100 dark:border-success-800">
-                    {projectName}
-                  </span>
-                  <span className="text-bgray-400 dark:text-bgray-500 text-xs font-bold uppercase tracking-widest">
-                    ID: {lot_id}
-                  </span>
-                </div>
-              </div>
-
-            </div>
+    <main className="page-shell min-h-screen w-full bg-canvas px-6 pb-6 xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-5">
+        <header className="flex flex-col gap-1">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex flex-wrap items-center gap-1 text-label font-medium text-ink-3"
+          >
+            <Link to="/projects" className="transition-colors hover:text-ink">
+              {t("projectsPage.title")}
+            </Link>
+            <span aria-hidden="true">/</span>
+            <Link
+              to={`/projects/${project_id}`}
+              className="truncate transition-colors hover:text-ink"
+            >
+              {projectName || t("lotsTable.project")}
+            </Link>
+            <span aria-hidden="true">/</span>
+            <Link
+              to={`/projects/${project_id}/lots`}
+              className="transition-colors hover:text-ink"
+            >
+              {t("projects.lots")}
+            </Link>
+            <span aria-hidden="true">/</span>
+            <span className="truncate text-ink-2">{name || t("lots.editLot")}</span>
+          </nav>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-page font-bold tracking-tight text-ink">
+              {t("header.pageTitle.editLot")}
+            </h1>
+            {statusKey && (
+              <Chip tone={STATUS_TONES[statusKey] || "neutral"}>
+                {statusLabel}
+              </Chip>
+            )}
           </div>
+          <p className="text-body font-medium text-ink-3">
+            {t("lots.updateLotInfo")}
+          </p>
+        </header>
 
-          <div className="p-8 lg:p-12 space-y-12">
-            {/* ALERT BOXES */}
-            <AnimatePresence>
-              {(error || serverErrors.length > 0) && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="p-6 rounded-2xl bg-red-50 dark:bg-red-900/20 border-2 border-red-100 dark:border-red-900/30 space-y-2"
-                >
-                  {error && <p className="text-red-500 font-bold flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                    {error}
-                  </p>}
-                  {serverErrors.map((err, i) => (
-                    <p key={i} className="text-red-500 font-bold text-sm ml-7">• {err}</p>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
+          <form
+            id="lot-edit-form"
+            onSubmit={handleSubmit}
+            className="flex min-w-0 flex-col gap-4"
+          >
+            {(error || serverErrors.length > 0) && (
+              <Banner tone="danger">
+                {error && <p>{error}</p>}
+                {serverErrors.map((item, index) => (
+                  <p key={index}>{item}</p>
+                ))}
+              </Banner>
+            )}
 
-            {/* SECTION: BASIC INFO */}
-            <section className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-500">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </div>
-                <h3 className="text-xl font-bold text-bgray-900 dark:text-white uppercase tracking-tight">{t("lots.basicInfo")}</h3>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.lotName")}</label>
-                  <input
-                    type="text"
+            <Card title={t("lots.basicInfo")}>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label={t("lots.lotName")} error={fieldErrors.name}>
+                  <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-bgray-50 dark:bg-darkblack-500 p-4 rounded-2xl border-2 border-transparent focus:border-blue-400 focus:ring-0 transition-all font-bold text-bgray-900 dark:text-white"
-                    placeholder="E.g. Lote 42"
+                    placeholder={t("lots.lotNamePlaceholder")}
+                    invalid={Boolean(fieldErrors.name)}
+                    className="h-10 max-h-10"
                   />
-                  {fieldErrors.name && <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider">{fieldErrors.name}</p>}
-                </div>
+                </Field>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.status")}</label>
-                  <div className="w-full bg-bgray-100 dark:bg-darkblack-700 p-4 rounded-2xl border-2 border-transparent font-bold text-bgray-500 dark:text-bgray-400 italic">
-                    {status}
-                  </div>
-                </div>
+                <Field label={t("lots.status")}>
+                  <Input
+                    value={statusLabel}
+                    readOnly
+                    disabled
+                    className="h-10 max-h-10 bg-surface-2 text-ink-3"
+                  />
+                </Field>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.address")}</label>
-                  <input
-                    type="text"
+                <Field label={t("lots.address")}>
+                  <Input
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="w-full bg-bgray-50 dark:bg-darkblack-500 p-4 rounded-2xl border-2 border-transparent focus:border-blue-400 focus:ring-0 transition-all font-bold text-bgray-900 dark:text-white"
                     placeholder={t("lots.optionalAddress")}
+                    className="h-10 max-h-10"
                   />
-                </div>
+                </Field>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.registrationNumber")}</label>
-                  <input
-                    type="text"
+                <Field label={t("lots.registrationNumber")}>
+                  <Input
                     value={registrationNumber}
                     onChange={(e) => setRegistrationNumber(e.target.value)}
-                    className="w-full bg-bgray-50 dark:bg-darkblack-500 p-4 rounded-2xl border-2 border-transparent focus:border-blue-400 focus:ring-0 transition-all font-bold text-bgray-900 dark:text-white"
                     placeholder={t("lots.optionalRegistration")}
+                    className="h-10 max-h-10"
                   />
-                </div>
+                </Field>
               </div>
-            </section>
+            </Card>
 
-            <hr className="border-bgray-100 dark:border-darkblack-400" />
-
-            {/* SECTION: DIMENSIONS & PRICE */}
-            <section className="space-y-10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-900/30 flex items-center justify-center text-success-500">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-                </div>
-                <h3 className="text-xl font-bold text-bgray-900 dark:text-white uppercase tracking-tight">{t("lots.geometryPrice")}</h3>
+            <Card title={t("lots.geometryPrice")}>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field
+                  label={`${t("lots.length")} (${linearUnitLabel(measurementUnit)})`}
+                  error={fieldErrors.length}
+                >
+                  <Input
+                    type="number"
+                    value={length}
+                    onChange={(e) => setLength(Number(e.target.value))}
+                    invalid={Boolean(fieldErrors.length)}
+                    className="h-10 max-h-10"
+                  />
+                </Field>
+                <Field
+                  label={`${t("lots.width")} (${linearUnitLabel(measurementUnit)})`}
+                  error={fieldErrors.width}
+                >
+                  <Input
+                    type="number"
+                    value={width}
+                    onChange={(e) => setWidth(Number(e.target.value))}
+                    invalid={Boolean(fieldErrors.width)}
+                    className="h-10 max-h-10"
+                  />
+                </Field>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-8 items-start">
-                <div className="space-y-6 md:col-span-1">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.length")} ({linearUnitLabel(measurementUnit)})</label>
-                    <input
-                      type="number"
-                      value={length}
-                      onChange={(e) => setLength(Number(e.target.value))}
-                      className="w-full bg-bgray-50 dark:bg-darkblack-500 p-4 rounded-2xl border-2 border-transparent focus:border-success-400 focus:ring-0 transition-all font-black text-xl text-bgray-900 dark:text-white"
-                    />
-                    {fieldErrors.length && <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider">{fieldErrors.length}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.width")} ({linearUnitLabel(measurementUnit)})</label>
-                    <input
-                      type="number"
-                      value={width}
-                      onChange={(e) => setWidth(Number(e.target.value))}
-                      className="w-full bg-bgray-50 dark:bg-darkblack-500 p-4 rounded-2xl border-2 border-transparent focus:border-success-400 focus:ring-0 transition-all font-black text-xl text-bgray-900 dark:text-white"
-                    />
-                    {fieldErrors.width && <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider">{fieldErrors.width}</p>}
-                  </div>
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="rounded-control border border-line bg-surface-2 p-4">
+                  <p className="text-micro font-bold uppercase tracking-wide text-ink-3">
+                    {t("lots.calculatedArea")}
+                  </p>
+                  <p className="mt-1 text-section font-bold text-ink">
+                    {fmtNum(displayedArea)}{" "}
+                    <span className="text-label font-medium text-ink-3">
+                      {areaUnitLabel(measurementUnit)}
+                    </span>
+                  </p>
+                  {overrideArea && (
+                    <Chip tone="warning" className="mt-2">
+                      {t("lots.manualMode")}
+                    </Chip>
+                  )}
                 </div>
 
-                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6 bg-bgray-50 dark:bg-darkblack-500 p-8 rounded-[2rem] border-2 border-bgray-100 dark:border-darkblack-400 relative overflow-hidden ring-1 ring-success-300">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-success-300/10 rounded-full -mr-16 -mt-16 blur-2xl" />
-
-                  <div className={`space-y-1 transition-all duration-300 ${overrideArea ? 'opacity-100' : 'opacity-80'}`}>
-                    <p className="text-[10px] font-black text-success-500 uppercase tracking-[0.2em] mb-2">{t("lots.calculatedArea")}</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-black text-bgray-900 dark:text-white">{fmtNum(displayedArea)}</span>
-                      <span className="text-sm font-bold text-bgray-400">{areaUnitLabel(measurementUnit)}</span>
-                    </div>
-                    {overrideArea && (
-                      <motion.span
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-600 text-[10px] text-white font-black rounded uppercase tracking-widest mt-2 shadow-lg shadow-blue-600/20"
-                      >
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
-                        Manual Mode
-                      </motion.span>
-                    )}
-                  </div>
-
-                  <div className={`space-y-1 transition-all duration-300 ${overridePrice ? 'opacity-100' : 'opacity-80'}`}>
-                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-2">{t("lots.estimatedPrice")}</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-black text-bgray-900 dark:text-white">{fmtNum(effectivePricePreview)}</span>
-                      <span className="text-sm font-bold text-bgray-400">{getDefaultCurrency()}</span>
-                    </div>
-                    {overridePrice && (
-                      <motion.span
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-600 text-[10px] text-white font-black rounded uppercase tracking-widest mt-2 shadow-lg shadow-blue-600/20"
-                      >
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" /></svg>
-                        Manual Mode
-                      </motion.span>
-                    )}
-                  </div>
+                <div className="rounded-control border border-line bg-surface-2 p-4">
+                  <p className="text-micro font-bold uppercase tracking-wide text-ink-3">
+                    {t("lots.estimatedPrice")}
+                  </p>
+                  <p className="mt-1 text-section font-bold text-ink">
+                    {fmtNum(effectivePricePreview)}{" "}
+                    <span className="text-label font-medium text-ink-3">
+                      {currency}
+                    </span>
+                  </p>
+                  {overridePrice && (
+                    <Chip tone="warning" className="mt-2">
+                      {t("lots.manualMode")}
+                    </Chip>
+                  )}
                 </div>
               </div>
 
-              {/* OVERRIDES DIVIDER */}
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="group p-6 rounded-3xl bg-white dark:bg-darkblack-600 border-2 border-bgray-100 dark:border-darkblack-400 hover:border-success-300 transition-all shadow-xs">
-                  <label className="flex items-center gap-4 mb-4 cursor-pointer">
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="rounded-card border border-line p-4">
+                  <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={overrideArea}
                       onChange={(e) => setOverrideArea(e.target.checked)}
-                      className="w-6 h-6 rounded-lg text-success-300 focus:ring-success-300 bg-bgray-100 dark:bg-darkblack-500 border-0"
+                      className="h-4 w-4 rounded border-line-strong accent-brand"
                     />
-                    <span className="text-sm font-black text-bgray-900 dark:text-white uppercase tracking-widest">
+                    <span className="text-label font-semibold text-ink-2">
                       {t("lots.overrideArea")}
                     </span>
                   </label>
-                  <AnimatePresence>
-                    {overrideArea && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-3"
-                      >
-                        <input
+                  {overrideArea && (
+                    <div className="mt-3 space-y-2">
+                      <Field error={fieldErrors.override_area}>
+                        <Input
                           type="number"
                           value={overrideAreaValue}
                           onChange={(e) => setOverrideAreaValue(e.target.value)}
-                          className="w-full bg-bgray-50 dark:bg-darkblack-700 p-4 rounded-xl border-2 border-success-100 dark:border-success-900 font-bold"
                           placeholder={t("lots.enterManualArea")}
+                          invalid={Boolean(fieldErrors.override_area)}
+                          className="h-10 max-h-10"
                         />
-                        {fieldErrors.override_area && <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider">{fieldErrors.override_area}</p>}
-                        <p className="text-[10px] text-bgray-400 italic">{t("lots.areaOverrideWarning")}</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      </Field>
+                      <p className="text-micro text-ink-3">
+                        {t("lots.areaOverrideWarning")}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                <div className="group p-6 rounded-3xl bg-white dark:bg-darkblack-600 border-2 border-bgray-100 dark:border-darkblack-400 hover:border-blue-300 transition-all shadow-xs">
-                  <label className="flex items-center gap-4 mb-4 cursor-pointer">
+                <div className="rounded-card border border-line p-4">
+                  <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={overridePrice}
                       onChange={(e) => setOverridePrice(e.target.checked)}
-                      className="w-6 h-6 rounded-lg text-blue-500 focus:ring-blue-500 bg-bgray-100 dark:bg-darkblack-500 border-0"
+                      className="h-4 w-4 rounded border-line-strong accent-brand"
                     />
-                    <span className="text-sm font-black text-bgray-900 dark:text-white uppercase tracking-widest">
+                    <span className="text-label font-semibold text-ink-2">
                       {t("lots.overridePrice")}
                     </span>
                   </label>
-                  <AnimatePresence>
-                    {overridePrice && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-3"
-                      >
-                        <input
+                  {overridePrice && (
+                    <div className="mt-3 space-y-2">
+                      <Field error={fieldErrors.override_price}>
+                        <Input
                           type="number"
                           value={overridePriceValue}
                           onChange={(e) => setOverridePriceValue(e.target.value)}
-                          className="w-full bg-bgray-50 dark:bg-darkblack-700 p-4 rounded-xl border-2 border-blue-100 dark:border-blue-900 font-bold"
                           placeholder={t("lots.enterManualPrice")}
+                          invalid={Boolean(fieldErrors.override_price)}
+                          className="h-10 max-h-10"
                         />
-                        {fieldErrors.override_price && <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider">{fieldErrors.override_price}</p>}
-                        <p className="text-[10px] text-bgray-400 italic">{t("lots.priceOverrideWarning")}</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      </Field>
+                      <p className="text-micro text-ink-3">
+                        {t("lots.priceOverrideWarning")}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
-            </section>
+            </Card>
 
-            <hr className="border-bgray-100 dark:border-darkblack-400" />
-
-            {/* SECTION: BOUNDARIES */}
-            <section className="space-y-8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center text-orange-500">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-                </div>
-                <h3 className="text-xl font-bold text-bgray-900 dark:text-white uppercase tracking-tight">{t("lots.boundaryDescriptions")}</h3>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                {[
-                  { label: t("lots.north"), value: north, setter: setNorth, icon: "⬆️" },
-                  { label: t("lots.south"), value: south, setter: setSouth, icon: "⬇️" },
-                  { label: t("lots.east"), value: east, setter: setEast, icon: "➡️" },
-                  { label: t("lots.west"), value: west, setter: setWest, icon: "⬅️" }
-                ].map((item, idx) => (
-                  <div key={idx} className="space-y-2">
-                    <label className="text-[10px] font-black text-bgray-400 uppercase tracking-widest flex items-center gap-1">
-                      <span className="opacity-50">{item.icon}</span> {item.label}
-                    </label>
-                    <input
-                      type="text"
+            <Card title={t("lots.boundaryDescriptions")}>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {boundaries.map((item) => (
+                  <Field key={item.label} label={item.label}>
+                    <Input
                       value={item.value}
                       onChange={(e) => item.setter(e.target.value)}
-                      className="w-full bg-bgray-50 dark:bg-darkblack-500 p-4 rounded-2xl border-2 border-transparent focus:border-orange-400 focus:ring-0 transition-all font-bold text-bgray-900 dark:text-white"
                       placeholder={`${t("lots.limitWith")}...`}
+                      className="h-10 max-h-10"
                     />
-                  </div>
+                  </Field>
                 ))}
               </div>
-            </section>
+            </Card>
 
-            {/* SECTION: NOTES */}
-            <section className="space-y-4">
-              <label className="text-xs font-black text-bgray-400 uppercase tracking-widest">{t("lots.notes")}</label>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={4}
-                className="w-full bg-bgray-50 dark:bg-darkblack-500 p-6 rounded-[2rem] border-2 border-transparent focus:border-bgray-300 focus:ring-0 transition-all font-bold text-bgray-900 dark:text-white resize-none"
-                placeholder={t("lots.additionalNotes")}
-              />
-            </section>
-          </div>
+            <Card title={t("lots.notes")}>
+              <Field>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  rows={4}
+                  aria-label={t("lots.notes")}
+                  placeholder={t("lots.additionalNotes")}
+                  className="min-h-24 w-full resize-none rounded-control border border-line-strong bg-surface px-3 py-2 text-[16px] text-ink outline-none sm:text-body-lg"
+                />
+              </Field>
+            </Card>
+          </form>
 
-        </form>
+          <aside className="flex flex-col gap-4">
+            <Card title={t("lots.formSummary")} bodyClassName="p-[18px]">
+              <dl className="flex flex-col gap-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-label text-ink-3">
+                    {t("lotsTable.project")}
+                  </dt>
+                  <dd className="min-w-0 truncate text-right text-label font-semibold text-ink">
+                    {projectName || "—"}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-label text-ink-3">{t("lots.status")}</dt>
+                  <dd className="text-label font-semibold text-ink">
+                    {statusLabel}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-label text-ink-3">
+                    {t("lots.calculatedArea")}
+                  </dt>
+                  <dd className="text-label font-semibold text-ink">
+                    {fmtNum(displayedArea)} {areaUnitLabel(measurementUnit)}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between gap-3 border-t border-line pt-2.5">
+                  <dt className="text-label text-ink-3">
+                    {t("lots.estimatedPrice")}
+                  </dt>
+                  <dd className="text-body font-bold text-ink">
+                    {fmtNum(effectivePricePreview)} {currency}
+                  </dd>
+                </div>
+              </dl>
+            </Card>
+          </aside>
+        </div>
 
         {project_id && lot_id && (
-          <div className="px-8 lg:px-12 pb-8 lg:pb-12">
-            <LotPhotosPanel
-              projectId={project_id}
-              lotId={lot_id}
-              canManage={user?.role === "admin"}
-            />
-          </div>
+          <LotPhotosPanel
+            projectId={project_id}
+            lotId={lot_id}
+            canManage={user?.role === "admin"}
+          />
         )}
 
-        <div className="p-8 lg:p-12 border-t border-bgray-100 dark:border-darkblack-400 bg-bgray-50/50 dark:bg-darkblack-500/50">
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="w-full sm:w-auto px-10 py-5 rounded-2xl border-2 border-bgray-200 dark:border-darkblack-400 text-bgray-600 dark:text-bgray-300 font-black hover:bg-white dark:hover:bg-darkblack-600 transition-all text-xs uppercase tracking-[0.2em]"
-            >
-              {t("common.back")}
-            </button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              form="lot-edit-form"
-              disabled={saving || user?.role !== 'admin'}
-              className={`w-full sm:w-auto px-12 py-5 rounded-2xl font-black text-white shadow-xl shadow-success-300/30 transition-all text-xs uppercase tracking-[0.2em] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none ${!saving && user?.role === 'admin' ? 'bg-success-300 hover:bg-success-400' : 'bg-bgray-400'}`}
-            >
-              {saving ? t("common.saving") : t("common.saveChanges")}
-            </motion.button>
-          </div>
-        </div>
-      </motion.div>
+        <SaveBar
+          visible
+          dirty
+          saving={saving}
+          message={t("lots.unsavedChanges")}
+          onDiscard={() => navigate(-1)}
+          saveLabel={t("common.saveChanges")}
+          discardLabel={t("common.cancel")}
+          saveType="submit"
+          saveForm="lot-edit-form"
+          saveDisabled={saving || user?.role !== "admin"}
+        />
+      </div>
     </main>
   );
 }

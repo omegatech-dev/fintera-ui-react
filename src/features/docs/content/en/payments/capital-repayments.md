@@ -18,10 +18,11 @@ After a capital repayment, the affected rows may show the **readjustment** statu
 
 ## Who can do what
 
-- **Admins** can apply a capital repayment to a contract.
-- **Sellers** should understand the effect: after a capital payment, future installments may disappear or shrink, and the balance drops immediately.
+- **Admins** can apply a capital repayment to a contract and see the ledger effect.
+- **Sellers** should understand the effect: after a capital payment, future installments may disappear or shrink, and the balance drops immediately. Sellers register receipts but do not approve the movement.
 
 ## Related
 
 - [Approving, rejecting, and undoing payments](/docs/approving-payments)
 - [Payment types and statuses](/docs/payment-types-and-statuses)
+- [Contract list, detail, and actions](/docs/contract-detail-and-actions)

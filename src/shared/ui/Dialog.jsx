@@ -78,7 +78,7 @@ function Dialog({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
+      className="motion-fade-in fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
@@ -90,7 +90,7 @@ function Dialog({
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={`w-full ${SIZES[size]} rounded-sheet bg-surface shadow-pop ${flush ? "" : "p-5"} ${className}`}
+        className={`motion-dialog w-full ${SIZES[size]} rounded-sheet bg-surface shadow-pop ${flush ? "" : "p-5"} ${className}`}
       >
         {title && (
           <h2 id={titleId} className="text-section font-bold text-ink">

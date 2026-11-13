@@ -23,6 +23,11 @@ const AdminOrOwnerRoute = ({ children }) => {
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
+  const securityPath = `/settings/user/${currentUser.id}/security`;
+  if (currentUser?.must_change_password && currentUser?.id && location.pathname !== securityPath) {
+    return <Navigate to={securityPath} replace />;
+  }
+
   // Admin and seller are the back-office roles.
   if (currentUser?.role === "admin" || currentUser?.role === "seller") {
     return children;

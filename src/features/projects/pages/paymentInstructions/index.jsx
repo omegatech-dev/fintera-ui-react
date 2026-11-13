@@ -251,7 +251,7 @@ export default function PaymentInstructionsPage() {
 
   return (
     <main className="min-h-screen w-full bg-canvas px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px]">
-      <div className="mx-auto max-w-6xl space-y-5">
+      <div className="mx-auto w-full max-w-[1600px] space-y-5">
         <Link
           to="/projects"
           className="inline-flex items-center gap-2 text-label font-semibold text-ink-3 transition-colors hover:text-ink"

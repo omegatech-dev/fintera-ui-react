@@ -32,8 +32,8 @@ describe('apiClient Performance Benchmark', () => {
         localStorage.setItem('token', 'benchmark-token-value');
     });
 
-    it('measures request performance with localStorage access', async () => {
-        // Ensure authToken is null for baseline
+    it('measures request performance when falling back to the persisted token', async () => {
+        // With no in-memory token, the client must fall back to localStorage.
         setAuthToken(null);
         const iterations = 50000;
         const start = performance.now();
@@ -47,8 +47,8 @@ describe('apiClient Performance Benchmark', () => {
         console.log(`[Baseline] ${iterations} requests took ${duration.toFixed(2)}ms`);
         console.log(`[Baseline] Average per request: ${(duration / iterations).toFixed(4)}ms`);
 
-        // Ensure localStorage was NOT called
-        expect(localStorage.getItem).not.toHaveBeenCalled();
+        // The persisted token is the only source while the context hydrates.
+        expect(localStorage.getItem).toHaveBeenCalled();
     });
 
     it('measures request performance with optimized in-memory token', async () => {

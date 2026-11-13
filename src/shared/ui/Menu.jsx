@@ -45,7 +45,7 @@ function Menu({ label, icon, items, align = "right" }) {
       {open && (
         <div
           role="menu"
-          className={`absolute z-30 mt-1 min-w-44 rounded-control border border-line bg-surface p-1 shadow-pop ${
+          className={`motion-pop-in absolute z-30 mt-1 min-w-44 rounded-control border border-line bg-surface p-1 shadow-pop ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >

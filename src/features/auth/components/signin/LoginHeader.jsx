@@ -4,16 +4,16 @@ import { useLocale } from "@/contexts/LocaleContext";
 function LoginHeader() {
   const { t } = useLocale();
   return (
-    <div className="text-center">
-      <div className="mb-6 flex justify-center lg:hidden">
-        <BrandingLogo variant="light" className="block h-14 w-auto dark:hidden" alt="logo" />
-        <BrandingLogo variant="dark" className="hidden h-14 w-auto dark:block" alt="logo" />
+    <div>
+      <div className="mb-6 flex lg:hidden">
+        <BrandingLogo variant="light" className="block h-10 w-auto dark:hidden" alt="logo" />
+        <BrandingLogo variant="dark" className="hidden h-10 w-auto dark:block" alt="logo" />
       </div>
 
       <h1 className="text-page font-bold leading-tight text-ink">
         {t("auth.signIn")}
       </h1>
-      <p className="mx-auto mt-2 max-w-sm text-body text-ink-3">
+      <p className="mt-1 text-body font-medium text-ink-3">
         {t("signin.signInDescription")}
       </p>
     </div>

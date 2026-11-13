@@ -43,3 +43,4 @@ When financing is bank, the credit status describes where the loan stands:
 
 - [Reservations, down payments, and holds](/docs/reservations-and-holds)
 - [How the payment schedule is generated](/docs/payment-schedule)
+- [Commissions and payouts](/docs/commissions-and-payouts)

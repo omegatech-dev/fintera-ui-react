@@ -6,7 +6,7 @@ function Skeleton({ rows = 3, className = "" }) {
       {Array.from({ length: rows }).map((_, index) => (
         <div
           key={index}
-          className={`h-3.5 rounded bg-line ${
+          className={`motion-shimmer h-3.5 rounded ${
             index === 0 ? "w-1/3" : "w-full"
           }`}
         />

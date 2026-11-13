@@ -1,5 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileLines, faImages } from "@fortawesome/free-solid-svg-icons";
 import { projectsApi } from "../../api";
 import { auditsApi } from "../../../audits/api";
 import { formatAuditEvent } from "../../../audits/modelLabels";
@@ -9,6 +11,8 @@ import AuthContext from "../../../../contexts/AuthContext";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { useGeneralSettings } from "../../../../contexts/generalSettings";
 import { getDefaultCurrency } from "../../../../shared/utils/formatSettings";
+import { formatDate } from "../../../../shared/utils/formatters";
+import { formatBytes } from "../../components/media/mediaFiles";
 import {
   Button,
   Card,
@@ -48,6 +52,7 @@ function ProjectDetail() {
       : "overview";
   });
   const [mediaCounts, setMediaCounts] = useState({ plans: 0, photos: 0 });
+  const [drawings, setDrawings] = useState([]);
   const [lots, setLots] = useState([]);
   const [lotsLoading, setLotsLoading] = useState(false);
   const [instructions, setInstructions] = useState([]);
@@ -98,11 +103,13 @@ function ProjectDetail() {
         projectsApi.listProjectPhotos(id),
       ]);
       if (cancelled) return;
+      const drawingList =
+        plans.status === "fulfilled"
+          ? plans.value.drawings || plans.value.data || []
+          : [];
+      setDrawings(drawingList);
       setMediaCounts({
-        plans:
-          plans.status === "fulfilled"
-            ? (plans.value.drawings || plans.value.data || []).length
-            : 0,
+        plans: drawingList.length,
         photos:
           photos.status === "fulfilled"
             ? (photos.value.photos || photos.value.data || []).length
@@ -161,47 +168,71 @@ function ProjectDetail() {
   }, [id]);
 
   useEffect(() => {
+    loadActivity();
+  }, [loadActivity]);
+
+  useEffect(() => {
     if (tab === "lots" && lots.length === 0) loadLots();
     if (tab === "instructions" && instructions.length === 0) loadInstructions();
-    if (tab === "activity" && activity.length === 0) loadActivity();
-  }, [tab, lots.length, instructions.length, activity.length, loadLots, loadInstructions, loadActivity]);
+  }, [tab, lots.length, instructions.length, loadLots, loadInstructions]);
 
   const statusChip = useMemo(() => {
     if (!project) return null;
     return project.is_published ? (
       <Chip tone="success">{t("projects.published")}</Chip>
     ) : (
-      <Chip tone="warning">{t("projects.draft")}</Chip>
+      <Chip tone="neutral">{t("projects.draft")}</Chip>
     );
   }, [project, t]);
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Skeleton rows={4} />
-        <Skeleton rows={6} />
-      </div>
+      <main className="page-shell min-h-screen w-full bg-canvas px-6 pb-6 xl:px-[48px] xl:pb-[48px]">
+        <div className="mx-auto w-full max-w-[1600px] space-y-6">
+          <Skeleton rows={4} />
+          <Skeleton rows={6} />
+        </div>
+      </main>
     );
   }
 
   if (error) {
     return (
-      <ErrorState
-        title={t("common.error")}
-        description={`${t("projects.failedToLoadProject")}: ${error}`}
-        onRetry={() => navigate(0)}
-      />
+      <main className="page-shell min-h-screen w-full bg-canvas px-6 pb-6 xl:px-[48px] xl:pb-[48px]">
+        <div className="mx-auto w-full max-w-[1600px]">
+          <ErrorState
+            title={t("common.error")}
+            description={`${t("projects.failedToLoadProject")}: ${error}`}
+            onRetry={() => navigate(0)}
+          />
+        </div>
+      </main>
     );
   }
 
   if (!project) return null;
 
-  const availabilityRows = [
-    { label: t("projects.available"), value: Number(project.available_lots) || 0, tone: "bg-brand" },
-    { label: t("projects.reserved"), value: Number(project.reserved_lots) || 0, tone: "bg-warning" },
-    { label: t("projects.sold"), value: Number(project.sold_lots) || 0, tone: "bg-ink-3" },
-  ];
   const totalLots = Number(project.lot_count) || 0;
+  const availabilityRows = [
+    {
+      label: t("projects.available"),
+      value: Number(project.available_lots) || 0,
+      tone: "bg-brand",
+      text: "text-brand-strong",
+    },
+    {
+      label: t("projects.reserved"),
+      value: Number(project.reserved_lots) || 0,
+      tone: "bg-warning",
+      text: "text-warning",
+    },
+    {
+      label: t("projects.sold"),
+      value: Number(project.sold_lots) || 0,
+      tone: "bg-ink-3",
+      text: "text-ink-3",
+    },
+  ];
 
   const formatMoney = (value) =>
     value
@@ -209,17 +240,21 @@ function ProjectDetail() {
       : "—";
 
   const formatPercent = (value) =>
-    value ? `${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}%` : "—";
+    value
+      ? `${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}%`
+      : "—";
 
   const ficha = [
     { label: t("projects.code"), value: project.code || "—" },
     { label: t("projects.projectType"), value: projectTypeLabel },
     { label: t("projects.measurementUnit"), value: project.measurement_unit || "—" },
     { label: t("projects.pricePerUnit"), value: formatMoney(project.price_per_square_unit) },
-    { label: t("projects.currency") || "Currency", value: currency },
-    { label: t("projects.status") || "Status", value: project.is_published ? t("projects.published") : t("projects.draft") },
+    { label: t("projects.currency"), value: currency },
+    {
+      label: t("projects.status"),
+      value: project.is_published ? t("projects.published") : t("projects.draft"),
+    },
     { label: t("projects.interestRate"), value: formatPercent(project.interest_rate) },
-    { label: t("projects.guid"), value: project.guid || "—" },
   ];
 
   const tabs = [
@@ -230,28 +265,43 @@ function ProjectDetail() {
     { value: "activity", label: t("projects.tabActivity") },
   ];
 
+  const recentActivity = activity.slice(0, 4);
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3">
-        <Link to="/projects" className="text-label font-semibold text-ink-3 hover:text-ink">
-          ← {t("projects.manageProjects")}
-        </Link>
+    <main className="page-shell min-h-screen w-full bg-canvas px-6 pb-6 xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6">
+        <div className="flex flex-col gap-1">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex flex-wrap items-center gap-1 text-label font-medium text-ink-3"
+        >
+          <Link to="/projects" className="transition-colors hover:text-ink">
+            {t("projectsPage.title")}
+          </Link>
+          <span aria-hidden="true">/</span>
+          <span className="truncate text-ink-2">{project.name || "—"}</span>
+        </nav>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-page font-bold tracking-tight text-ink">{project.name || "—"}</h1>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-page font-bold tracking-tight text-ink">
+                {project.name || "—"}
+              </h1>
               {statusChip}
             </div>
-            <p className="mt-1 text-body text-ink-3">
-              {[project.city, project.address, projectTypeLabel, project.code]
+            <p className="mt-1 text-body font-medium text-ink-3">
+              {[project.city, projectTypeLabel, project.code]
                 .filter(Boolean)
                 .join(" · ") || "—"}
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => navigate(`/projects/${id}/lots`)}>
-              {t("projects.viewLots", { name: project.name })}
+          <div className="flex flex-wrap gap-2.5">
+            <Button
+              variant="secondary"
+              onClick={() => navigate(`/projects/${id}/lots`)}
+            >
+              {t("projects.viewLotsShort")}
             </Button>
             {isAdmin && (
               <Button onClick={() => navigate(`/projects/${id}/edit`)}>
@@ -262,28 +312,29 @@ function ProjectDetail() {
         </div>
       </div>
 
-      {/* Facts strip */}
-      <Card bodyClassName="grid grid-cols-2 gap-4 p-4 md:grid-cols-4">
+      <Card bodyClassName="grid grid-cols-2 gap-5 px-[18px] py-[14px] md:grid-cols-4">
         {[
           { label: t("projects.code"), value: project.code || "—" },
           {
-            label: t("projects.city"),
+            label: t("projects.location") || t("projects.city"),
             value: [project.city, project.address].filter(Boolean).join(", ") || "—",
           },
           {
             label: t("projects.deliveryDate"),
-            value: project.delivery_date ? project.delivery_date.slice(0, 10) : "—",
+            value: project.delivery_date ? formatDate(project.delivery_date) : "—",
           },
           {
             label: t("projects.lots"),
             value: `${totalLots} · ${Number(project.available_lots) || 0} ${t("projects.availableShort")}`,
           },
         ].map((item) => (
-          <div key={item.label}>
-            <p className="mb-1 text-micro font-bold uppercase tracking-wide text-ink-3">
+          <div key={item.label} className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.6px] text-ink-3">
               {item.label}
             </p>
-            <p className="truncate text-body font-bold text-ink">{item.value}</p>
+            <p className="mt-0.5 truncate text-label font-semibold text-ink">
+              {item.value}
+            </p>
           </div>
         ))}
       </Card>
@@ -301,29 +352,34 @@ function ProjectDetail() {
       />
 
       {tab === "overview" && (
-        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-          <div className="flex flex-col gap-6">
-            <Card title={t("projects.description")}>
+        <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+          <div className="flex flex-col gap-4">
+            <Card title={t("projects.description")} bodyClassName="p-[18px]">
               {project.description ? (
-                <p className="whitespace-pre-line text-body leading-relaxed text-ink-2">
+                <p className="whitespace-pre-line text-label leading-relaxed text-ink-2">
                   {project.description}
                 </p>
               ) : (
-                <p className="text-body text-ink-3">{t("projects.enterDescription")}</p>
+                <p className="text-label text-ink-3">
+                  {t("projects.enterDescription")}
+                </p>
               )}
-              <p className="mt-3 text-micro text-ink-3">
+              <p className="mt-2 text-micro font-medium text-ink-3">
                 {[
                   `${t("projects.projectType")}: ${projectTypeLabel}`,
-                  project.measurement_unit && `${t("projects.measurementUnit")}: ${project.measurement_unit}`,
-                  `${t("projects.currency") || "Currency"}: ${currency}`,
+                  project.measurement_unit &&
+                    `${t("projects.measurementUnit")}: ${project.measurement_unit}`,
+                  `${t("projects.currency")}: ${currency}`,
+                  project.created_at &&
+                    `${t("projects.created")}: ${formatDate(project.created_at)}`,
                 ]
                   .filter(Boolean)
                   .join(" · ")}
               </p>
             </Card>
 
-            <Card title={t("projects.availability")}>
-              <div className="mb-4 flex h-3 overflow-hidden rounded-full bg-surface-2">
+            <Card title={t("projects.availability")} bodyClassName="p-[18px]">
+              <div className="mb-3 flex h-2.5 overflow-hidden rounded-full bg-surface-2">
                 {totalLots > 0 &&
                   availabilityRows.map((row) => (
                     <div
@@ -333,15 +389,27 @@ function ProjectDetail() {
                     />
                   ))}
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="flex flex-col gap-2">
                 {availabilityRows.map((row) => (
-                  <div key={row.label}>
-                    <p className="text-micro font-bold uppercase tracking-wide text-ink-3">
+                  <div
+                    key={row.label}
+                    className="flex items-center justify-between gap-3 text-label"
+                  >
+                    <span className="flex items-center gap-2 font-medium text-ink-2">
+                      <span
+                        className={`h-2 w-2 rounded-full ${row.tone}`}
+                        aria-hidden="true"
+                      />
                       {row.label}
-                    </p>
-                    <p className="text-section font-black tabular-nums text-ink">
+                    </span>
+                    <span className={`font-bold tabular-nums ${row.text}`}>
                       {row.value}
-                    </p>
+                      <span className="ml-1 text-ink-3">
+                        {totalLots > 0
+                          ? `${Math.round((row.value / totalLots) * 100)}%`
+                          : "0%"}
+                      </span>
+                    </span>
                   </div>
                 ))}
               </div>
@@ -351,39 +419,123 @@ function ProjectDetail() {
                   onClick={() => navigate(`/projects/${id}/lots`)}
                   className="w-full"
                 >
-                  {t("projects.viewLots", { name: project.name })}
+                  {t("projects.viewLotsShort")}
                 </Button>
               </div>
             </Card>
+
+            <Card title={t("projects.recentActivity")} bodyClassName="px-[18px] py-1">
+              {activityLoading ? (
+                <div className="py-4">
+                  <Skeleton rows={2} />
+                </div>
+              ) : recentActivity.length === 0 ? (
+                <p className="py-4 text-label text-ink-3">
+                  {t("projects.noActivity")}
+                </p>
+              ) : (
+                <ul className="divide-y divide-line">
+                  {recentActivity.map((event) => (
+                    <li
+                      key={event.id}
+                      className="flex items-center justify-between gap-3 py-2.5"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-label font-semibold text-ink">
+                          {formatAuditEvent(event.action, t)}
+                        </p>
+                        <p className="truncate text-micro text-ink-3">
+                          {event.user?.full_name ||
+                            event.user?.email ||
+                            t("audits.system")}
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-micro text-ink-3">
+                        {formatDate(event.created_at)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
           </div>
 
-          <div className="flex flex-col gap-6">
-            <Card title={t("projects.projectInfo")}>
-              <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="flex flex-col gap-3.5">
+            <Card title={t("projects.projectInfo")} bodyClassName="p-[18px]">
+              <dl className="flex flex-col gap-2.5">
                 {ficha.map((item) => (
-                  <div key={item.label} className="min-w-0">
-                    <dt className="text-micro font-bold uppercase tracking-wide text-ink-3">
-                      {item.label}
-                    </dt>
-                    <dd className="truncate text-body font-semibold text-ink">{item.value}</dd>
+                  <div
+                    key={item.label}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <dt className="text-label text-ink-3">{item.label}</dt>
+                    <dd className="min-w-0 truncate text-right text-label font-semibold text-ink">
+                      {item.value}
+                    </dd>
                   </div>
                 ))}
               </dl>
             </Card>
 
-            <Card title={t("projects.documents") || "Documents"}>
-              <div className="flex items-center justify-between text-body text-ink-2">
-                <span>{t("projects.plans")}</span>
-                <span className="font-bold text-ink">{mediaCounts.plans}</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-body text-ink-2">
-                <span>{t("projects.photos")}</span>
+            <Card title={t("projects.documents")} bodyClassName="p-[18px]">
+              {drawings.length > 0 ? (
+                <ul className="flex flex-col">
+                  {drawings.slice(0, 2).map((drawing) => (
+                    <li
+                      key={drawing.id}
+                      className="flex items-center justify-between gap-3 border-b border-line py-2 text-label first:pt-0"
+                    >
+                      <span className="flex min-w-0 items-center gap-2 text-ink-2">
+                        <FontAwesomeIcon
+                          icon={faFileLines}
+                          className="shrink-0 text-ink-3"
+                          aria-hidden="true"
+                        />
+                        <span className="truncate">
+                          {drawing.name || t("projects.plans")}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-micro text-ink-3">
+                        {formatBytes(drawing.size_bytes)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="flex items-center justify-between gap-3 border-b border-line pb-2 text-label">
+                  <span className="flex items-center gap-2 text-ink-2">
+                    <FontAwesomeIcon
+                      icon={faFileLines}
+                      className="text-ink-3"
+                      aria-hidden="true"
+                    />
+                    {t("projects.plans")}
+                  </span>
+                  <span className="font-bold text-ink">{mediaCounts.plans}</span>
+                </div>
+              )}
+              <div className="mt-2 flex items-center justify-between gap-3 border-b border-line pb-3 text-label">
+                <span className="flex items-center gap-2 text-ink-2">
+                  <FontAwesomeIcon
+                    icon={faImages}
+                    className="text-ink-3"
+                    aria-hidden="true"
+                  />
+                  {t("projects.photos")}
+                </span>
                 <span className="font-bold text-ink">{mediaCounts.photos}</span>
               </div>
-              <div className="mt-4">
-                <Button variant="ghost" size="sm" onClick={() => setTab("media")}>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTab("media");
+                    setSearchParams({ tab: "media" }, { replace: true });
+                  }}
+                  className="text-label font-semibold text-brand-strong transition-colors hover:text-brand"
+                >
                   {t("projects.manageMedia")} →
-                </Button>
+                </button>
               </div>
             </Card>
           </div>
@@ -395,7 +547,7 @@ function ProjectDetail() {
           title={t("projects.tabLots")}
           action={
             <Button variant="ghost" size="sm" onClick={() => navigate(`/projects/${id}/lots`)}>
-              {t("projects.viewLots", { name: project.name })} →
+              {t("projects.viewLotsShort")} →
             </Button>
           }
         >
@@ -404,7 +556,7 @@ function ProjectDetail() {
           ) : lots.length === 0 ? (
             <EmptyState
               variant="empty"
-              title={t("projects.noLots") || "No lots yet"}
+              title={t("projects.noLots")}
               description={t("projects.lotsCount", { count: totalLots })}
             />
           ) : (
@@ -425,7 +577,7 @@ function ProjectDetail() {
                     {formatMoney(lot.effective_price ?? lot.price)}
                   </p>
                   <p className="mt-1 truncate text-micro text-ink-3">
-                    {lot.reserved_by || t("lots.noOwner") || "—"}
+                    {lot.reserved_by || t("lots.noOwner")}
                   </p>
                   <div className="mt-3">
                     <Button
@@ -434,8 +586,8 @@ function ProjectDetail() {
                       onClick={() => navigate(`/projects/${id}/lots`)}
                     >
                       {lot.status === "available"
-                        ? t("lots.reserve") || "Reservar"
-                        : t("common.view") || "Ver"}{" "}
+                        ? t("lots.reserve")
+                        : t("common.view")}{" "}
                       →
                     </Button>
                   </div>
@@ -536,7 +688,7 @@ function ProjectDetail() {
                     </p>
                   </div>
                   <span className="shrink-0 text-micro text-ink-3">
-                    {new Date(event.created_at).toLocaleDateString()}
+                    {formatDate(event.created_at)}
                   </span>
                 </li>
               ))}
@@ -544,7 +696,8 @@ function ProjectDetail() {
           )}
         </Card>
       )}
-    </div>
+      </div>
+    </main>
   );
 }
 

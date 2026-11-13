@@ -102,7 +102,6 @@ export default defineConfig({
           if (id.includes("node_modules")) {
             // Core React and any package that uses React – must share same chunk to avoid "createContext of undefined"
             if (id.includes("react-dom") || id.includes("react-router-dom") || id.includes("react/")) return "vendor";
-            if (id.includes("react-transition-group")) return "vendor";
             if (id.includes("@rollbar/react")) return "vendor";
             // Heavy UI / chart libs – split so no single chunk blows the limit
             if (id.includes("chart.js") || id.includes("react-chartjs-2")) return "charts";

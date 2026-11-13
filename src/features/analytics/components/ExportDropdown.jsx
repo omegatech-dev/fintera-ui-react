@@ -16,8 +16,8 @@ const REPORT_TYPES = [
                 <polyline points="16 11 18 13 22 9" />
             </svg>
         ),
-        color: "text-emerald-500",
-        bgColor: "bg-emerald-500/10",
+        color: "text-brand",
+        bgColor: "bg-brand-soft",
     },
     {
         id: "total_revenue_csv",
@@ -29,8 +29,8 @@ const REPORT_TYPES = [
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
             </svg>
         ),
-        color: "text-blue-500",
-        bgColor: "bg-blue-500/10",
+        color: "text-info",
+        bgColor: "bg-info-soft",
     },
     {
         id: "overdue_payments_csv",
@@ -43,8 +43,8 @@ const REPORT_TYPES = [
                 <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
         ),
-        color: "text-rose-500",
-        bgColor: "bg-rose-500/10",
+        color: "text-danger",
+        bgColor: "bg-danger-soft",
     }
 ];
 
@@ -61,8 +61,8 @@ const EXPORT_FORMATS = [
                 <polyline points="9 15 12 18 15 15" />
             </svg>
         ),
-        color: "text-amber-500",
-        bgColor: "bg-amber-500/10",
+        color: "text-warning",
+        bgColor: "bg-warning-soft",
     },
     {
         id: "xlsx",
@@ -76,8 +76,8 @@ const EXPORT_FORMATS = [
                 <path d="M8 17h2l2-2 2 2h2" />
             </svg>
         ),
-        color: "text-green-500",
-        bgColor: "bg-green-500/10",
+        color: "text-brand-strong",
+        bgColor: "bg-brand-soft",
     }
 ];
 
@@ -125,16 +125,14 @@ const ExportDropdown = memo(function ExportDropdown({ startDate, endDate, onExpo
     return (
         <div className="relative" ref={dropdownRef}>
             <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
                 onClick={() => setIsOpen(!isOpen)}
-                className={`
-                    flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all duration-300
-                    ${isOpen
-                        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
-                        : "bg-white dark:bg-darkblack-600 text-gray-700 dark:text-white border border-gray-200 dark:border-darkblack-500 hover:border-blue-400 shadow-xs"
-                    }
-                `}
+                className={`flex h-[38px] items-center gap-2 rounded-control border px-3.5 text-label font-semibold transition-colors ${
+                    isOpen
+                        ? "border-brand bg-brand-soft text-brand-strong"
+                        : "border-line bg-surface text-ink-2 hover:bg-surface-2"
+                }`}
             >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -164,13 +162,13 @@ const ExportDropdown = memo(function ExportDropdown({ startDate, endDate, onExpo
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute right-0 mt-3 w-72 bg-white dark:bg-darkblack-600 rounded-3xl shadow-2xl border border-gray-100 dark:border-darkblack-500 z-[100] overflow-hidden"
+                        className="absolute right-0 z-[100] mt-2 w-72 overflow-hidden rounded-card border border-line bg-surface shadow-pop"
                     >
-                        <div className="p-4">
-                            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">
+                        <div className="p-3">
+                            <div className="mb-2 px-2 text-micro font-bold uppercase tracking-wide text-ink-3">
                                 {t("reports.dataExport") || "Data Export"}
                             </div>
-                            <div className="grid grid-cols-2 gap-2 mb-4">
+                            <div className="mb-3 grid grid-cols-2 gap-2">
                                 {EXPORT_FORMATS.map((format) => (
                                     <button
                                         key={format.id}
@@ -178,19 +176,19 @@ const ExportDropdown = memo(function ExportDropdown({ startDate, endDate, onExpo
                                             onExportBase(format.id);
                                             setIsOpen(false);
                                         }}
-                                        className="flex flex-col items-center justify-center p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-darkblack-500 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-darkblack-400 group"
+                                        className="group flex flex-col items-center justify-center rounded-control border border-transparent p-2.5 transition-colors hover:border-line hover:bg-surface-2"
                                     >
-                                        <div className={`p-2 rounded-xl ${format.bgColor} ${format.color} mb-2 group-hover:scale-110 transition-transform`}>
+                                        <div className={`mb-1.5 rounded-control p-2 ${format.bgColor} ${format.color}`}>
                                             {format.icon}
                                         </div>
-                                        <span className="text-sm font-bold text-gray-700 dark:text-gray-200">{format.label}</span>
+                                        <span className="text-label font-semibold text-ink-2">{format.label}</span>
                                     </button>
                                 ))}
                             </div>
 
-                            <div className="h-[1px] bg-gray-100 dark:bg-darkblack-500 my-2" />
+                            <div className="my-2 h-px bg-line" />
 
-                            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider my-3 px-2">
+                            <div className="my-2 px-2 text-micro font-bold uppercase tracking-wide text-ink-3">
                                 {t("reports.financialReports") || "Financial Reports"}
                             </div>
                             <div className="space-y-1">
@@ -198,16 +196,16 @@ const ExportDropdown = memo(function ExportDropdown({ startDate, endDate, onExpo
                                     <button
                                         key={report.id}
                                         onClick={() => handleReportDownload(report.id)}
-                                        className="w-full flex items-center gap-3 p-2.5 rounded-2xl hover:bg-gray-50 dark:hover:bg-darkblack-500 transition-all border border-transparent hover:border-gray-100 dark:hover:border-darkblack-400 group text-left"
+                                        className="group flex w-full items-center gap-2.5 rounded-control border border-transparent p-2 text-left transition-colors hover:border-line hover:bg-surface-2"
                                     >
-                                        <div className={`p-2 rounded-xl ${report.bgColor} ${report.color} group-hover:scale-110 transition-transform`}>
+                                        <div className={`rounded-control p-2 ${report.bgColor} ${report.color}`}>
                                             {report.icon}
                                         </div>
                                         <div>
-                                            <span className="block text-sm font-bold text-gray-700 dark:text-gray-200">
+                                            <span className="block text-label font-semibold text-ink-2">
                                                 {t(report.titleKey)}
                                             </span>
-                                            <span className="block text-[10px] text-gray-400">
+                                            <span className="block text-micro text-ink-3">
                                                 {t("common.downloadCsv") || "Download .csv"}
                                             </span>
                                         </div>
@@ -217,13 +215,13 @@ const ExportDropdown = memo(function ExportDropdown({ startDate, endDate, onExpo
                         </div>
 
                         {(!startDate || !endDate) && (
-                            <div className="bg-amber-50 dark:bg-amber-900/20 p-3 flex items-center gap-2">
-                                <svg className="text-amber-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <div className="flex items-center gap-2 bg-warning-soft p-3">
+                                <svg className="shrink-0 text-warning" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <circle cx="12" cy="12" r="10" />
                                     <line x1="12" y1="8" x2="12" y2="12" />
                                     <line x1="12" y1="16" x2="12.01" y2="16" />
                                 </svg>
-                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 leading-tight">
+                                <span className="text-micro font-semibold leading-tight text-warning">
                                     {t("reports.selectDates") || "Select a date range for reports"}
                                 </span>
                             </div>

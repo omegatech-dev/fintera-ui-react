@@ -27,7 +27,7 @@ function Button({
       type={type}
       aria-busy={loading || undefined}
       disabled={loading || props.disabled}
-      className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-control font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+      className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-control font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:active:scale-100 disabled:cursor-not-allowed disabled:opacity-60 ${
         VARIANTS[variant]
       } ${iconOnly ? "h-11 w-11 p-0" : SIZES[size]} ${className}`}
       {...props}

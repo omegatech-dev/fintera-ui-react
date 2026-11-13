@@ -55,7 +55,7 @@ export default function PhotoGalleryManager({
   const handleDelete = async (photo) => {
     const confirmed = await confirmDialog({
       title: t("media.deletePhotoConfirm"),
-      confirmLabel: t("common.delete") || "Eliminar",
+      confirmLabel: t("common.delete"),
     });
     if (!confirmed) return;
     try {

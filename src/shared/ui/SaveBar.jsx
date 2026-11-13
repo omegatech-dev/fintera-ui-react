@@ -19,7 +19,7 @@ function SaveBar({
 
   return (
     <div
-      className={`sticky bottom-0 z-20 flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface px-4 py-3 shadow-pop ${className}`}
+      className={`motion-fade-up sticky bottom-0 z-20 flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface px-4 py-3 shadow-pop ${className}`}
     >
       <span className="text-label font-semibold text-warning" role="status">
         {message}

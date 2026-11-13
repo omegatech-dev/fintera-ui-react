@@ -22,7 +22,6 @@ import {
 } from "chart.js";
 // import { Line, Bar, Doughnut } from "react-chartjs-2"; // Removed
 import { useLocale } from "@/contexts/LocaleContext";
-import GenericFilter from "@/shared/forms/GenericFilter";
 import ExportDropdown from "../components/ExportDropdown";
 import StatsGrid from "../components/StatsGrid";
 import RevenueTrendChart from "../components/RevenueTrendChart";
@@ -54,17 +53,6 @@ const containerVariants = {
         transition: { staggerChildren: 0.1 },
     },
 };
-
-const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-        y: 0,
-        opacity: 1,
-        transition: { type: "spring", stiffness: 100, damping: 12 },
-    },
-};
-
-
 
 const Analytics = () => {
     const { t } = useLocale();
@@ -118,7 +106,7 @@ const Analytics = () => {
         fetchPaymentStats();
     }, []);
 
-    // Format project options for GenericFilter
+    // Format project options for the project filter
     const projectOptions = useMemo(() => {
         const baseOptions = [{ label: t("common.all"), value: "All" }];
         const projectList = projects.map(p => ({
@@ -289,7 +277,7 @@ const Analytics = () => {
                         usePointStyle: true,
                         padding: 20,
                         color: "currentColor",
-                        font: { family: "'Urbanist', sans-serif", size: 12 },
+                        font: { family: "'Inter', sans-serif", size: 12 },
                     },
                 },
                 tooltip: {
@@ -307,12 +295,12 @@ const Analytics = () => {
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { color: "currentColor", opacity: 0.7, font: { family: "'Urbanist', sans-serif" } },
+                    ticks: { color: "currentColor", opacity: 0.7, font: { family: "'Inter', sans-serif" } },
                     border: { display: false },
                 },
                 y: {
                     grid: { color: "rgba(156, 163, 175, 0.1)", drawBorder: false },
-                    ticks: { color: "currentColor", opacity: 0.7, padding: 10, font: { family: "'Urbanist', sans-serif" } },
+                    ticks: { color: "currentColor", opacity: 0.7, padding: 10, font: { family: "'Inter', sans-serif" } },
                     border: { display: false },
                 },
             },
@@ -334,7 +322,7 @@ const Analytics = () => {
                     display: true,
                     text: t("analytics.totalSales"),
                     color: "#3b82f6", // Blue-500
-                    font: { family: "'Urbanist', sans-serif", weight: 'bold' }
+                    font: { family: "'Inter', sans-serif", weight: 'bold' }
                 }
             },
             y1: {
@@ -347,7 +335,7 @@ const Analytics = () => {
                     display: true,
                     text: t("analytics.contractsSold"),
                     color: "#0d9488", // Teal-600
-                    font: { family: "'Urbanist', sans-serif", weight: 'bold' }
+                    font: { family: "'Inter', sans-serif", weight: 'bold' }
                 }
             }
         }
@@ -361,24 +349,32 @@ const Analytics = () => {
         [currentDate]
     );
 
-    const monthLabel = useMemo(
-        () =>
-            [
-                t("months.january"),
-                t("months.february"),
-                t("months.march"),
-                t("months.april"),
-                t("months.may"),
-                t("months.june"),
-                t("months.july"),
-                t("months.august"),
-                t("months.september"),
-                t("months.october"),
-                t("months.november"),
-                t("months.december"),
-            ][currentDate.getMonth()],
-        [t, currentDate]
+    const monthNames = useMemo(
+        () => [
+            t("months.january"),
+            t("months.february"),
+            t("months.march"),
+            t("months.april"),
+            t("months.may"),
+            t("months.june"),
+            t("months.july"),
+            t("months.august"),
+            t("months.september"),
+            t("months.october"),
+            t("months.november"),
+            t("months.december"),
+        ],
+        [t]
     );
+
+    const monthLabel = monthNames[currentDate.getMonth()];
+    const previousMonthLabel =
+        monthNames[(currentDate.getMonth() + 11) % 12];
+    const selectedProjectLabel =
+        filterValue === "All"
+            ? t("analytics.allProjects")
+            : projectOptions.find((option) => option.value === filterValue)
+                  ?.label || t("analytics.allProjects");
 
     const statsForGrid = useMemo(() => {
         const ov = overviewData;
@@ -418,113 +414,158 @@ const Analytics = () => {
                 label: t("analytics.totalRevenue"),
                 value: formatCurrency(ov?.total_revenue),
                 change: formatChange(ov?.revenue_change_percentage, ov?.previous_revenue),
-                color: "text-blue-600 dark:text-blue-400",
+                color: "text-ink",
             },
             {
                 label: t("analytics.activeContracts"),
                 value: ov?.active_contracts ?? "0",
                 change: formatChange(ov?.contracts_change_percentage, ov?.previous_contracts),
-                color: "text-teal-600 dark:text-teal-400",
+                color: "text-ink",
             },
             {
                 label: t("analytics.averagePayment"),
                 value: formatCurrency(ov?.average_payment),
                 change: formatChange(ov?.payment_change_percentage, ov?.previous_average_payment),
-                color: "text-orange-600 dark:text-orange-400",
+                color: "text-ink",
             },
             {
                 label: t("analytics.occupancyRate"),
                 value: formatPercent(ov?.occupancy_rate),
                 change: formatChange(ov?.occupancy_change_percentage, ov?.previous_occupancy_rate),
-                color: "text-green-600 dark:text-green-400",
+                color: "text-ink",
+                caption:
+                    distribution && Number(distribution.total_lots) > 0
+                        ? t("analytics.kpiLotsCaption", {
+                            sold:
+                                Number(distribution.financed || 0) +
+                                Number(distribution.fully_paid || 0),
+                            total: Number(distribution.total_lots),
+                        })
+                        : null,
             },
         ];
-    }, [overviewData, t, formatCurrency, formatPercent, currentDate]);
+    }, [overviewData, t, formatCurrency, formatPercent, currentDate, distribution]);
 
     const doughnutOptions = useMemo(
         () => ({
-            ...chartOptions,
-            cutout: "75%",
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "72%",
+            // A doughnut must not inherit the cartesian scales used by the line
+            // and bar charts, otherwise Chart.js paints x/y axes behind the ring.
+            scales: {},
             plugins: {
-                ...chartOptions.plugins,
-                legend: { position: "bottom" },
+                legend: { display: false },
+                tooltip: {
+                    ...chartOptions.plugins.tooltip,
+                    callbacks: {
+                        label: (context) => {
+                            const value = Number(context.raw) || 0;
+                            return `${context.label}: ${value}`;
+                        },
+                    },
+                },
+            },
+            animation: {
+                animateRotate: true,
+                animateScale: false,
+                duration: 600,
             },
         }),
-        [chartOptions]
+        [chartOptions.plugins.tooltip]
     );
 
     return (
-        <main className="w-full px-3 sm:px-6 pb-6 pt-[80px] xs:pt-[90px] sm:md:pt-[120px] lg:pt-[156px] page-shell xl:px-12 xl:pb-12 2xl:px-16">
+        <main className="min-h-screen w-full bg-canvas px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px]">
+            <div className="mx-auto max-w-[1600px]">
             <motion.div
                 initial="hidden"
                 animate="visible"
                 variants={containerVariants}
-                className="space-y-8"
+                className="space-y-5"
             >
                 {/* Header and Filters */}
-                <section className="space-y-6">
-                    <div id="analytics-header" className="flex flex-col md:flex-row md:items-end md:justify-end gap-4">
-                        <motion.div id="analytics-export-dropdown" variants={itemVariants} className="flex items-end">
-                            <ExportDropdown
-                                startDate={dateRangeForExport.startDate}
-                                endDate={dateRangeForExport.endDate}
-                                onExportBase={handleExport}
-                            />
-                        </motion.div>
+                <header id="analytics-header" className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <h1 className="text-page font-bold tracking-tight text-ink">
+                            {t("analytics.title")}
+                        </h1>
+                        <p className="mt-1 text-body text-ink-3">
+                            {t("analytics.periodSubtitle", {
+                                period: `${monthLabel} ${currentDate.getFullYear()}`,
+                                project: selectedProjectLabel,
+                            })}
+                        </p>
                     </div>
 
-                    <motion.div id="analytics-filters" variants={itemVariants} className="flex flex-col md:flex-row items-center gap-4 w-full">
-                        <div className="flex-1 w-full">
-                            <GenericFilter
-                                showSearch={false}
-                                filterValue={filterValue}
-                                onFilterChange={handleFilterChange}
-                                filterOptions={projectOptions}
-                                filterPlaceholder={t("projects.projectType")}
-                            />
+                    <div id="analytics-filters" className="flex flex-wrap items-center gap-2">
+                        <div className="relative">
+                            <select
+                                value={filterValue}
+                                onChange={(event) => handleFilterChange(event.target.value)}
+                                aria-label={t("analytics.allProjects")}
+                                className="h-[38px] appearance-none rounded-control border border-line bg-surface pl-3 pr-8 text-label font-semibold text-ink-2 focus:border-brand focus:outline-hidden"
+                            >
+                                {projectOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <svg
+                                className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 9l6 6 6-6" />
+                            </svg>
                         </div>
 
-                        {/* Month/Year Selection */}
-                        <div className="flex items-center bg-white/40 dark:bg-darkblack-600/40 backdrop-blur-xl rounded-[2rem] p-2 border border-white/50 dark:border-darkblack-400/50 shadow-2xl shadow-blue-500/5 ring-1 ring-black/5 dark:ring-white/5">
+                        <div className="flex h-[38px] items-center rounded-control border border-line bg-surface">
                             <button
+                                type="button"
                                 onClick={() => {
                                     const next = new Date(currentDate);
                                     next.setMonth(next.getMonth() - 1);
                                     setCurrentDate(next);
                                 }}
-                                className="p-3 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl transition-all"
+                                className="flex h-full items-center rounded-l-control px-2 text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink"
                                 title={t("common.previous")}
                             >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                 </svg>
                             </button>
-
-                            <div className="px-6 flex flex-col items-center min-w-[140px]">
-                                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                                    {currentDate.getFullYear()}
-                                </span>
-                                <span className="text-lg font-black text-gray-900 dark:text-white leading-tight">
-                                    {monthLabel}
-                                </span>
-                            </div>
-
+                            <span className="min-w-[124px] px-1 text-center text-label font-semibold text-ink-2">
+                                {monthLabel} {currentDate.getFullYear()}
+                            </span>
                             <button
+                                type="button"
                                 onClick={() => {
                                     const next = new Date(currentDate);
                                     next.setMonth(next.getMonth() + 1);
                                     setCurrentDate(next);
                                 }}
-                                className="p-3 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-2xl transition-all"
+                                className="flex h-full items-center rounded-r-control px-2 text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink"
                                 title={t("common.next")}
                             >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                             </button>
                         </div>
-                    </motion.div>
-                </section>
+
+                        <div id="analytics-export-dropdown">
+                            <ExportDropdown
+                                startDate={dateRangeForExport.startDate}
+                                endDate={dateRangeForExport.endDate}
+                                onExportBase={handleExport}
+                            />
+                        </div>
+                    </div>
+                </header>
 
                 {/* Chart Content Area with Loading State */}
                 <div className="relative">
@@ -534,22 +575,28 @@ const Analytics = () => {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="absolute inset-0 z-50 bg-white/40 dark:bg-darkblack-900/40 backdrop-blur-xs rounded-3xl flex items-center justify-center"
+                                className="absolute inset-0 z-50 flex items-center justify-center rounded-card bg-surface/70 backdrop-blur-sm"
                             >
                                 <div className="flex flex-col items-center gap-3">
-                                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                                    <span className="text-sm font-bold text-blue-600">{t("common.loading")}</span>
+                                    <div className="h-10 w-10 animate-spin rounded-full border-2 border-brand border-t-transparent"></div>
+                                    <span className="text-label font-bold text-brand">
+                                        {t("common.loading")}
+                                    </span>
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
 
-                    <div className={`space-y-8 transition-all duration-300 ${isFiltering ? "blur-[2px] opacity-60 scale-[0.99]" : ""}`}>
+                    <div className={`space-y-5 transition-all duration-300 ${isFiltering ? "blur-[2px] opacity-60 scale-[0.99]" : ""}`}>
                         {/* Stats Grid */}
-                        <StatsGrid stats={statsForGrid} t={t} />
+                        <StatsGrid
+                            stats={statsForGrid}
+                            t={t}
+                            compareMonth={previousMonthLabel}
+                        />
 
                         {/* Charts Row 1 */}
-                        <section className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                        <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
                             {/* Main Trend Chart */}
                             <RevenueTrendChart
                                 trendData={trendData}
@@ -580,7 +627,7 @@ const Analytics = () => {
                         />
 
                         {/* Charts Row 3 - Growth and Overdue */}
-                        <section className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                        <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
                             <div className="h-full xl:col-span-2">
                                 <GrowthByProject
                                     projects={growthProjects}
@@ -593,6 +640,7 @@ const Analytics = () => {
                                     amount={overdueSummary.amount}
                                     installments={overdueSummary.installments}
                                     clients={overdueSummary.clients}
+                                    compareMonth={previousMonthLabel}
                                     formatCurrency={formatCurrency}
                                     t={t}
                                 />
@@ -643,7 +691,7 @@ const Analytics = () => {
                     </div>
                 </div>
             </motion.div>
-
+            </div>
         </main>
     );
 };

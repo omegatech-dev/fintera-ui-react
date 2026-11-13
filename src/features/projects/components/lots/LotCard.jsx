@@ -3,7 +3,7 @@ import { useLocale } from "../../../../contexts/LocaleContext";
 import { getStatusLabel } from "../../../../shared/utils/statusUtils";
 import { areaUnitLabel, linearUnitLabel } from "../../../../shared/utils/units";
 import { getDefaultCurrency } from "../../../../shared/utils/formatSettings";
-import { Button, Chip } from "@/shared/ui";
+import { Chip } from "@/shared/ui";
 
 const STATUS_LABEL_KEYS = {
   available: "status.available",
@@ -49,7 +49,8 @@ function LotCard({
   const areaText = area ? `${area} ${areaUnitLabel(lot.measurement_unit)}` : "—";
   const meta = `${dimensions} · ${areaText} · #${lot.id}`;
 
-  const owner = lot.reserved_by?.trim() || t("lots.noOwner");
+  const owner = lot.reserved_by?.trim();
+  const ownerLabel = owner || t("lots.noOwner");
 
   const action =
     statusKey === "available"
@@ -72,31 +73,39 @@ function LotCard({
 
   return (
     <article
-      className={`flex h-full flex-col gap-3 rounded-card border bg-surface p-4 transition-colors ${
+      className={`flex min-h-[176px] flex-col gap-1.5 rounded-card border bg-surface p-4 transition-colors ${
         isHighlighted
           ? "border-brand ring-2 ring-brand/20"
           : "border-line hover:border-line-strong"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-title font-bold text-ink">{lot.name}</h3>
-            {isHighlighted && (
-              <span className="rounded-chip bg-brand-soft px-2 py-0.5 text-micro font-bold text-brand-strong">
-                {t("lots.selected")}
-              </span>
-            )}
-          </div>
-          <p className="mt-0.5 truncate text-micro text-ink-3">{meta}</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <h3 className="truncate text-[15px] font-bold text-ink">{lot.name}</h3>
+          {isHighlighted && (
+            <span className="rounded-chip bg-brand-soft px-2 py-0.5 text-micro font-bold text-brand-strong">
+              {t("lots.selected")}
+            </span>
+          )}
         </div>
-        <Chip tone={tone}>{statusLabel}</Chip>
+        <Chip tone={tone} className="h-6 shrink-0 px-2">
+          {statusLabel}
+        </Chip>
       </div>
 
-      <p className="text-page font-bold tracking-tight text-ink">{priceText}</p>
-      <p className="truncate text-label font-medium text-ink-3">{owner}</p>
+      <p className="truncate text-label font-medium text-ink-3">{meta}</p>
+      <p className="text-[19px] font-bold leading-6 tracking-tight text-ink">
+        {priceText}
+      </p>
+      <p
+        className={`truncate text-micro font-medium ${
+          owner ? "text-ink-3" : "text-ink-3/70"
+        }`}
+      >
+        {ownerLabel}
+      </p>
 
-      <div className="mt-auto flex items-center justify-between gap-2 border-t border-line pt-3">
+      <div className="mt-auto flex items-center justify-between gap-2 pt-1.5">
         <button
           type="button"
           onClick={action.onClick}
@@ -106,9 +115,13 @@ function LotCard({
           <span aria-hidden="true">→</span>
         </button>
         {isAdmin && statusKey !== "sold" && (
-          <Button size="sm" variant="ghost" onClick={onEdit}>
+          <button
+            type="button"
+            onClick={onEdit}
+            className="text-micro font-semibold text-ink-3 transition-colors hover:text-ink"
+          >
             {t("common.edit")}
-          </Button>
+          </button>
         )}
       </div>
     </article>

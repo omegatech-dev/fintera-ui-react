@@ -36,12 +36,12 @@ function formatRTN(raw) {
 function InputField({ label, name, value, onChange, type = "text", readOnly = false, icon }) {
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={name} className="text-sm font-semibold text-bgray-700 dark:text-bgray-300 ml-1">
+      <label htmlFor={name} className="text-label font-semibold text-ink-2">
         {label}
       </label>
       <div className="relative">
         {icon && (
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3">
             {icon}
           </div>
         )}
@@ -52,7 +52,7 @@ function InputField({ label, name, value, onChange, type = "text", readOnly = fa
           value={value ?? ""}
           onChange={onChange}
           readOnly={readOnly}
-          className={`w-full bg-white dark:bg-darkblack-500 text-bgray-900 dark:text-white p-4 ${icon ? 'pl-12' : 'pl-4'} rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 outline-hidden ${readOnly ? "opacity-70 cursor-not-allowed bg-bgray-50 dark:bg-darkblack-600" : ""}`}
+          className={`h-10 w-full rounded-control border border-line bg-surface text-body text-ink outline-hidden transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15 ${icon ? "pl-9" : "pl-3"} pr-3 ${readOnly ? "cursor-not-allowed bg-surface-2 opacity-70" : ""}`}
         />
       </div>
     </div>
@@ -225,29 +225,29 @@ function PersonalInfoForm({ userId }) {
   };
 
   if (!userId) {
-    return <p className="text-red-500">{t("errors.userIdRequired")}</p>;
+    return <p className="text-body text-danger">{t("errors.userIdRequired")}</p>;
   }
 
   if (loading) return (
     <div className="w-full flex justify-center py-10">
-      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent"></div>
     </div>
   );
 
-  if (error) return <p className="text-red-500">{t("common.error")}: {error}</p>;
+  if (error) return <p className="text-body text-danger">{t("common.error")}: {error}</p>;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full bg-white dark:bg-darkblack-600 rounded-2xl p-6 md:p-8 shadow-xs"
+      className="w-full"
     >
-      <div className="border-b border-bgray-200 dark:border-darkblack-400 pb-6 mb-8">
-        <h3 className="text-xl font-bold text-bgray-900 dark:text-white">
+      <div className="mb-6 border-b border-line pb-4">
+        <h3 className="text-[15px] font-bold text-ink">
           {t("personalInfo.title")}
         </h3>
-        <p className="text-sm text-bgray-500 dark:text-bgray-400 mt-1">
+        <p className="mt-1 text-body text-ink-3">
           {t("personalInfo.description")}
         </p>
       </div>
@@ -255,7 +255,7 @@ function PersonalInfoForm({ userId }) {
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="flex flex-col items-center mb-6">
           <div className="relative group">
-            <div className="w-32 h-32 rounded-full overflow-hidden bg-bgray-100 dark:bg-darkblack-500 border-4 border-white dark:border-darkblack-400 shadow-lg flex items-center justify-center">
+            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-line bg-surface-2">
               {imagePreview ? (
                 <img
                   src={imagePreview}
@@ -264,16 +264,16 @@ function PersonalInfoForm({ userId }) {
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
               ) : (
-                <svg className="w-12 h-12 text-bgray-300 dark:text-bgray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-9 w-9 text-ink-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               )}
             </div>
             <label
               htmlFor="profile-picture-edit"
-              className="absolute bottom-0 right-0 p-2 bg-indigo-600 text-white rounded-full shadow-lg cursor-pointer hover:bg-indigo-700 transition-all transform hover:scale-110"
+              className="absolute bottom-0 right-0 cursor-pointer rounded-full bg-brand p-1.5 text-white shadow-pop transition-colors hover:bg-brand-strong"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -286,12 +286,12 @@ function PersonalInfoForm({ userId }) {
               className="hidden"
             />
           </div>
-          <p className="mt-3 text-sm text-bgray-500 dark:text-bgray-400 font-medium">
+          <p className="mt-2 text-label font-medium text-ink-3">
             {t('users.changePhoto') || 'Change Profile Photo'}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <InputField
             label={t("personalInfo.fullName")}
             name="full_name"
@@ -341,8 +341,8 @@ function PersonalInfoForm({ userId }) {
         </div>
 
         <div className="pt-4">
-          <h4 className="text-lg font-bold text-bgray-900 dark:text-white mb-6 flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+          <h4 className="mb-4 flex items-center gap-2 text-[15px] font-bold text-ink">
+            <span className="flex h-7 w-7 items-center justify-center rounded-control bg-brand-soft text-brand-strong">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0c0 .883 3.918 1.6 6 1.6s6-.717 6-1.6M3 9c0 .883 3.918 1.6 6 1.6s6-.717 6-1.6" />
               </svg>
@@ -350,7 +350,7 @@ function PersonalInfoForm({ userId }) {
             {t("personalInfo.legalInfo")}
           </h4>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <InputField
               label={t("personalInfo.identity")}
               name="identity"
@@ -365,11 +365,11 @@ function PersonalInfoForm({ userId }) {
             />
 
             <div className="flex flex-col gap-2">
-              <label htmlFor="locale" className="text-sm font-semibold text-bgray-700 dark:text-bgray-300 ml-1">
+              <label htmlFor="locale" className="text-label font-semibold text-ink-2">
                 {t("personalInfo.language")}
               </label>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                   </svg>
@@ -379,12 +379,12 @@ function PersonalInfoForm({ userId }) {
                   id="locale"
                   value={user.locale}
                   onChange={handleInputChange}
-                  className="w-full bg-white dark:bg-darkblack-500 text-bgray-900 dark:text-white p-4 pl-12 rounded-xl border border-bgray-200 dark:border-darkblack-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-300 outline-hidden appearance-none"
+                  className="h-10 w-full appearance-none rounded-control border border-line bg-surface pl-9 pr-9 text-body text-ink outline-hidden transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15"
                 >
                   <option value="es">{t("personalInfo.spanish")}</option>
                   <option value="en">{t("personalInfo.english")}</option>
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-bgray-500">
+                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-3">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
@@ -394,10 +394,10 @@ function PersonalInfoForm({ userId }) {
           </div>
         </div>
 
-        <div className="flex justify-end pt-6 border-t border-bgray-200 dark:border-darkblack-400">
+        <div className="flex justify-end border-t border-line pt-4">
           <button
             type="submit"
-            className="flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 shadow-lg shadow-indigo-500/30 transition-all duration-300 transform hover:-translate-y-0.5"
+            className="inline-flex h-10 items-center gap-2 rounded-control bg-brand px-4 text-body-lg font-semibold text-white transition-colors hover:bg-brand-strong"
           >
             <span>{t("personalInfo.saveProfile")}</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

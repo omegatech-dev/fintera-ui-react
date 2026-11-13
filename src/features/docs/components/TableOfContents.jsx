@@ -28,15 +28,15 @@ function TableOfContents({ containerRef, contentKey }) {
 
   return (
     <nav aria-label={t("docs.onThisPage")}>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-bgray-500 dark:text-bgray-400">
+      <p className="mb-2 text-micro font-semibold uppercase tracking-wide text-ink-3">
         {t("docs.onThisPage")}
       </p>
-      <ul className="space-y-1.5 border-l border-bgray-200 dark:border-darkblack-400">
+      <ul className="space-y-1 border-l border-line">
         {headings.map((heading) => (
           <li key={heading.id} className={heading.level === 3 ? "pl-4" : "pl-3"}>
             <a
               href={`#${heading.id}`}
-              className="block border-l-2 border-transparent text-xs leading-5 text-bgray-600 hover:border-blue-500 hover:text-blue-600 dark:text-bgray-300 dark:hover:text-blue-300"
+              className="block border-l-2 border-transparent text-label leading-5 text-ink-3 transition-colors hover:border-brand hover:text-brand-strong"
             >
               {heading.text}
             </a>

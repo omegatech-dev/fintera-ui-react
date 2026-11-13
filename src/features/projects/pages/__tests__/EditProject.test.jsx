@@ -71,14 +71,14 @@ describe("EditProject", () => {
     projectsApi.unpublish.mockResolvedValue({ project: { is_published: false } });
   });
 
-  it("renders a single Back and Save action after the media panels", async () => {
+  it("renders a single Save action after the media panels", async () => {
     renderEdit();
     await screen.findByDisplayValue("Altos de Santa María");
 
-    const backButtons = screen.getAllByRole("button", { name: "common.back" });
+    const breadcrumbs = screen.getAllByRole("button", { name: "projectsPage.title" });
     const saveButtons = screen.getAllByRole("button", { name: "projects.saveChanges" });
 
-    expect(backButtons).toHaveLength(1);
+    expect(breadcrumbs).toHaveLength(1);
     expect(saveButtons).toHaveLength(1);
 
     const save = saveButtons[0];
@@ -94,7 +94,9 @@ describe("EditProject", () => {
     renderEdit();
     await screen.findByDisplayValue("Altos de Santa María");
 
-    fireEvent.click(screen.getByRole("button", { name: "projects.unpublish" }));
+    fireEvent.click(
+      screen.getByRole("switch", { name: "projects.visiblePortal" })
+    );
 
     await waitFor(() => expect(projectsApi.unpublish).toHaveBeenCalledWith("1"));
     expect(await screen.findByText("projects.unpublished")).toBeInTheDocument();

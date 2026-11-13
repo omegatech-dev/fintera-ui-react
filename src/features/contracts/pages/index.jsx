@@ -1,15 +1,14 @@
 import { useState, useContext, useMemo, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSync } from "@fortawesome/free-solid-svg-icons";
+import { faEllipsisVertical, faMagnifyingGlass, faSync } from "@fortawesome/free-solid-svg-icons";
 
 import { useLocale } from "../../../contexts/LocaleContext";
 import AuthContext from "../../../contexts/AuthContext";
 import { useToast } from "../../../contexts/ToastContext";
+import useDebounce from "@/hooks/useDebounce";
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
-import GenericFilter from "../../../shared/forms/GenericFilter";
 import { contractsApi } from "../api";
-import { getStatusTheme } from "../../../shared/utils/statusUtils";
 import { formatStatus } from "../../../shared/utils/formatStatus";
 import { formatDate } from "../../../shared/utils/formatters";
 import ContractStats from "../components/ContractStats";
@@ -22,6 +21,7 @@ import {
   Chip,
   EmptyState,
   ErrorState,
+  Menu,
   Pagination,
   Skeleton,
   Table,
@@ -32,12 +32,19 @@ const translateFinancingType = (type, t) => {
     case "direct":
       return t("contracts.financingTypes.direct") || "Directo";
     case "cash":
-      return "Contado";
+      return t("contracts.financingTypes.cash") || "Contado";
     case "bank":
       return t("contracts.financingTypes.bank") || "Bancario";
     default:
-      return "N/A";
+      return "—";
   }
+};
+
+const money = (value) => {
+  if (value === null || value === undefined || value === "") return "—";
+  return `L ${Number(value || 0).toLocaleString("es-HN", {
+    maximumFractionDigits: 0,
+  })}`;
 };
 
 const STATUS_TONES = {
@@ -46,6 +53,8 @@ const STATUS_TONES = {
   rejected: "danger",
   pending: "warning",
   submitted: "info",
+  cancelled: "danger",
+  canceled: "danger",
 };
 
 const PER_PAGE = 12;
@@ -70,9 +79,11 @@ function Contract() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchDraft, setSearchDraft] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [showDateFilters, setShowDateFilters] = useState(false);
 
   const [stats, setStats] = useState({
     total: 0,
@@ -81,7 +92,6 @@ function Contract() {
     rejected: 0,
   });
 
-  // Row-level modal state lifted from ContractItem
   const [scheduleContract, setScheduleContract] = useState(null);
   const [rejectionContract, setRejectionContract] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -153,26 +163,23 @@ function Contract() {
     fetchContracts();
   }, [fetchContracts, refreshTrigger]);
 
-  const handleSearchChange = useCallback((term) => {
-    setSearchTerm(term);
+  const handleSearchSubmit = useCallback((event) => {
+    event.preventDefault();
+    setSearchTerm(searchDraft);
     setPage(1);
-  }, []);
+  }, [searchDraft]);
 
-  const handleFilterChange = useCallback((value) => {
+  const debouncedSearch = useDebounce(searchDraft, 400);
+
+  useEffect(() => {
+    setSearchTerm(debouncedSearch);
+    setPage(1);
+  }, [debouncedSearch]);
+
+  const handleStatusChange = useCallback((value) => {
     setStatusFilter(value);
     setPage(1);
   }, []);
-
-  const statusOptions = useMemo(
-    () => [
-      { value: "", label: t("contracts.allStatuses") },
-      { value: "pending", label: t("contracts.status.pending") },
-      { value: "approved", label: t("contracts.status.approved") },
-      { value: "rejected", label: t("contracts.status.rejected") },
-      { value: "closed", label: t("contracts.status.closed") },
-    ],
-    [t]
-  );
 
   const handleSortChange = useCallback((field) => {
     setSort((prev) => ({
@@ -188,41 +195,13 @@ function Contract() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const handleNavigateToLot = useCallback(
-    (contract) => {
-      if (contract.project_id) {
-        navigate(`/projects/${contract.project_id}/lots`, {
-          state: {
-            selectedLotId: contract.lot_id,
-            selectedLotName: contract.lot_name,
-            selectedLotAddress: contract.lot_address,
-          },
-        });
-      }
-    },
-    [navigate]
-  );
-
-  const handleNavigateToClient = useCallback(
-    (contract) => {
-      navigate("/users", {
-        state: {
-          selectedUserId: contract.applicant_identity,
-          selectedUserName: contract.applicant_name,
-          selectedUserPhone: contract.applicant_phone,
-        },
-      });
-    },
-    [navigate]
-  );
-
   const handleApprove = useCallback(
     async (contract) => {
       if (!contract.id) return;
       setActionLoading(true);
       try {
         await contractsApi.approve(contract.project_id, contract.lot_id, contract.id);
-        showToast("Contrato aprobado exitosamente.", "success");
+        showToast(t("contracts.approvedSuccess"), "success");
         refreshContracts();
       } catch (err) {
         showToast(`Error: ${err.message}`, "error");
@@ -230,7 +209,7 @@ function Contract() {
         setActionLoading(false);
       }
     },
-    [refreshContracts, showToast]
+    [refreshContracts, showToast, t]
   );
 
   const handleReject = useCallback(
@@ -240,7 +219,7 @@ function Contract() {
       setActionLoading(true);
       try {
         await contractsApi.reject(contract.project_id, contract.lot_id, contract.id, reason);
-        showToast("Contrato rechazado exitosamente.", "success");
+        showToast(t("contracts.rejectedSuccess"), "success");
         setRejectionContract(null);
         refreshContracts();
       } catch (err) {
@@ -249,7 +228,7 @@ function Contract() {
         setActionLoading(false);
       }
     },
-    [rejectionContract, refreshContracts, showToast]
+    [rejectionContract, refreshContracts, showToast, t]
   );
 
   const handleDeleteContract = useCallback(
@@ -274,25 +253,29 @@ function Contract() {
     [refreshContracts, showToast, t]
   );
 
-  const columns = useMemo(
+  const statusChips = useMemo(
     () => [
+      { value: "", label: t("common.all"), count: stats.total },
+      { value: "approved", label: t("contracts.status.approved"), count: stats.approved },
+      { value: "pending", label: t("contracts.status.pending"), count: stats.pending },
+      { value: "rejected", label: t("contracts.status.rejected"), count: stats.rejected },
+    ],
+    [stats, t]
+  );
+
+  const hasNextPaymentColumn = useMemo(
+    () => contracts.some((contract) => contract.next_payment_date || contract.next_due_date),
+    [contracts]
+  );
+
+  const columns = useMemo(() => {
+    const base = [
       {
-        key: "lot_id",
-        header: t("contracts.lot"),
+        key: "id",
+        header: t("contracts.contractId"),
         sortable: true,
         render: (contract) => (
-          <button
-            type="button"
-            onClick={() => handleNavigateToLot(contract)}
-            className="text-left"
-          >
-            <span className="block truncate text-body font-semibold text-ink">
-              {contract.lot_name || "N/A"}
-            </span>
-            <span className="block truncate text-micro text-ink-3">
-              {contract.project_name || "—"}
-            </span>
-          </button>
+          <span className="font-bold text-ink">#{contract.id}</span>
         ),
       },
       {
@@ -300,26 +283,49 @@ function Contract() {
         header: t("contracts.client"),
         sortable: true,
         render: (contract) => (
-          <button
-            type="button"
-            onClick={() => handleNavigateToClient(contract)}
-            className="text-left"
-          >
-            <span className="block truncate text-body text-ink">
-              {contract.applicant_name || "N/A"}
+          <div className="min-w-0">
+            <span className="block truncate text-body font-semibold text-ink">
+              {contract.applicant_name || "—"}
             </span>
             <span className="block truncate text-micro text-ink-3">
               {contract.applicant_identity || "—"}
             </span>
-          </button>
+          </div>
+        ),
+      },
+      {
+        key: "lot_id",
+        header: t("contracts.lotProject"),
+        sortable: true,
+        render: (contract) => (
+          <div className="min-w-0">
+            <span className="block truncate text-body text-ink-2">
+              {contract.lot_name || "—"}
+            </span>
+            <span className="block truncate text-micro text-ink-3">
+              {contract.project_name || "—"}
+            </span>
+          </div>
         ),
       },
       {
         key: "financing_type",
-        header: t("contracts.financing"),
+        header: t("contracts.type"),
         sortable: true,
         render: (contract) => (
-          <Chip>{translateFinancingType(contract.financing_type, t)}</Chip>
+          <span className="text-body text-ink-2">
+            {translateFinancingType(contract.financing_type, t)}
+          </span>
+        ),
+      },
+      {
+        key: "balance",
+        header: t("contracts.balance"),
+        align: "right",
+        render: (contract) => (
+          <span className="text-body font-semibold text-ink">
+            {money(Math.abs(Number(contract.balance || 0)))}
+          </span>
         ),
       },
       {
@@ -332,136 +338,198 @@ function Contract() {
           </Chip>
         ),
       },
-      {
+    ];
+
+    if (hasNextPaymentColumn) {
+      base.push({
+        key: "next_payment_date",
+        header: t("contracts.nextPayment"),
+        render: (contract) => (
+          <span className="text-body text-ink-2">
+            {formatDate(contract.next_payment_date || contract.next_due_date)}
+          </span>
+        ),
+      });
+    } else {
+      base.push({
         key: "contracts.created_at",
         header: t("contracts.created"),
         sortable: true,
-        align: "right",
         render: (contract) => (
-          <span className="text-body text-ink-2">
-            {formatDate(contract.created_at)}
-          </span>
+          <span className="text-body text-ink-2">{formatDate(contract.created_at)}</span>
         ),
+      });
+    }
+
+    base.push({
+      key: "actions",
+      header: "",
+      align: "right",
+      render: (contract) => {
+        const contractStatus = contract.status?.toLowerCase();
+        const items = [
+          {
+            label: t("common.view"),
+            onSelect: () => navigate(`/contracts/${contract.guid}`),
+          },
+        ];
+
+        if (userRole !== "seller" && ["approved", "closed"].includes(contractStatus)) {
+          items.push({
+            label: t("contracts.paymentSchedule"),
+            onSelect: () => setScheduleContract(contract),
+          });
+        }
+        if (userRole === "admin" && ["pending", "submitted", "rejected"].includes(contractStatus)) {
+          items.push({
+            label: t("contracts.approve"),
+            onSelect: () => handleApprove(contract),
+          });
+        }
+        if (userRole === "admin" && ["pending", "submitted"].includes(contractStatus)) {
+          items.push({
+            label: t("contracts.reject"),
+            onSelect: () => setRejectionContract(contract),
+          });
+        }
+        if (userRole === "admin" && contractStatus === "rejected") {
+          items.push({
+            label: t("common.delete") || "Eliminar",
+            tone: "danger",
+            onSelect: () => handleDeleteContract(contract),
+          });
+        }
+
+        return (
+          <div className="flex justify-end" onClick={(event) => event.stopPropagation()}>
+            <Menu
+              label={t("common.actions")}
+              icon={<FontAwesomeIcon icon={faEllipsisVertical} />}
+              items={items}
+            />
+          </div>
+        );
       },
-      {
-        key: "created_by",
-        header: t("contracts.createdBy"),
-        align: "right",
-        render: (contract) => contract.created_by || "—",
-      },
-      {
-        key: "actions",
-        header: "",
-        align: "right",
-        render: (contract) => {
-          const contractStatus = contract.status?.toLowerCase();
-          return (
-            <div className="flex items-center justify-end gap-2">
-              {userRole === "admin" &&
-                ["pending", "submitted", "rejected"].includes(contractStatus) && (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    loading={actionLoading}
-                    onClick={() => handleApprove(contract)}
-                  >
-                    {t("contracts.approve")}
-                  </Button>
-                )}
-              {userRole === "admin" &&
-                ["pending", "submitted"].includes(contractStatus) && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setRejectionContract(contract)}
-                  >
-                    {t("contracts.reject")}
-                  </Button>
-                )}
-              {userRole === "admin" && contractStatus === "rejected" && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  loading={deleteLoading}
-                  onClick={() => handleDeleteContract(contract)}
-                >
-                  {t("common.delete") || "Eliminar"}
-                </Button>
-              )}
-              {userRole !== "seller" &&
-                ["approved", "closed"].includes(contractStatus) && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setScheduleContract(contract)}
-                  >
-                    {t("contracts.paymentSchedule")}
-                  </Button>
-                )}
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => navigate(`/contracts/${contract.guid}`)}
-                title={t("common.view")}
-              >
-                {t("common.view")}
-              </Button>
-            </div>
-          );
-        },
-      },
-    ],
-    [
-      actionLoading,
-      deleteLoading,
-      handleApprove,
-      handleDeleteContract,
-      handleNavigateToClient,
-      handleNavigateToLot,
-      navigate,
-      t,
-      userRole,
-    ]
-  );
+    });
+
+    return base;
+  }, [
+    handleApprove,
+    handleDeleteContract,
+    hasNextPaymentColumn,
+    navigate,
+    t,
+    userRole,
+  ]);
 
   return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell dark:bg-darkblack-700 min-h-screen">
-      <div className="max-w-[1600px] mx-auto space-y-5">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+    <main className="page-shell min-h-screen w-full bg-canvas px-4 pb-8 sm:px-6 xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto max-w-[1600px] space-y-5">
+        <div className="motion-fade-up flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-page font-bold text-ink">
               {t("contracts.title") || "Contratos"}
             </h1>
             <p className="text-body text-ink-3">
-              {t("contracts.subtitle") || "Financiamientos y reservas por cliente."}
+              {t("contracts.summaryLine", {
+                total: stats.total,
+                approved: stats.approved,
+                pending: stats.pending,
+              })}
             </p>
           </div>
-          <Button variant="secondary" onClick={refreshContracts}>
-            <FontAwesomeIcon icon={faSync} className="mr-2" />
-            {t("common.refresh") || "Actualizar"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={refreshContracts}>
+              <FontAwesomeIcon icon={faSync} className="mr-2" />
+              {t("common.refresh") || "Actualizar"}
+            </Button>
+          </div>
         </div>
 
-        <div id="contract-stats">
+        <div id="contract-stats" className="motion-fade-up [animation-delay:45ms]">
           <ContractStats stats={stats} />
         </div>
 
-        <Card bodyClassName="p-5">
-          <GenericFilter
-            searchTerm={searchTerm}
-            filterValue={statusFilter}
-            filterOptions={statusOptions}
-            onSearchChange={handleSearchChange}
-            onFilterChange={handleFilterChange}
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-            searchPlaceholder={t("contracts.searchPlaceholder")}
-            filterPlaceholder={t("contracts.filterByStatus")}
-            minSearchLength={3}
-          />
-        </Card>
+        <div className="motion-fade-up flex flex-col gap-3 [animation-delay:90ms] xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="flex h-10 w-full items-center gap-2 rounded-control border border-line bg-surface px-3 sm:w-[300px]"
+            >
+              <FontAwesomeIcon icon={faMagnifyingGlass} className="text-ink-3" />
+              <input
+                type="search"
+                value={searchDraft}
+                onChange={(event) => setSearchDraft(event.target.value)}
+                placeholder={t("contracts.searchPlaceholder")}
+                className="w-full bg-transparent text-label text-ink outline-none placeholder:text-ink-3"
+                aria-label={t("contracts.searchPlaceholder")}
+              />
+            </form>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {statusChips.map((chip) => {
+                const selected = statusFilter === chip.value;
+                return (
+                  <button
+                    key={chip.value || "all"}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => handleStatusChange(chip.value)}
+                    className={`h-[30px] rounded-chip px-3 text-label font-semibold transition-colors ${
+                      selected
+                        ? "bg-brand-soft text-brand-strong"
+                        : "border border-line bg-surface text-ink-2 hover:text-ink"
+                    }`}
+                  >
+                    {chip.label} <span className="opacity-70">{chip.count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-expanded={showDateFilters}
+              onClick={() => setShowDateFilters((value) => !value)}
+              className={`h-10 rounded-control border px-3 text-label font-semibold transition-colors ${
+                showDateFilters || startDate || endDate
+                  ? "border-brand/30 bg-brand-soft text-brand-strong"
+                  : "border-line bg-surface text-ink-2 hover:bg-surface-2"
+              }`}
+            >
+              {t("common.filter")}
+            </button>
+            {showDateFilters && (
+              <>
+            <label className="flex h-10 items-center gap-2 rounded-control border border-line bg-surface px-3 text-label text-ink-3">
+              <span className="whitespace-nowrap">{t("common.startDate")}</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(event) => {
+                  setStartDate(event.target.value);
+                  setPage(1);
+                }}
+                className="bg-transparent text-label text-ink outline-none"
+              />
+            </label>
+            <label className="flex h-10 items-center gap-2 rounded-control border border-line bg-surface px-3 text-label text-ink-3">
+              <span className="whitespace-nowrap">{t("common.endDate")}</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(event) => {
+                  setEndDate(event.target.value);
+                  setPage(1);
+                }}
+                className="bg-transparent text-label text-ink outline-none"
+              />
+            </label>
+              </>
+            )}
+          </div>
+        </div>
 
         {error && (
           <ErrorState
@@ -471,73 +539,63 @@ function Contract() {
           />
         )}
 
-        <Card bodyClassName="p-0">
+        <Card className="motion-fade-up [animation-delay:135ms]" bodyClassName="p-0">
           {loading ? (
             <div className="p-5">
               <Skeleton rows={6} />
             </div>
           ) : (
             <>
-              <Table
-                columns={columns}
-                rows={contracts}
-                getRowKey={(contract) => contract.id}
-                sort={sort}
-                onSortChange={handleSortChange}
-                empty={
-                  <div className="p-5">
-                    <EmptyState
-                      variant="no-results"
-                      title={t("contracts.noContractsFound")}
-                      description={t("common.tryAdjustingFilters")}
+              <div className="overflow-x-auto px-2 sm:px-[18px]">
+                <Table
+                  columns={columns}
+                  rows={contracts}
+                  getRowKey={(contract) => contract.id}
+                  sort={sort}
+                  onSortChange={handleSortChange}
+                  onRowClick={(contract) => navigate(`/contracts/${contract.guid}`)}
+                  empty={
+                    <div className="p-5">
+                      <EmptyState
+                        variant="no-results"
+                        title={t("contracts.noContractsFound")}
+                        description={t("common.tryAdjustingFilters")}
+                      />
+                    </div>
+                  }
+                  mobileCard={(contract) => (
+                    <ContractMobileCard
+                      contract={contract}
+                      userRole={userRole}
+                      refreshContracts={refreshContracts}
+                      t={t}
+                      translateFinancingType={translateFinancingType}
+                      formatDate={formatDate}
+                      handleApprove={(event) => {
+                        event?.stopPropagation();
+                        handleApprove(contract);
+                      }}
+                      handleDeleteContract={(event) => {
+                        event?.stopPropagation();
+                        handleDeleteContract(contract);
+                      }}
+                      actionLoading={actionLoading}
+                      deleteLoading={deleteLoading}
+                      setShowSchedule={(open) => open && setScheduleContract(contract)}
+                      setShowRejectionModal={(open) => open && setRejectionContract(contract)}
+                      setShowDetailsModal={() => navigate(`/contracts/${contract.guid}`)}
                     />
-                  </div>
-                }
-                mobileCard={(contract) => (
-                  <ContractMobileCard
-                    contract={contract}
-                    userRole={userRole}
-                    refreshContracts={refreshContracts}
-                    t={t}
-                    getStatusTheme={getStatusTheme}
-                    translateFinancingType={translateFinancingType}
-                    formatDate={formatDate}
-                    handleNavigateToLot={(e) => {
-                      e?.stopPropagation();
-                      handleNavigateToLot(contract);
-                    }}
-                    handleNavigateToClient={(e) => {
-                      e?.stopPropagation();
-                      handleNavigateToClient(contract);
-                    }}
-                    handleApprove={(e) => {
-                      e?.stopPropagation();
-                      handleApprove(contract);
-                    }}
-                    handleReject={handleReject}
-                    handleDeleteContract={(e) => {
-                      e?.stopPropagation();
-                      handleDeleteContract(contract);
-                    }}
-                    actionLoading={actionLoading}
-                    deleteLoading={deleteLoading}
-                    showSchedule={false}
-                    setShowSchedule={(open) =>
-                      open && setScheduleContract(contract)
-                    }
-                    showRejectionModal={false}
-                    setShowRejectionModal={(open) =>
-                      open && setRejectionContract(contract)
-                    }
-                    showDetailsModal={false}
-                    setShowDetailsModal={() =>
-                      navigate(`/contracts/${contract.guid}`)
-                    }
-                  />
-                )}
-              />
-              {totalPages > 1 && (
-                <div className="px-5 pb-4">
+                  )}
+                />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-[18px] py-3">
+                <p className="text-label text-ink-3">
+                  {t("contracts.showingContracts", {
+                    count: contracts.length,
+                    total,
+                  })}
+                </p>
+                {totalPages > 1 && (
                   <Pagination
                     page={page}
                     pageCount={totalPages}
@@ -545,8 +603,8 @@ function Contract() {
                     perPage={PER_PAGE}
                     onPageChange={handlePageChange}
                   />
-                </div>
-              )}
+                )}
+              </div>
             </>
           )}
         </Card>

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
-import { SettingsSaveBar } from "../../../shared/ui";
+import SettingsSaveBar from "./SettingsSaveBar";
 import SettingsSection from "./SettingsSection";
+import { useSettingsSaveBarRegistration } from "../hooks/useSettingsSaveBarRegistration";
 import { useSettingsDraft } from "../hooks/useSettingsDraft";
 import {
   settingsErrorClass,
@@ -12,6 +13,7 @@ import {
   settingsInputDefaultClass,
   settingsInputErrorClass,
   settingsLabelClass,
+  settingsTextareaClass,
 } from "./settingsFormStyles";
 
 const FIELDS = [
@@ -20,7 +22,11 @@ const FIELDS = [
   "legal_address",
   "website",
   "terms_effective_date",
+  "terms_content_es",
+  "terms_content_en",
 ];
+
+const TERMS_MAX_LENGTH = 20000;
 
 const inputClass = (hasError) =>
   `${settingsInputClass} ${hasError ? settingsInputErrorClass : settingsInputDefaultClass}`;
@@ -47,8 +53,7 @@ function LegalSettingsForm() {
     setErrors({});
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const submitDraft = async () => {
     const nextErrors = {};
     const website = String(draft.website || "").trim();
     const effectiveDate = String(draft.terms_effective_date || "").trim();
@@ -74,6 +79,8 @@ function LegalSettingsForm() {
         legal_address: String(draft.legal_address || "").trim(),
         website,
         terms_effective_date: effectiveDate,
+        terms_content_es: String(draft.terms_content_es || "").trim(),
+        terms_content_en: String(draft.terms_content_en || "").trim(),
       });
       showToast(t("branding.legal.saved"), "success");
     } catch (requestError) {
@@ -83,12 +90,24 @@ function LegalSettingsForm() {
     }
   };
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    submitDraft();
+  };
+
   const updateField = (field, value) => {
     setField(field, value);
     if (errors[field]) {
       setErrors((previous) => ({ ...previous, [field]: "" }));
     }
   };
+
+  const inShell = useSettingsSaveBarRegistration("legal", {
+    dirty,
+    saving,
+    onDiscard: handleDiscard,
+    onSubmit: submitDraft,
+  });
 
   return (
     <SettingsSection
@@ -97,11 +116,11 @@ function LegalSettingsForm() {
     >
       {loading ? (
         <div className="space-y-3" aria-live="polite">
-          <div className="h-12 animate-pulse rounded-xl bg-bgray-100 dark:bg-darkblack-500" />
-          <div className="h-12 animate-pulse rounded-xl bg-bgray-100 dark:bg-darkblack-500" />
+          <div className="h-10 animate-pulse rounded-control bg-surface-2" />
+          <div className="h-10 animate-pulse rounded-control bg-surface-2" />
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className={settingsGridClass}>
             <div>
               <label htmlFor="legal-name" className={settingsLabelClass}>
@@ -189,7 +208,7 @@ function LegalSettingsForm() {
             <textarea
               id="legal-address"
               rows={3}
-              className={`w-full rounded-xl border bg-bgray-50 px-4 py-3 text-sm font-semibold transition-all focus:border-transparent focus:ring-2 dark:bg-darkblack-500 dark:text-white ${
+              className={`${settingsTextareaClass} ${
                 errors.legal_address
                   ? settingsInputErrorClass
                   : settingsInputDefaultClass
@@ -204,18 +223,79 @@ function LegalSettingsForm() {
             </p>
           </div>
 
-          <SettingsSaveBar
-            visible={dirty}
-            saving={saving}
-            disabled={saving || loading}
-            onDiscard={handleDiscard}
-            labels={{
-              unsaved: t("branding.saveBar.unsaved"),
-              discard: t("branding.saveBar.discard"),
-              save: t("branding.save"),
-              saving: t("branding.saving"),
-            }}
-          />
+          <div className="space-y-4 border-t border-line pt-5">
+            <div>
+              <label htmlFor="legal-terms-es" className={settingsLabelClass}>
+                {t("branding.legal.termsContentEs")}
+              </label>
+              <textarea
+                id="legal-terms-es"
+                rows={10}
+                maxLength={TERMS_MAX_LENGTH}
+                className={`${settingsTextareaClass} ${settingsInputDefaultClass}`}
+                value={draft.terms_content_es || ""}
+                onChange={(event) =>
+                  updateField("terms_content_es", event.target.value)
+                }
+                aria-describedby="legal-terms-es-help legal-terms-es-count"
+              />
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <p id="legal-terms-es-help" className={settingsHelperClass}>
+                  {t("branding.legal.termsContentEsHint")}
+                </p>
+                <p id="legal-terms-es-count" className={settingsHelperClass}>
+                  {t("branding.legal.termsCharacters", {
+                    count: String(draft.terms_content_es || "").length,
+                    max: TERMS_MAX_LENGTH,
+                  })}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="legal-terms-en" className={settingsLabelClass}>
+                {t("branding.legal.termsContentEn")}
+              </label>
+              <textarea
+                id="legal-terms-en"
+                rows={10}
+                maxLength={TERMS_MAX_LENGTH}
+                className={`${settingsTextareaClass} ${settingsInputDefaultClass}`}
+                value={draft.terms_content_en || ""}
+                onChange={(event) =>
+                  updateField("terms_content_en", event.target.value)
+                }
+                aria-describedby="legal-terms-en-help legal-terms-en-count"
+              />
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <p id="legal-terms-en-help" className={settingsHelperClass}>
+                  {t("branding.legal.termsContentEnHint")}
+                </p>
+                <p id="legal-terms-en-count" className={settingsHelperClass}>
+                  {t("branding.legal.termsCharacters", {
+                    count: String(draft.terms_content_en || "").length,
+                    max: TERMS_MAX_LENGTH,
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {!inShell && (
+            <SettingsSaveBar
+              visible={dirty}
+              saving={saving}
+              saveDisabled={saving || loading}
+              onDiscard={handleDiscard}
+              onSave={submitDraft}
+              labels={{
+                unsaved: t("settings.saveBar.unsaved"),
+                discard: t("settings.saveBar.discard"),
+                save: t("settings.saveBar.save"),
+                saving: t("settings.saveBar.saving"),
+              }}
+            />
+          )}
         </form>
       )}
     </SettingsSection>

@@ -1,6 +1,3 @@
-export { default as GenericList } from "./GenericList";
-export { default as SearchFilterBar } from "./SearchFilterBar";
-export { default as SettingsSaveBar } from "./SettingsSaveBar";
 export { default as Toast } from "./Toast";
 export { default as Button } from "./Button";
 export { default as Input } from "./Input";
@@ -14,6 +11,7 @@ export { default as ErrorState } from "./ErrorState";
 export { default as Skeleton } from "./Skeleton";
 export { default as SaveBar } from "./SaveBar";
 export { default as Dialog } from "./Dialog";
+export { default as ShortcutsDialog } from "./ShortcutsDialog";
 export { default as ConfirmDialog } from "./ConfirmDialog";
 export {
   ConfirmProvider,

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
-import { SettingsSaveBar } from "../../../shared/ui";
+import SettingsSaveBar from "./SettingsSaveBar";
 import SettingsSection from "./SettingsSection";
+import { useSettingsSaveBarRegistration } from "../hooks/useSettingsSaveBarRegistration";
 import { useSettingsDraft } from "../hooks/useSettingsDraft";
 import {
   settingsErrorClass,
-  settingsGridClass,
+  settingsGridWideClass,
   settingsHelperClass,
   settingsInputClass,
   settingsInputDefaultClass,
@@ -57,8 +58,7 @@ function RegionalSettingsForm() {
     setErrors({});
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const submitDraft = async () => {
     const nextErrors = {};
     const currency = String(draft.default_currency || "").trim().toUpperCase();
     const locale = String(draft.default_locale || "").trim();
@@ -91,6 +91,11 @@ function RegionalSettingsForm() {
     }
   };
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    submitDraft();
+  };
+
   const updateField = (field, value) => {
     setField(field, value);
     if (errors[field]) {
@@ -107,16 +112,23 @@ function RegionalSettingsForm() {
       ? [{ value: draft.default_locale, label: draft.default_locale }, ...LOCALES]
       : LOCALES;
 
+  const inShell = useSettingsSaveBarRegistration("regional", {
+    dirty,
+    saving,
+    onDiscard: handleDiscard,
+    onSubmit: submitDraft,
+  });
+
   return (
     <SettingsSection
       title={t("branding.regional.title")}
       description={t("branding.regional.subtitle")}
     >
       {loading ? (
-        <div className="h-24 animate-pulse rounded-xl bg-bgray-100 dark:bg-darkblack-500" />
+        <div className="h-24 animate-pulse rounded-control bg-surface-2" />
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className={settingsGridClass}>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className={settingsGridWideClass}>
             <div>
               <label htmlFor="default-currency" className={settingsLabelClass}>
                 {t("branding.regional.currency")}
@@ -202,18 +214,21 @@ function RegionalSettingsForm() {
             </div>
           </div>
 
-          <SettingsSaveBar
-            visible={dirty}
-            saving={saving}
-            disabled={saving || loading}
-            onDiscard={handleDiscard}
-            labels={{
-              unsaved: t("branding.saveBar.unsaved"),
-              discard: t("branding.saveBar.discard"),
-              save: t("branding.save"),
-              saving: t("branding.saving"),
-            }}
-          />
+          {!inShell && (
+            <SettingsSaveBar
+              visible={dirty}
+              saving={saving}
+              saveDisabled={saving || loading}
+              onDiscard={handleDiscard}
+              onSave={submitDraft}
+              labels={{
+                unsaved: t("settings.saveBar.unsaved"),
+                discard: t("settings.saveBar.discard"),
+                save: t("settings.saveBar.save"),
+                saving: t("settings.saveBar.saving"),
+              }}
+            />
+          )}
         </form>
       )}
     </SettingsSection>

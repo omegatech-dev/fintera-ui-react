@@ -13,6 +13,8 @@ Cuando apruebas un pago:
 
 Por defecto, el monto aprobado es la cuota más su interés. Puedes bajarlo o subirlo; cualquier excedente sobre la obligación se trata como abono a capital. Aprobar un pago de tipo **abono a capital** aplica el monto completo a las cuotas pendientes.
 
+Un pago de **reserva** no se puede aprobar hasta que el contrato esté aprobado. En ese caso, el botón Aprobar permanece deshabilitado.
+
 ## Rechazar
 
 Solo se pueden rechazar pagos **enviados**. Ingresa un motivo para que el cliente sepa qué corregir. El cliente puede subir un nuevo comprobante.
@@ -29,5 +31,6 @@ Deshacer un pago aprobado:
 
 ## Relacionado
 
+- [Bandeja de pagos y cola de revisión](/docs/payment-inbox)
 - [Abonos a capital y reajustes](/docs/capital-repayments)
 - [Tipos y estados de pago](/docs/payment-types-and-statuses)

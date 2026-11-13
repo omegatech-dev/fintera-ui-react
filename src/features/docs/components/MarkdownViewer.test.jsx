@@ -18,6 +18,9 @@ describe("MarkdownViewer", () => {
     expect(screen.getByRole("heading", { name: "Title" })).toBeInTheDocument();
     expect(screen.getByText("bold").tagName).toBe("STRONG");
     expect(screen.getByRole("table")).toBeInTheDocument();
+    screen.getAllByRole("columnheader").forEach((header) => {
+      expect(header).toHaveAttribute("scope", "col");
+    });
   });
 
   it("does not render raw HTML", () => {

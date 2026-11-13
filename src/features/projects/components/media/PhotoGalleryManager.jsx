@@ -1,3 +1,5 @@
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
+import { Banner, Button, Chip, Input } from "@/shared/ui";
 import { useMemo, useState } from "react";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { useToast } from "../../../../contexts/ToastContext";
@@ -51,7 +53,11 @@ export default function PhotoGalleryManager({
   };
 
   const handleDelete = async (photo) => {
-    if (!window.confirm(t("media.deletePhotoConfirm"))) return;
+    const confirmed = await confirmDialog({
+      title: t("media.deletePhotoConfirm"),
+      confirmLabel: t("common.delete"),
+    });
+    if (!confirmed) return;
     try {
       await onDelete(photo.id);
       showToast(t("media.deleteSuccess"), "success");
@@ -95,16 +101,20 @@ export default function PhotoGalleryManager({
       description={description}
       hint={t("media.photosHint")}
     >
-      {loading && <p className="text-sm font-semibold text-bgray-500">{t("common.loading")}</p>}
+      {loading && <p className="text-body font-semibold text-ink-3">{t("common.loading")}</p>}
       {error && !loading && (
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-red-500">{error}</p>
-          {onRetry && (
-            <button type="button" onClick={onRetry} className="text-xs font-bold text-indigo-600">
-              {t("common.retry")}
-            </button>
-          )}
-        </div>
+        <Banner
+          tone="danger"
+          action={
+            onRetry && (
+              <Button variant="ghost" size="sm" onClick={onRetry}>
+                {t("common.retry")}
+              </Button>
+            )
+          }
+        >
+          {error}
+        </Banner>
       )}
 
       {!loading && !error && canManage && (
@@ -114,7 +124,7 @@ export default function PhotoGalleryManager({
       )}
 
       {!loading && !error && orderedPhotos.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-bgray-300 dark:border-darkblack-400 p-6 text-sm font-semibold text-bgray-500">
+        <p className="rounded-control border border-dashed border-line-strong bg-surface-2 p-6 text-body font-semibold text-ink-3">
           {t("media.noPhotos")}
         </p>
       )}
@@ -124,9 +134,9 @@ export default function PhotoGalleryManager({
           {orderedPhotos.map((photo, index) => (
             <article
               key={photo.id || photo.url}
-              className="overflow-hidden rounded-2xl border border-bgray-200 dark:border-darkblack-400"
+              className="overflow-hidden rounded-card border border-line"
             >
-              <div className="relative h-36 bg-bgray-100 dark:bg-darkblack-500">
+              <div className="relative h-36 bg-surface-2">
                 <img
                   src={mediaUrl(photo.thumb_url || photo.url)}
                   alt={photo.alt || ""}
@@ -134,75 +144,73 @@ export default function PhotoGalleryManager({
                   loading="lazy"
                 />
                 {index === 0 && (
-                  <span className="absolute left-2 top-2 rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-white">
-                    {t("media.cover")}
+                  <span className="absolute left-2 top-2">
+                    <Chip tone="info">{t("media.cover")}</Chip>
                   </span>
                 )}
               </div>
               <div className="space-y-2 p-3">
                 {editingAlt && photo.id != null && editingAlt.id === photo.id ? (
-                  <div className="flex gap-2">
-                    <input
+                  <div className="flex items-start gap-2">
+                    <Input
                       autoFocus
                       value={editingAlt.alt ?? ""}
                       onChange={(event) => setEditingAlt({ ...editingAlt, alt: event.target.value })}
                       placeholder={t("media.altText")}
-                      className="min-w-0 flex-1 rounded-lg border border-bgray-200 px-2 py-1 text-xs dark:border-darkblack-400 dark:bg-darkblack-500"
+                      className="min-w-0 flex-1"
                     />
-                    <button
-                      type="button"
-                      onClick={handleSaveAlt}
-                      className="rounded-lg bg-indigo-600 px-2 py-1 text-[10px] font-black text-white"
-                    >
+                    <Button size="sm" onClick={handleSaveAlt}>
                       {t("common.save")}
-                    </button>
+                    </Button>
                   </div>
                 ) : (
-                  <p className="truncate text-xs font-semibold text-bgray-500">
+                  <p className="truncate text-micro font-semibold text-ink-3">
                     {photo.alt || t("media.noAlt")}
                   </p>
                 )}
 
                 {canManage && photo.id != null && (
                   <div className="flex flex-wrap gap-1.5">
-                    <button
-                      type="button"
+                    <Button
+                      size="sm"
+                      variant="secondary"
                       onClick={() => handleCover(photo)}
                       disabled={index === 0}
-                      className="rounded-lg border border-bgray-200 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-bgray-600 disabled:opacity-40 dark:border-darkblack-400 dark:text-bgray-300"
                     >
                       {t("media.setCover")}
-                    </button>
-                    <button
-                      type="button"
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      aria-label={t("media.moveUp")}
                       onClick={() => handleMove(photo, index, -1)}
                       disabled={index === 0}
-                      className="rounded-lg border border-bgray-200 px-2 py-1 text-[9px] font-black text-bgray-600 disabled:opacity-40 dark:border-darkblack-400 dark:text-bgray-300"
                     >
                       ↑
-                    </button>
-                    <button
-                      type="button"
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      aria-label={t("media.moveDown")}
                       onClick={() => handleMove(photo, index, 1)}
                       disabled={index === orderedPhotos.length - 1}
-                      className="rounded-lg border border-bgray-200 px-2 py-1 text-[9px] font-black text-bgray-600 disabled:opacity-40 dark:border-darkblack-400 dark:text-bgray-300"
                     >
                       ↓
-                    </button>
-                    <button
-                      type="button"
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
                       onClick={() => setEditingAlt({ id: photo.id, alt: photo.alt || "" })}
-                      className="rounded-lg border border-bgray-200 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-bgray-600 dark:border-darkblack-400 dark:text-bgray-300"
                     >
                       Alt
-                    </button>
-                    <button
-                      type="button"
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
                       onClick={() => handleDelete(photo)}
-                      className="rounded-lg border border-red-200 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-red-500"
                     >
                       {t("common.delete")}
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>

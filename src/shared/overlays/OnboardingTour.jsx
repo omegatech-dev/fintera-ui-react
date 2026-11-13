@@ -17,8 +17,6 @@ const OnboardingTour = () => {
             tourKey = isSeller ? "sellerHome" : "home";
         } else if (path.startsWith("/projects")) {
             tourKey = "projects";
-        } else if (path.startsWith("/contracts")) {
-            tourKey = "contracts";
         } else if (path.startsWith("/users")) {
             tourKey = "users";
         } else if (path.startsWith("/audits")) {
@@ -43,17 +41,17 @@ const OnboardingTour = () => {
             const isSeller = user?.role === "seller";
             if (path === "/" || path === "/home") return isSeller ? "sellerHome" : "home";
             if (path.startsWith("/projects")) return "projects";
-            if (path.startsWith("/contracts")) return "contracts";
             if (path.startsWith("/users")) return "users";
             if (path.startsWith("/audits")) return "audits";
             if (path.startsWith("/analytics")) return "analytics";
             if (path.startsWith("/financing/user")) return "financing";
-            return isSeller ? "sellerHome" : "home";
+            return null;
         };
 
-        const handleStartTour = (e) => {
+        const handleStartTour = (event) => {
             // Use tourKey from event, or derive from current path so the user gets the tour for the page they're on
-            const tourKey = e.detail?.tourKey ?? pathToTourKey(location.pathname);
+            const tourKey = event.detail?.tourKey ?? pathToTourKey(location.pathname);
+            if (!tourKey) return;
             // Small delay to allow the profile menu to close
             setTimeout(() => {
                 startTour(tourKey);

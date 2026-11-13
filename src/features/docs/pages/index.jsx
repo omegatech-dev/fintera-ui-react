@@ -28,11 +28,13 @@ function Documentation() {
 
   if (articles.length === 0) {
     return (
-      <main className="w-full px-6 pb-6 pt-[100px] sm:pt-[156px] xl:px-[48px] xl:pb-[48px]">
-        <p className="rounded-xl bg-white p-8 text-sm text-bgray-600 dark:bg-darkblack-600 dark:text-bgray-300">
+      <main className="w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto w-full max-w-[1600px]">
+        <p className="rounded-card border border-line bg-surface p-8 text-body text-ink-3">
           {t("docs.empty")}
         </p>
-      </main>
+        </div>
+    </main>
     );
   }
 
@@ -41,9 +43,10 @@ function Documentation() {
   }
 
   return (
-    <main className="w-full px-6 pb-6 pt-[100px] sm:pt-[156px] xl:px-[48px] xl:pb-[48px]">
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-200">
+    <main className="w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto w-full max-w-[1600px]">
+      <header className="motion-fade-up mb-5">
+        <span className="inline-flex items-center gap-1.5 rounded-chip bg-brand-soft px-2.5 py-1 text-micro font-semibold text-brand-strong">
           <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
             <path
               d="M4 5.5A1.5 1.5 0 015.5 4H11v16H5.5A1.5 1.5 0 014 18.5v-13zM13 4h5.5A1.5 1.5 0 0120 5.5v13a1.5 1.5 0 01-1.5 1.5H13V4z"
@@ -54,11 +57,14 @@ function Documentation() {
           </svg>
           {t("docs.badge")}
         </span>
-        <p className="text-sm text-bgray-500 dark:text-bgray-400">{t("docs.subtitle")}</p>
-      </div>
+        <h1 className="mt-2 text-page font-bold tracking-tight text-ink">
+          {t("docs.title")}
+        </h1>
+        <p className="mt-1 text-body text-ink-3">{t("docs.subtitle")}</p>
+      </header>
 
-      <div className="grid grid-cols-1 rounded-xl bg-white dark:bg-darkblack-600 xl:grid-cols-12">
-        <div className="border-b border-bgray-200 dark:border-darkblack-400 xl:col-span-3 xl:border-b-0 xl:border-r">
+      <div className="motion-fade-in grid grid-cols-1 overflow-hidden rounded-card border border-line bg-surface [animation-delay:80ms] xl:grid-cols-12">
+        <div className="border-b border-line xl:col-span-3 xl:border-b-0 xl:border-r">
           <DocsSidebar
             sections={filteredSections}
             query={query}
@@ -67,16 +73,16 @@ function Documentation() {
           />
         </div>
 
-        <div className="min-w-0 px-6 py-8 sm:px-10 xl:col-span-9">
-          <header className="mb-6">
+        <div className="min-w-0 px-5 py-7 sm:px-8 xl:col-span-9 xl:py-8">
+          <header className="motion-fade-up mb-6 [animation-delay:140ms]">
             {section && (
-              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300">
+              <p className="text-micro font-semibold uppercase tracking-wide text-brand-strong">
                 {section.title}
               </p>
             )}
-            <h1 className="mt-2 text-2xl font-bold text-bgray-900 dark:text-white">
+            <h2 className="mt-2 text-page font-bold tracking-tight text-ink">
               {article.title}
-            </h1>
+            </h2>
           </header>
 
           <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_220px]">
@@ -91,6 +97,7 @@ function Documentation() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </main>
   );

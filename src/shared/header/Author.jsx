@@ -1,59 +1,73 @@
-import ProtoTypes from "prop-types";
-import { getInitials, getAvatarColor, getFullImageUrl } from "@/shared/utils/avatarUtils";
+import PropTypes from "prop-types";
+import { getFullImageUrl, getInitials } from "@/shared/utils/avatarUtils";
+import { useLocale } from "../../contexts/LocaleContext";
+
+const ROLE_KEYS = {
+  admin: "header.administrator",
+  seller: "users.sellerRole",
+  user: "header.user",
+};
 
 function Author({ showProfile, user }) {
+  const { t } = useLocale();
+  const displayName = user.full_name || user.email || t("header.user");
+  const avatarSrc = user.profile_picture_thumb || user.profile_picture;
+  const role = t(ROLE_KEYS[user.role] || "header.user");
+
   return (
-    <div
+    <button
+      type="button"
       onClick={() => showProfile("profile")}
       id="profile-trigger"
-      className="flex cursor-pointer space-x-0 lg:space-x-3 z-30"
+      aria-label={displayName}
+      className="flex h-10 items-center gap-2 rounded-control text-left transition-colors hover:bg-surface-2"
     >
-      <div className={`h-[52px] w-[52px] rounded-xl border border-bgray-300 ${(!user.profile_picture && !user.profile_picture_thumb) ? getAvatarColor(user.full_name) : ''} flex items-center justify-center overflow-hidden bg-white dark:bg-darkblack-500`}>
-        {(user.profile_picture || user.profile_picture_thumb) ? (
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-soft text-label font-bold text-brand-strong">
+        {avatarSrc ? (
           <img
-            src={getFullImageUrl(user.profile_picture_thumb || user.profile_picture)}
-            alt={user.full_name}
-            className="w-full h-full object-cover"
-            onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
+            src={getFullImageUrl(avatarSrc)}
+            alt={displayName}
+            className="h-full w-full object-cover"
           />
-        ) : null}
-        <span className="text-white font-bold text-xl" style={{ display: (user.profile_picture || user.profile_picture_thumb) ? 'none' : 'block' }}>
-          {getInitials(user.full_name)}
+        ) : (
+          getInitials(displayName)
+        )}
+      </span>
+      <span className="hidden min-w-0 flex-col gap-px pr-1 2xl:flex">
+        <span className="truncate text-label font-semibold leading-4 text-ink">
+          {displayName}
         </span>
-      </div>
-      <div className="hidden 2xl:block">
-        <div className="flex items-center space-x-2.5">
-          <h3 className="text-base font-bold leading-[28px] text-bgray-900 dark:text-white">
-            {user.full_name}
-          </h3>
-          <span>
-            <svg
-              className="stroke-bgray-900 dark:stroke-white"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M7 10L12 14L17 10"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
-        </div>
-        <p className="text-sm font-medium leading-[20px] text-bgray-600 dark:text-bgray-50">
-          {user.role}
-        </p>
-      </div>
-    </div>
+        <span className="truncate text-micro font-medium leading-3 text-ink-3">
+          {role}
+        </span>
+      </span>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+        className="hidden h-4 w-4 shrink-0 text-ink-3 sm:block"
+      >
+        <path
+          d="m7 10 5 5 5-5"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
   );
 }
 
 Author.propTypes = {
-  showProfile: ProtoTypes.func,
+  showProfile: PropTypes.func,
+  user: PropTypes.shape({
+    full_name: PropTypes.string,
+    email: PropTypes.string,
+    role: PropTypes.string,
+    profile_picture: PropTypes.string,
+    profile_picture_thumb: PropTypes.string,
+  }),
 };
 
 export default Author;

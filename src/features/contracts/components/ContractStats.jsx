@@ -1,90 +1,116 @@
 import PropTypes from "prop-types";
 import { memo } from "react";
 import { useLocale } from "@/contexts/LocaleContext";
-import { motion } from "framer-motion";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faCheckCircle,
-    faClock,
-    faFileContract,
-    faTimesCircle,
-} from "@fortawesome/free-solid-svg-icons";
 
-const StatCard = ({ title, value, icon, color, delay }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay }}
-        className="bg-white dark:bg-darkblack-600 rounded-2xl p-6 shadow-xs border border-gray-100 dark:border-darkblack-500 flex items-center space-x-4"
+const pct = (value, total) =>
+  total ? `${Math.round((Number(value || 0) / Number(total)) * 100)}%` : "0%";
+
+const money = (value, locale) => {
+  const amount = Number(value);
+  if (value === null || value === undefined || !Number.isFinite(amount)) {
+    return "—";
+  }
+  return `L ${amount.toLocaleString(locale === "en" ? "en-US" : "es-HN", {
+    maximumFractionDigits: 0,
+  })}`;
+};
+
+const StatCard = ({ label, value, caption, tone = "default" }) => {
+  const isDanger = tone === "danger";
+  return (
+    <div
+      className={`flex min-h-[96px] flex-col justify-center gap-1 rounded-xl border p-3.5 ${
+        isDanger
+          ? "border-danger/25 bg-danger-soft"
+          : "border-line bg-surface"
+      }`}
     >
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color} text-white text-xl`}>
-            <FontAwesomeIcon icon={icon} />
-        </div>
-        <div>
-            <p className="text-bgray-500 dark:text-bgray-400 text-sm font-medium">{title}</p>
-            <h3 className="text-2xl font-bold text-bgray-900 dark:text-white leading-none mt-1">{value}</h3>
-        </div>
-    </motion.div>
-);
+      <p
+        className={`text-micro font-bold uppercase tracking-wide ${
+          isDanger ? "text-danger" : "text-ink-3"
+        }`}
+      >
+        {label}
+      </p>
+      <p
+        className={`text-[21px] font-bold leading-tight ${
+          isDanger ? "text-danger" : "text-ink"
+        }`}
+      >
+        {value}
+      </p>
+      <p
+        className={`text-micro font-medium ${
+          isDanger ? "text-danger/80" : "text-ink-3"
+        }`}
+      >
+        {caption}
+      </p>
+    </div>
+  );
+};
 
 StatCard.propTypes = {
-    title: PropTypes.string.isRequired,
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    icon: PropTypes.any.isRequired,
-    color: PropTypes.string.isRequired,
-    delay: PropTypes.number.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  caption: PropTypes.string,
+  tone: PropTypes.oneOf(["default", "danger"]),
 };
 
 const ContractStats = memo(function ContractStats({ stats }) {
-    const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const total = Number(stats.total || 0);
+  const active = Number(stats.active ?? stats.approved ?? 0);
+  const cancelled = Number(stats.cancelled || 0);
+  const overdueCount = Number(stats.overdue_count || 0);
+  const hasBalance =
+    stats.pending_balance !== null && stats.pending_balance !== undefined;
 
-    const cards = [
-        {
-            title: t("contracts.allStatuses"),
-            value: stats.total || 0,
-            icon: faFileContract,
-            color: "bg-blue-500",
-        },
-        {
-            title: t("contracts.status.pending"),
-            value: stats.pending || 0,
-            icon: faClock,
-            color: "bg-yellow-500",
-        },
-        {
-            title: t("contracts.status.approved"),
-            value: stats.approved || 0,
-            icon: faCheckCircle,
-            color: "bg-green-500",
-        },
-        {
-            title: t("contracts.status.rejected"),
-            value: stats.rejected || 0,
-            icon: faTimesCircle,
-            color: "bg-red-500",
-        },
-    ];
+  const cards = [
+    {
+      label: t("contracts.activeContracts"),
+      value: active,
+      caption: `${pct(active, total)} ${t("contracts.ofTotal")}`,
+    },
+    {
+      label: t("contracts.pendingBalance"),
+      value: hasBalance ? money(stats.pending_balance, locale) : "—",
+      caption: `${active} ${t("contracts.activeContracts").toLowerCase()}`,
+    },
+    {
+      label: t("contracts.moratory"),
+      value: money(stats.overdue, locale),
+      caption: t("payments.kpiOverdue", { count: overdueCount }),
+      tone: "danger",
+    },
+    {
+      label: t("contracts.status.cancelled"),
+      value: cancelled,
+      caption: `${pct(cancelled, total)} ${t("contracts.ofTotal")}`,
+    },
+  ];
 
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {cards.map((card, index) => (
-                <StatCard
-                    key={card.title}
-                    {...card}
-                    delay={index * 0.1}
-                />
-            ))}
-        </div>
-    );
+  return (
+    <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
+      {cards.map((card) => (
+        <StatCard key={card.label} {...card} />
+      ))}
+    </div>
+  );
 });
 
 ContractStats.propTypes = {
-    stats: PropTypes.shape({
-        total: PropTypes.number,
-        pending: PropTypes.number,
-        approved: PropTypes.number,
-        rejected: PropTypes.number,
-    }).isRequired,
+  stats: PropTypes.shape({
+    total: PropTypes.number,
+    pending: PropTypes.number,
+    approved: PropTypes.number,
+    rejected: PropTypes.number,
+    cancelled: PropTypes.number,
+    active: PropTypes.number,
+    pending_balance: PropTypes.number,
+    overdue: PropTypes.number,
+    overdue_count: PropTypes.number,
+  }).isRequired,
 };
 
 export default ContractStats;

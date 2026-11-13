@@ -58,7 +58,7 @@ function SignIn() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex w-full justify-center">
       <LeftSide
         email={email}
         setEmail={setEmail}

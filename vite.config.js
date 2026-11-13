@@ -31,23 +31,30 @@ const pwaConfig = {
     ],
   },
   manifest: {
-    name: "Fintera admin Dashboard",
-    short_name: "fintera",
-    description: "Fintera Admin Dashboard",
+    id: "/",
+    name: "Fintera — Gestión de financiamiento",
+    short_name: "Fintera",
+    description: "Gestión de proyectos, contratos, pagos y comisiones inmobiliarias.",
+    lang: "es",
+    dir: "ltr",
+    scope: "/",
     start_url: "/",
     display: "standalone",
-    background_color: "#23262B",
-    theme_color: "#16A34A",
+    background_color: "#F6F7F9",
+    theme_color: "#15803D",
+    categories: ["business", "finance", "productivity"],
     icons: [
       {
         src: "pwa-64x64.png",
         sizes: "64x64",
         type: "image/png",
+        purpose: "any",
       },
       {
         src: "pwa-192x192.png",
         sizes: "192x192",
         type: "image/png",
+        purpose: "any",
       },
       {
         src: "pwa-512x512.png",
@@ -79,6 +86,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.js"],
+    // Performance/benchmark suites can exceed the 5s default under CI load.
+    testTimeout: 20000,
+    hookTimeout: 20000,
   },
   server: {
     watch: {
@@ -95,7 +105,6 @@ export default defineConfig({
           if (id.includes("node_modules")) {
             // Core React and any package that uses React – must share same chunk to avoid "createContext of undefined"
             if (id.includes("react-dom") || id.includes("react-router-dom") || id.includes("react/")) return "vendor";
-            if (id.includes("react-transition-group")) return "vendor";
             if (id.includes("@rollbar/react")) return "vendor";
             // Heavy UI / chart libs – split so no single chunk blows the limit
             if (id.includes("chart.js") || id.includes("react-chartjs-2")) return "charts";

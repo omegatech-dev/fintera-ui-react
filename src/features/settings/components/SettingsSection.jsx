@@ -13,17 +13,14 @@ function SettingsSection({
   return (
     <section
       aria-labelledby={headingId}
-      className={`${divider ? "mt-10 border-t border-bgray-200 pt-10 dark:border-darkblack-400" : ""} ${className}`.trim()}
+      className={`${divider ? "mt-[18px] border-t border-line pt-[18px]" : ""} ${className}`.trim()}
     >
-      <header className="mb-6">
-        <h2
-          id={headingId}
-          className="text-2xl font-bold text-bgray-900 dark:text-white"
-        >
+      <header className="mb-2.5">
+        <h2 id={headingId} className="text-[15px] font-bold text-ink">
           {title}
         </h2>
         {description && (
-          <p className="mt-1 font-medium text-bgray-500 dark:text-bgray-400">
+          <p className="mt-0.5 text-label font-medium text-ink-3">
             {description}
           </p>
         )}

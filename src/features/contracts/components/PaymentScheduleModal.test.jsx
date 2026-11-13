@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as matchers from '@testing-library/jest-dom/matchers';
-import React from 'react';
 import PaymentScheduleModal from './PaymentScheduleModal';
 import PaymentScheduleTab from './PaymentScheduleTab'; // This is the mocked module
 import AuthContext from '../../../contexts/AuthContext';

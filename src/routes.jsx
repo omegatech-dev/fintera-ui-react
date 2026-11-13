@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import AdminRoute from "./shared/auth/AdminRoute";
 import AdminOrOwnerRoute from "./shared/auth/AdminOrOwnerRoute";
+import SellerRoute from "./shared/auth/SellerRoute";
 import Forbidden from "./features/common/ForbiddenPage";
 import Layout from "./shared/layout/Layout";
 import RouteErrorElement from "./shared/error/RouteErrorElement";
@@ -10,8 +11,12 @@ import RouteErrorElement from "./shared/error/RouteErrorElement";
 // Lazy-load all feature and auth pages for smaller initial bundle
 const Home = lazy(() => import("./features/dashboard/pages"));
 const Contracts = lazy(() => import("./features/contracts/pages"));
+const ContractDetail = lazy(() => import("./features/contracts/pages/detail"));
 const Payments = lazy(() => import("./features/payments/pages"));
+const Commissions = lazy(() => import("./features/commissions/pages"));
+const SellerWorkspace = lazy(() => import("./features/seller/pages"));
 const Projects = lazy(() => import("./features/projects/pages"));
+const ProjectDetail = lazy(() => import("./features/projects/pages/detail"));
 const Users = lazy(() => import("./features/users/pages"));
 const Audits = lazy(() => import("./features/audits/pages"));
 const Settings = lazy(() => import("./features/settings/pages"));
@@ -22,7 +27,6 @@ const Analytics = lazy(() => import("./features/analytics/pages"));
 const Financing = lazy(() => import("./features/financing/pages"));
 const SignIn = lazy(() => import("./features/auth/pages/signin"));
 const SignUp = lazy(() => import("./features/auth/pages/signup"));
-const ComingSoon = lazy(() => import("./features/commingSoon"));
 const NotFound = lazy(() => import("./shared/error/NotFound"));
 const PersonalInfo = lazy(() => import("./features/settings/pages/personal-info"));
 const Security = lazy(() => import("./features/settings/pages/security"));
@@ -35,6 +39,7 @@ const CreateLot = lazy(() => import("./features/projects/pages/lots/create"));
 const EditLot = lazy(() => import("./features/projects/pages/lots/edit"));
 const Reserve = lazy(() => import("./features/projects/pages/reserve"));
 const CreateUser = lazy(() => import("./features/users/pages/create"));
+const EditUser = lazy(() => import("./features/users/pages/edit"));
 const Upload = lazy(() => import("./features/financing/pages/upload"));
 const Summary = lazy(() => import("./features/financing/pages/summary"));
 const Documentation = lazy(() => import("./features/docs/pages"));
@@ -60,10 +65,34 @@ export const appRoutes = [
           ),
         },
         {
+          path: "/commissions",
+          element: (
+            <AdminRoute>
+              <Commissions />
+            </AdminRoute>
+          ),
+        },
+        {
+          path: "/vendedor/*",
+          element: (
+            <SellerRoute>
+              <SellerWorkspace />
+            </SellerRoute>
+          ),
+        },
+        {
           path: "/contracts",
           element: (
             <AdminOrOwnerRoute>
               <Contracts />
+            </AdminOrOwnerRoute>
+          ),
+        },
+        {
+          path: "/contracts/:guid",
+          element: (
+            <AdminOrOwnerRoute>
+              <ContractDetail />
             </AdminOrOwnerRoute>
           ),
         },
@@ -112,6 +141,14 @@ export const appRoutes = [
           element: (
             <AdminOrOwnerRoute>
               <LotsList />
+            </AdminOrOwnerRoute>
+          ),
+        },
+        {
+          path: "/projects/:id",
+          element: (
+            <AdminOrOwnerRoute>
+              <ProjectDetail />
             </AdminOrOwnerRoute>
           ),
         },
@@ -241,6 +278,14 @@ export const appRoutes = [
           ),
         },
         {
+          path: "/users/:id/edit",
+          element: (
+            <AdminRoute>
+              <EditUser />
+            </AdminRoute>
+          ),
+        },
+        {
           path: "/analytics",
           element: (
             <AdminRoute>
@@ -274,17 +319,11 @@ export const appRoutes = [
     {
       path: "/signup",
       element: (
-        <Suspense fallback={<PageLoader />}>
-          <SignUp />
-        </Suspense>
-      ),
-    },
-    {
-      path: "/coming-soon",
-      element: (
-        <Suspense fallback={<PageLoader />}>
-          <ComingSoon />
-        </Suspense>
+        <AdminRoute>
+          <Suspense fallback={<PageLoader />}>
+            <SignUp />
+          </Suspense>
+        </AdminRoute>
       ),
     },
 ];

@@ -50,24 +50,35 @@ class ErrorBoundaryClass extends React.Component {
   renderFallback() {
     const { t } = this.props.localeContext || { t: (key) => key };
     const fallback = this.props.fallback ?? (
-      <div>
-        <p>{t('errors.somethingWentWrong')}</p>
+      <div className="text-center">
+        <p className="text-display font-bold leading-none text-brand">!</p>
+        <h1 className="mt-3 text-page font-bold text-ink">
+          {t("errors.unexpectedError")}
+        </h1>
+        <p className="mt-2 text-body text-ink-3">
+          {t("errors.somethingWentWrong")}
+        </p>
       </div>
     );
 
     return (
-      <div>
-        <div role="alert" aria-live="assertive">
+      <div className="flex min-h-[60vh] items-center justify-center bg-canvas px-4 py-12">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="w-full max-w-lg rounded-card border border-line bg-surface p-8 shadow-pop"
+        >
           {fallback}
-        </div>
-        <div style={{ marginTop: 12 }}>
-          <button
-            ref={this.retryButtonRef}
-            onClick={this.handleRetry}
-            className="px-3 py-1 mr-2 bg-gray-200 rounded"
-          >
-            {t('common.retry')}
-          </button>
+          <div className="mt-6 flex justify-center">
+            <button
+              ref={this.retryButtonRef}
+              type="button"
+              onClick={this.handleRetry}
+              className="inline-flex h-11 items-center justify-center rounded-control bg-brand px-4 text-body-lg font-semibold text-white transition-colors hover:bg-brand-strong"
+            >
+              {t("common.retry")}
+            </button>
+          </div>
         </div>
       </div>
     );

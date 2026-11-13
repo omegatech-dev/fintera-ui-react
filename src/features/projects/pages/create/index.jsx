@@ -1,471 +1,172 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { projectsApi } from "../../api";
-import { useLocale } from "../../../../contexts/LocaleContext";
-import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faProjectDiagram,
-  faAlignLeft,
-  faMapMarkerAlt,
-  faCalendarAlt,
-  faCubes,
-  faRulerCombined,
-  faTag,
-  faPercentage,
-  faBriefcase,
-  faChevronLeft,
-  faPlus,
-  faCheckCircle,
-  faFingerprint
-} from "@fortawesome/free-solid-svg-icons";
+import { faImage } from "@fortawesome/free-solid-svg-icons";
+import { projectsApi } from "../../api";
+import ProjectForm from "../../components/ProjectForm";
+import { useLocale } from "@/contexts/LocaleContext";
+import { useGeneralSettings } from "@/contexts/generalSettings";
+import { getDefaultCurrency } from "@/shared/utils/formatSettings";
+import { Card, Chip, SaveBar } from "@/shared/ui";
+
+const INITIAL_VALUES = {
+  name: "",
+  guid: "",
+  code: "",
+  description: "",
+  address: "",
+  city: "",
+  lot_count: 0,
+  price_per_square_unit: 0,
+  measurement_unit: "m2",
+  interest_rate: 0,
+  commission_rate_direct: 4,
+  commission_rate_bank: 6,
+  commission_rate_cash: 7,
+  delivery_date: "",
+  project_type: "residential",
+};
+
+const hasText = (value) => String(value ?? "").trim().length > 0;
+const hasNumber = (value) =>
+  String(value ?? "").trim() !== "" && Number.isFinite(Number(value));
 
 function CreateProject() {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [code, setCode] = useState("");
-  const [lotCount, setLotCount] = useState(0);
-  const [pricePerSquareUnit, setPricePerSquareUnit] = useState(0);
-  const [measurementUnit, setMeasurementUnit] = useState("m2");
-  const [interestRate, setInterestRate] = useState(0);
-  const [commissionRateDirect, setCommissionRateDirect] = useState(4);
-  const [commissionRateBank, setCommissionRateBank] = useState(6);
-  const [commissionRateCash, setCommissionRateCash] = useState(7);
-  const [deliveryDate, setDeliveryDate] = useState("");
-  const [projectType, setProjectType] = useState("residential");
+  const [values, setValues] = useState(INITIAL_VALUES);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { t } = useLocale();
+  const { settings } = useGeneralSettings();
+  const currency = settings.default_currency || getDefaultCurrency();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const dirty = JSON.stringify(values) !== JSON.stringify(INITIAL_VALUES);
+  const isValid =
+    hasText(values.name) &&
+    hasText(values.description) &&
+    hasText(values.address) &&
+    [
+      values.lot_count,
+      values.price_per_square_unit,
+      values.interest_rate,
+      values.commission_rate_direct,
+      values.commission_rate_bank,
+      values.commission_rate_cash,
+    ].every(hasNumber);
+
+  const handleChange = (field, value) => {
+    setValues((previous) => ({ ...previous, [field]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
 
     try {
       await projectsApi.create({
         project: {
-          name,
-          description,
-          address,
-          city: city.trim() || null,
-          code: code.trim() || null,
-          lot_count: Number(lotCount),
-          price_per_square_unit: Number(pricePerSquareUnit),
-          measurement_unit: measurementUnit,
-          interest_rate: Number(interestRate),
-          commission_rate_direct: Number(commissionRateDirect),
-          commission_rate_bank: Number(commissionRateBank),
-          commission_rate_cash: Number(commissionRateCash),
-          delivery_date: deliveryDate || null,
-          project_type: projectType,
-        }
+          name: values.name,
+          description: values.description,
+          address: values.address,
+          city: values.city.trim() || null,
+          code: values.code.trim() || null,
+          lot_count: Number(values.lot_count),
+          price_per_square_unit: Number(values.price_per_square_unit),
+          measurement_unit: values.measurement_unit,
+          interest_rate: Number(values.interest_rate),
+          commission_rate_direct: Number(values.commission_rate_direct),
+          commission_rate_bank: Number(values.commission_rate_bank),
+          commission_rate_cash: Number(values.commission_rate_cash),
+          delivery_date: values.delivery_date || null,
+          project_type: values.project_type,
+        },
       });
-      navigate('/projects');
+      navigate("/projects");
     } catch (error) {
-      console.error('Error al conectar con el servidor', error);
-      // Ideally show toast here too
+      console.error("Error al conectar con el servidor", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: { opacity: 1, x: 0 }
-  };
-
-  const SectionTitle = ({ icon, title }) => (
-    <div className="flex items-center space-x-3 mb-6 pb-2 border-b border-bgray-200 dark:border-darkblack-400">
-      <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
-        <FontAwesomeIcon icon={icon} />
-      </div>
-      <h3 className="text-lg font-bold text-bgray-900 dark:text-white uppercase tracking-wider text-sm">{title}</h3>
-    </div>
-  );
-
   return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] sm:pt-[156px] pt-[100px] min-h-screen bg-bgray-50 dark:bg-darkblack-700">
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="max-w-4xl mx-auto"
-      >
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div>
+    <main className="page-shell min-h-screen w-full bg-canvas px-6 pb-6 xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-6">
+        <div className="flex flex-col gap-1">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex flex-wrap items-center gap-1 text-label font-medium text-ink-3"
+          >
             <button
+              type="button"
               onClick={() => navigate(-1)}
-              className="flex items-center text-bgray-600 dark:text-bgray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors mb-2"
+              className="transition-colors hover:text-ink"
             >
-              <FontAwesomeIcon icon={faChevronLeft} className="mr-2 text-xs" />
-              <span className="text-sm font-medium">{t('projectsPage.title') || 'Projects'}</span>
+              {t("projectsPage.title")}
             </button>
-            <h1 className="text-3xl font-extrabold text-bgray-900 dark:text-white sm:text-4xl">
-              {t('projects.createNewProject')}
+            <span aria-hidden="true">/</span>
+            <span className="text-ink-2">{t("projects.createNewProject")}</span>
+          </nav>
+          <div>
+            <h1 className="text-page font-bold tracking-tight text-ink">
+              {t("projects.createNewProject")}
             </h1>
-            <p className="mt-2 text-bgray-600 dark:text-bgray-400">
-              {t('projects.fillProjectInfo')}
+            <p className="mt-1 text-body font-medium text-ink-3">
+              {t("projects.fillProjectInfo")}
             </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* General Information Card */}
-          <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-xs border border-bgray-200 dark:border-darkblack-400">
-            <SectionTitle icon={faProjectDiagram} title={t('dashboard.overview') || 'General Information'} />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                  {t('projects.guid') || 'Project ID'}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                    <FontAwesomeIcon icon={faFingerprint} />
-                  </span>
-                  <input
-                    type="text"
-                    value={""}
-                    readOnly
-                    className="w-full h-12 pl-12 pr-4 bg-bgray-100 dark:bg-darkblack-400 border border-bgray-200 dark:border-darkblack-400 rounded-xl cursor-not-allowed opacity-70 font-mono text-xs dark:text-bgray-400"
-                    placeholder={t('projects.guidAutoGenerated') || '(Auto-generado al crear)'}
-                  />
-                </div>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                  {t('projects.name')}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                    <FontAwesomeIcon icon={faProjectDiagram} />
-                  </span>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    placeholder={t('projects.enterProjectName')}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                  {t('projects.projectType')}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400 pointer-events-none">
-                    <FontAwesomeIcon icon={faBriefcase} />
-                  </span>
-                  <select
-                    value={projectType}
-                    onChange={(e) => setProjectType(e.target.value)}
-                    className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white appearance-none"
-                  >
-                    <option value="residential">{t('projects.residential')}</option>
-                    <option value="commercial">{t('projects.commercial')}</option>
-                    <option value="industrial">{t('projects.industrial')}</option>
-                    <option value="mixed_use">{t('projects.mixedUse')}</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                  {t('projects.deliveryDate')}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                    <FontAwesomeIcon icon={faCalendarAlt} />
-                  </span>
-                  <input
-                    type="date"
-                    value={deliveryDate}
-                    onChange={(e) => setDeliveryDate(e.target.value)}
-                    className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                  {t('projects.description')}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-4 text-bgray-400">
-                    <FontAwesomeIcon icon={faAlignLeft} />
-                  </span>
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    required
-                    rows="3"
-                    className="w-full pl-12 pr-4 py-3 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    placeholder={t('projects.enterDescription')}
-                  ></textarea>
-                </div>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                  {t('projects.address')}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} />
-                  </span>
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    required
-                    className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    placeholder={t('projects.enterAddress')}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                  {t('projects.city')}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} />
-                  </span>
-                  <input
-                    type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    placeholder={t('projects.enterCity')}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                  {t('projects.code')}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                    <FontAwesomeIcon icon={faFingerprint} />
-                  </span>
-                  <input
-                    type="text"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    placeholder={t('projects.enterCode')}
-                  />
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Configuration & Pricing */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-xs border border-bgray-200 dark:border-darkblack-400">
-              <SectionTitle icon={faCubes} title={t('projects.lots') || 'Structure'} />
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                    {t('projects.lotsCount')}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                      <FontAwesomeIcon icon={faCubes} />
-                    </span>
-                    <input
-                      type="number"
-                      value={lotCount}
-                      onChange={(e) => setLotCount(e.target.value)}
-                      required
-                      className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                    {t('projects.measurementUnit')}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400 pointer-events-none">
-                      <FontAwesomeIcon icon={faRulerCombined} />
-                    </span>
-                    <select
-                      value={measurementUnit}
-                      onChange={(e) => setMeasurementUnit(e.target.value)}
-                      className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white appearance-none"
-                    >
-                      <option value="m2">{t('projects.squareMeters')}</option>
-                      <option value="ft2">{t('projects.squareFeet')}</option>
-                      <option value="vara2">{t('projects.squareVaras')}</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                    {t('projects.pricePerUnit')}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                      <FontAwesomeIcon icon={faTag} />
-                    </span>
-                    <input
-                      type="number"
-                      value={pricePerSquareUnit}
-                      onChange={(e) => setPricePerSquareUnit(e.target.value)}
-                      required
-                      className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="bg-white dark:bg-darkblack-600 rounded-2xl p-8 shadow-xs border border-bgray-200 dark:border-darkblack-400">
-              <SectionTitle icon={faPercentage} title={t('projects.interestRate') || 'Rates'} />
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                    {t('projects.interestRate')} (%)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                      <FontAwesomeIcon icon={faPercentage} />
-                    </span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={interestRate}
-                      onChange={(e) => setInterestRate(e.target.value)}
-                      required
-                      className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                    {t('projects.commissionRateDirect') || 'Commission (Direct)'} (%)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                      <FontAwesomeIcon icon={faPercentage} />
-                    </span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={commissionRateDirect}
-                      onChange={(e) => setCommissionRateDirect(e.target.value)}
-                      required
-                      className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                    {t('projects.commissionRateBank') || 'Commission (Bank)'} (%)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                      <FontAwesomeIcon icon={faPercentage} />
-                    </span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={commissionRateBank}
-                      onChange={(e) => setCommissionRateBank(e.target.value)}
-                      required
-                      className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-bgray-700 dark:text-bgray-300 mb-2">
-                    {t('projects.commissionRateCash') || 'Commission (Cash)'} (%)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-bgray-400">
-                      <FontAwesomeIcon icon={faPercentage} />
-                    </span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={commissionRateCash}
-                      onChange={(e) => setCommissionRateCash(e.target.value)}
-                      required
-                      className="w-full h-12 pl-12 pr-4 bg-bgray-50 dark:bg-darkblack-500 border border-bgray-200 dark:border-darkblack-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all dark:text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/20">
-                  <p className="text-xs text-blue-700 dark:text-blue-300 flex items-start">
-                    <FontAwesomeIcon icon={faCheckCircle} className="mt-0.5 mr-2" />
-                    {t('reservations.calculationNote') || 'These rates will be applied to all new contracts within this project.'}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
+          <div className="min-w-0">
+            <ProjectForm
+              formId="project-create-form"
+              mode="create"
+              values={values}
+              onChange={handleChange}
+              onSubmit={handleSubmit}
+              currency={currency}
+            />
           </div>
 
-          {/* Action Buttons */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-end gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-bgray-700 dark:text-bgray-300 font-bold hover:bg-bgray-100 dark:hover:bg-darkblack-500 transition-all border border-bgray-200 dark:border-darkblack-400"
-            >
-              {t('common.cancel') || 'Cancel'}
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className={`
-                w-full sm:w-auto px-12 py-3.5 rounded-xl font-bold text-white shadow-lg 
-                ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-500/20'} 
-                transition-all duration-300 flex items-center justify-center
-              `}
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  {t('projects.creating')}
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                  {t('projects.createProject')}
-                </>
-              )}
-            </button>
-          </motion.div>
-        </form >
-      </motion.div >
-    </main >
+          <aside className="flex flex-col gap-4">
+            <Card title={t("projects.publishPanel")}>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-body font-semibold text-ink">
+                  {t("projects.visiblePortal")}
+                </p>
+                <Chip tone="neutral">{t("projects.draft")}</Chip>
+              </div>
+              <p className="mt-2 text-micro text-ink-3">
+                {t("projects.newProjectDraftHint")}
+              </p>
+            </Card>
+
+            <Card title={t("projects.coverPhoto")}>
+              <div className="flex aspect-[4/3] items-center justify-center rounded-control border border-dashed border-line-strong bg-surface-2 text-ink-3">
+                <FontAwesomeIcon icon={faImage} size="2x" aria-hidden="true" />
+              </div>
+              <p className="mt-3 text-micro text-ink-3">
+                {t("projects.coverHint")}
+              </p>
+            </Card>
+          </aside>
+        </div>
+
+        <SaveBar
+          visible
+          dirty={dirty}
+          saving={loading}
+          message={dirty ? t("projects.unsavedChanges") : ""}
+          onDiscard={() => navigate(-1)}
+          saveLabel={t("projects.createProject")}
+          discardLabel={t("common.cancel")}
+          saveType="submit"
+          saveForm="project-create-form"
+          saveDisabled={!dirty || !isValid}
+          className="mt-2"
+        />
+      </div>
+    </main>
   );
 }
 

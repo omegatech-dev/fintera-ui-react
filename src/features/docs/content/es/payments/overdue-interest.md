@@ -34,9 +34,10 @@ El interés (`13.70`) se suma al monto de interés del pago y se registra como u
 
 ## Editar el cargo
 
-Los administradores pueden ajustar el monto de mora de un pago específico desde el calendario de pagos cuando el valor automático necesite una corrección.
+Los administradores pueden ajustar el monto de mora de un pago específico desde el calendario de pagos cuando el valor automático necesite una corrección. El calendario está disponible desde un contrato aprobado o cerrado.
 
 ## Relacionado
 
-- [Calendario de pagos](/docs/payment-schedule)
+- [Cómo se genera el calendario de pagos](/docs/payment-schedule)
 - [Ciclo de vida y estados del contrato](/docs/contract-lifecycle)
+- [Bandeja de pagos y cola de revisión](/docs/payment-inbox)

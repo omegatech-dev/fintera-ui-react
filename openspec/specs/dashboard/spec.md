@@ -14,12 +14,15 @@ The application SHALL render a dashboard at `/` for authenticated users.
 #### Scenario: Admin lands on the app
 
 - **WHEN** an authenticated admin opens `/`
-- **THEN** the admin dashboard with quick actions and recent activity is shown
+- **THEN** an action center is shown: overdue amounts, payments to approve,
+  contracts to approve, and reservations without a contract
+- **AND** each item links to its filtered list
 
 #### Scenario: Seller lands on the app
 
 - **WHEN** an authenticated seller opens `/`
-- **THEN** the seller dashboard with commission and performance data is shown
+- **THEN** a "Mi día" home is shown with today's collections, monthly sales,
+  estimated commission and active clients
 
 ### Requirement: Data loading and error states
 

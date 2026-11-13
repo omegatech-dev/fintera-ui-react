@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { jwtDecode } from "jwt-decode";
 import { authApi } from "../features/auth/api";
 import { setAuthToken } from "../lib/apiClient";
@@ -43,6 +43,12 @@ export const AuthProvider = ({ children }) => {
     setRefreshToken(null);
     setError(null);
   }, []);
+
+  useEffect(() => {
+    const handleUnauthorized = () => logout();
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, [logout]);
 
   const refresh = useCallback(async (storedRefreshToken) => {
     if (!storedRefreshToken) {

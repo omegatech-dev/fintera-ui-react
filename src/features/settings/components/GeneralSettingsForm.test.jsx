@@ -40,6 +40,8 @@ const baseSettings = {
   legal_address: "Tegucigalpa",
   website: "https://fintera.app",
   terms_effective_date: "2026-01-01",
+  terms_content_es: "Términos base en español.",
+  terms_content_en: "Base terms in English.",
   email_notifications_enabled: true,
   overdue_reminders_enabled: true,
   upcoming_reminder_days: 1,
@@ -140,13 +142,13 @@ describe("General settings sections", () => {
 
     const whatsapp = screen.getByLabelText("branding.supportReservations.whatsApp");
     fireEvent.change(whatsapp, { target: { value: "+50488887777" } });
-    expect(screen.getByText("branding.save")).toBeInTheDocument();
+    expect(screen.getByText("settings.saveBar.save")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText("branding.saveBar.discard"));
+    fireEvent.click(screen.getByText("settings.saveBar.discard"));
 
     expect(whatsapp).toHaveValue("+50499998888");
     await waitFor(() => {
-      expect(screen.queryByText("branding.save")).not.toBeInTheDocument();
+      expect(screen.queryByText("settings.saveBar.save")).not.toBeInTheDocument();
     });
   });
 
@@ -165,7 +167,40 @@ describe("General settings sections", () => {
         legal_address: "Tegucigalpa",
         website: "https://fintera.app",
         terms_effective_date: "2026-01-01",
+        terms_content_es: "Términos base en español.",
+        terms_content_en: "Base terms in English.",
       });
+    });
+  });
+
+  it("saves the terms content in both languages using the default templates", async () => {
+    const { container } = render(<LegalSettingsForm />);
+
+    expect(
+      screen.getByRole("textbox", { name: "branding.legal.termsContentEs" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", { name: "branding.legal.termsContentEn" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByText("branding.legal.termsCharacters")
+    ).toHaveLength(2);
+
+    const templateButtons = screen.getAllByText(
+      "branding.legal.useDefaultTemplate"
+    );
+    fireEvent.click(templateButtons[0]);
+    fireEvent.click(templateButtons[1]);
+    fireEvent.submit(container.querySelector("form"));
+
+    await waitFor(() => {
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          terms_content_es: expect.stringContaining("<h2>1. Aceptación</h2>"),
+          terms_content_en: expect.stringContaining("<h2>1. Acceptance</h2>"),
+          legal_name: "Fintera S.A.",
+        })
+      );
     });
   });
 

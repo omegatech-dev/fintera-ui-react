@@ -18,10 +18,12 @@ Cada pago tiene un **tipo** y un **estado**. El tipo indica para qué es el dine
 | Estado | Significado |
 | --- | --- |
 | **Pendiente** | Esperando pago o comprobante. |
-| **Enviado** | Se subió un comprobante y espera revisión. |
+| **Enviado** | Se subió un comprobante y espera revisión. La bandeja de pagos etiqueta esta pestaña como **Por aprobar**. |
 | **Pagado** | Aprobado y registrado en el libro mayor. |
 | **Rechazado** | El comprobante fue rechazado; el cliente puede subir uno nuevo. |
 | **Reajuste** | La fila se ajustó después de un abono a capital. |
+
+El espacio del vendedor también muestra **En revisión** después de subir un comprobante. Significa lo mismo que **enviado**: el administrador aún no lo ha aprobado.
 
 ## Mora
 
@@ -34,4 +36,5 @@ Si el monto recibido es mayor que la cuota más el interés, el excedente es un 
 ## Relacionado
 
 - [Cómo se genera el calendario de pagos](/docs/payment-schedule)
+- [Bandeja de pagos y cola de revisión](/docs/payment-inbox)
 - [Aprobar, rechazar y deshacer pagos](/docs/approving-payments)

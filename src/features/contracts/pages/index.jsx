@@ -1,137 +1,110 @@
 import { useState, useContext, useMemo, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faThLarge,
-  faList,
-  faSync
-} from "@fortawesome/free-solid-svg-icons";
+import { faEllipsisVertical, faMagnifyingGlass, faSync } from "@fortawesome/free-solid-svg-icons";
 
 import { useLocale } from "../../../contexts/LocaleContext";
 import AuthContext from "../../../contexts/AuthContext";
-import GenericList from "../../../shared/ui/GenericList";
-import GenericFilter from "../../../shared/forms/GenericFilter";
-import ContractItem from "../components/ContractItem";
-import ContractStats from "../components/ContractStats";
+import { useToast } from "../../../contexts/ToastContext";
+import useDebounce from "@/hooks/useDebounce";
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import { contractsApi } from "../api";
+import { formatStatus } from "../../../shared/utils/formatStatus";
+import { formatDate } from "../../../shared/utils/formatters";
+import ContractStats from "../components/ContractStats";
+import ContractMobileCard from "../components/ContractItem/ContractMobileCard";
+import PaymentScheduleModal from "../components/PaymentScheduleModal";
+import RejectionModal from "../components/RejectionModal";
+import {
+  Button,
+  Card,
+  Chip,
+  EmptyState,
+  ErrorState,
+  Menu,
+  Pagination,
+  Skeleton,
+  Table,
+} from "@/shared/ui";
+
+const translateFinancingType = (type, t) => {
+  switch (type?.toLowerCase()) {
+    case "direct":
+      return t("contracts.financingTypes.direct") || "Directo";
+    case "cash":
+      return t("contracts.financingTypes.cash") || "Contado";
+    case "bank":
+      return t("contracts.financingTypes.bank") || "Bancario";
+    default:
+      return "—";
+  }
+};
+
+const money = (value) => {
+  if (value === null || value === undefined || value === "") return "—";
+  return `L ${Number(value || 0).toLocaleString("es-HN", {
+    maximumFractionDigits: 0,
+  })}`;
+};
+
+const STATUS_TONES = {
+  approved: "success",
+  closed: "info",
+  rejected: "danger",
+  pending: "warning",
+  submitted: "info",
+  cancelled: "danger",
+  canceled: "danger",
+};
+
+const PER_PAGE = 12;
 
 function Contract() {
   const { user } = useContext(AuthContext);
   const { t } = useLocale();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const userRole = user?.role;
 
-  // Search and filter state
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [contracts, setContracts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sort, setSort] = useState({
+    field: "contracts.created_at",
+    direction: "desc",
+  });
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [itemPatch, setItemPatch] = useState(null); // Updated contract (e.g. after payment) for optimistic list update
-  const [viewMode, setViewMode] = useState("grid"); // "grid" or "table"
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchDraft, setSearchDraft] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [showDateFilters, setShowDateFilters] = useState(false);
+
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
     approved: 0,
     rejected: 0,
+    cancelled: 0,
+    active: 0,
+    pending_balance: null,
+    overdue: 0,
+    overdue_count: 0,
   });
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
 
-  // Fetch stats separately to keep it clean
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const stats = await contractsApi.getStats();
-        if (stats) {
-          setStats({
-            total: stats.total,
-            pending: stats.pending,
-            approved: stats.approved,
-            rejected: stats.rejected,
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching contract stats:", error);
-      }
-    };
-    fetchStats();
-  }, [refreshTrigger]);
-
-  // Status filter options: pending, approved, rejected, closed (cancelled no longer used)
-  const statusOptions = useMemo(
-    () => [
-      { value: "", label: t('contracts.allStatuses') },
-      { value: "pending", label: t('contracts.status.pending') },
-      { value: "approved", label: t('contracts.status.approved') },
-      { value: "rejected", label: t('contracts.status.rejected') },
-      { value: "closed", label: t('contracts.status.closed') },
-    ],
-    [t]
-  );
-
-  const columns = useMemo(
-    () => [
-      {
-        label: t('contracts.lot'),
-        align: "left",
-        sortKey: "lot_id",
-        defaultSortDirection: "asc",
-      },
-      {
-        label: t('contracts.client'),
-        align: "left",
-        sortKey: "applicant_user_id",
-        defaultSortDirection: "asc",
-      },
-      {
-        label: t('contracts.financing'),
-        align: "center",
-        sortKey: "financing_type",
-        defaultSortDirection: "asc",
-      },
-      {
-        label: t('common.status'),
-        align: "center",
-        sortKey: "status",
-        defaultSortDirection: "asc",
-      },
-      {
-        label: t('contracts.created'),
-        align: "center",
-        sortKey: "contracts.created_at",
-        defaultSortDirection: "desc",
-      },
-      { label: t('contracts.createdBy'), align: "center" },
-      { label: t('contracts.actions'), align: "center" },
-    ],
-    [t]
-  );
-
-  const refreshContracts = useCallback((updatedContract) => {
-    if (updatedContract?.id) {
-      setItemPatch((prev) => (prev?.id === updatedContract.id ? { ...prev, ...updatedContract } : updatedContract));
-    }
-    setRefreshTrigger((prev) => prev + 1);
-  }, []);
-
-  const renderContractItem = useCallback(
-    (contract, index, isMobileCard) => {
-      // Force card view for grid mode even on desktop
-      const forceCard = viewMode === "grid" || isMobileCard;
-      return (
-        <ContractItem
-          key={contract.id}
-          contract={contract}
-          userRole={user?.role}
-          refreshContracts={refreshContracts}
-          isMobileCard={forceCard}
-        />
-      );
-    },
-    [user?.role, refreshContracts, viewMode]
-  );
+  const [scheduleContract, setScheduleContract] = useState(null);
+  const [rejectionContract, setRejectionContract] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const filters = useMemo(() => {
     const obj = {};
     const trimmedTerm = searchTerm.trim();
-    // Check if searchTerm is a valid UUID (more relaxed regex to catch all variants)
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (trimmedTerm) {
       if (uuidRegex.test(trimmedTerm)) {
@@ -146,92 +119,522 @@ function Contract() {
     return obj;
   }, [searchTerm, statusFilter, startDate, endDate]);
 
-  return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] sm:pt-[156px] pt-[100px] dark:bg-darkblack-700 min-h-screen">
-      <div className="max-w-[1600px] mx-auto">
-        {/* Controls Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-center justify-end mb-4 gap-4"
-        >
-          <div className="flex items-center space-x-3">
-            <div id="view-mode-toggles" className="flex bg-white dark:bg-darkblack-600 rounded-xl p-1 shadow-xs border border-gray-100 dark:border-darkblack-500">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-blue-500 text-white shadow-md" : "text-bgray-400 hover:text-bgray-600 dark:hover:text-bgray-200"}`}
-              >
-                <FontAwesomeIcon icon={faThLarge} className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("table")}
-                className={`p-2 rounded-lg transition-all ${viewMode === "table" ? "bg-blue-500 text-white shadow-md" : "text-bgray-400 hover:text-bgray-600 dark:hover:text-bgray-200"}`}
-              >
-                <FontAwesomeIcon icon={faList} className="w-4 h-4" />
-              </button>
-            </div>
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await contractsApi.getStats();
+        if (data) {
+          setStats({
+            total: data.total,
+            pending: data.pending,
+            approved: data.approved,
+            rejected: data.rejected,
+            cancelled: data.cancelled,
+            active: data.active,
+            pending_balance: data.pending_balance,
+            overdue: data.overdue,
+            overdue_count: data.overdue_count,
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching contract stats:", err);
+      }
+    };
+    fetchStats();
+  }, [refreshTrigger]);
 
-            <button
-              onClick={refreshContracts}
-              className="p-3 bg-white dark:bg-darkblack-600 hover:bg-gray-50 dark:hover:bg-darkblack-500 rounded-xl shadow-xs border border-gray-100 dark:border-darkblack-500 text-bgray-600 dark:text-bgray-300 transition-all"
-            >
-              <FontAwesomeIcon icon={faSync} className={`w-4 h-4 ${refreshTrigger > 0 ? 'animate-spin-once' : ''}`} />
-            </button>
+  const refreshContracts = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
+
+  const fetchContracts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = {
+        ...filters,
+        page,
+        per_page: PER_PAGE,
+        sort: `${sort.field}-${sort.direction}`,
+      };
+      const data = await contractsApi.list(params);
+      setContracts(data.contracts || []);
+      const pagination = data.pagination || {};
+      setTotalPages(Math.max(1, parseInt(pagination.pages || 1, 10)));
+      setTotal(parseInt(pagination.count || pagination.total || 0, 10));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, page, sort]);
+
+  useEffect(() => {
+    fetchContracts();
+  }, [fetchContracts, refreshTrigger]);
+
+  const handleSearchSubmit = useCallback((event) => {
+    event.preventDefault();
+    setSearchTerm(searchDraft);
+    setPage(1);
+  }, [searchDraft]);
+
+  const debouncedSearch = useDebounce(searchDraft, 400);
+
+  useEffect(() => {
+    setSearchTerm(debouncedSearch);
+    setPage(1);
+  }, [debouncedSearch]);
+
+  const handleStatusChange = useCallback((value) => {
+    setStatusFilter(value);
+    setPage(1);
+  }, []);
+
+  const handleSortChange = useCallback((field) => {
+    setSort((prev) => ({
+      field,
+      direction:
+        prev.field === field && prev.direction === "asc" ? "desc" : "asc",
+    }));
+    setPage(1);
+  }, []);
+
+  const handlePageChange = useCallback((newPage) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const handleApprove = useCallback(
+    async (contract) => {
+      if (!contract.id) return;
+      setActionLoading(true);
+      try {
+        await contractsApi.approve(contract.project_id, contract.lot_id, contract.id);
+        showToast(t("contracts.approvedSuccess"), "success");
+        refreshContracts();
+      } catch (err) {
+        showToast(`Error: ${err.message}`, "error");
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [refreshContracts, showToast, t]
+  );
+
+  const handleReject = useCallback(
+    async (reason) => {
+      const contract = rejectionContract;
+      if (!contract?.id) return;
+      setActionLoading(true);
+      try {
+        await contractsApi.reject(contract.project_id, contract.lot_id, contract.id, reason);
+        showToast(t("contracts.rejectedSuccess"), "success");
+        setRejectionContract(null);
+        refreshContracts();
+      } catch (err) {
+        showToast(`Error: ${err.message}`, "error");
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [rejectionContract, refreshContracts, showToast, t]
+  );
+
+  const handleDeleteContract = useCallback(
+    async (contract) => {
+      if (!contract?.id) return;
+      const confirmed = await confirmDialog({
+        title: t("contractDetailsModal.deleteConfirm"),
+        confirmLabel: t("common.delete") || "Eliminar",
+      });
+      if (!confirmed) return;
+      setDeleteLoading(true);
+      try {
+        const data = await contractsApi.delete(contract.project_id, contract.lot_id, contract.id);
+        showToast(data.message || t("contractDetailsModal.deletedSuccess"), "success");
+        refreshContracts();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        setDeleteLoading(false);
+      }
+    },
+    [refreshContracts, showToast, t]
+  );
+
+  const statusChips = useMemo(
+    () => [
+      { value: "", label: t("common.all"), count: stats.total },
+      { value: "approved", label: t("contracts.status.approved"), count: stats.approved },
+      { value: "pending", label: t("contracts.status.pending"), count: stats.pending },
+      { value: "cancelled", label: t("contracts.status.cancelled"), count: stats.cancelled },
+      { value: "rejected", label: t("contracts.status.rejected"), count: stats.rejected },
+    ],
+    [stats, t]
+  );
+
+  const hasNextPaymentColumn = useMemo(
+    () => contracts.some((contract) => contract.next_payment_date || contract.next_due_date),
+    [contracts]
+  );
+
+  const columns = useMemo(() => {
+    const base = [
+      {
+        key: "id",
+        header: t("contracts.contractId"),
+        sortable: true,
+        render: (contract) => (
+          <span className="font-bold text-ink">#{contract.id}</span>
+        ),
+      },
+      {
+        key: "applicant_user_id",
+        header: t("contracts.client"),
+        sortable: true,
+        render: (contract) => (
+          <div className="min-w-0">
+            <span className="block truncate text-body font-semibold text-ink">
+              {contract.applicant_name || "—"}
+            </span>
+            <span className="block truncate text-micro text-ink-3">
+              {contract.applicant_identity || "—"}
+            </span>
           </div>
-        </motion.div>
+        ),
+      },
+      {
+        key: "lot_id",
+        header: t("contracts.lotProject"),
+        sortable: true,
+        render: (contract) => (
+          <div className="min-w-0">
+            <span className="block truncate text-body text-ink-2">
+              {contract.lot_name || "—"}
+            </span>
+            <span className="block truncate text-micro text-ink-3">
+              {contract.project_name || "—"}
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: "financing_type",
+        header: t("contracts.type"),
+        sortable: true,
+        render: (contract) => (
+          <span className="text-body text-ink-2">
+            {translateFinancingType(contract.financing_type, t)}
+          </span>
+        ),
+      },
+      {
+        key: "balance",
+        header: t("contracts.balance"),
+        align: "right",
+        render: (contract) => (
+          <span className="text-body font-semibold text-ink">
+            {money(Math.abs(Number(contract.balance || 0)))}
+          </span>
+        ),
+      },
+      {
+        key: "status",
+        header: t("common.status"),
+        sortable: true,
+        render: (contract) => (
+          <Chip tone={STATUS_TONES[contract.status?.toLowerCase()] || "neutral"}>
+            {formatStatus(contract.status?.toLowerCase(), t)}
+          </Chip>
+        ),
+      },
+    ];
 
-        {/* Stats Section */}
-        <div id="contract-stats">
+    if (hasNextPaymentColumn) {
+      base.push({
+        key: "next_payment_date",
+        header: t("contracts.nextPayment"),
+        render: (contract) => (
+          <span className="text-body text-ink-2">
+            {formatDate(contract.next_payment_date || contract.next_due_date)}
+          </span>
+        ),
+      });
+    } else {
+      base.push({
+        key: "contracts.created_at",
+        header: t("contracts.created"),
+        sortable: true,
+        render: (contract) => (
+          <span className="text-body text-ink-2">{formatDate(contract.created_at)}</span>
+        ),
+      });
+    }
+
+    base.push({
+      key: "actions",
+      header: "",
+      align: "right",
+      render: (contract) => {
+        const contractStatus = contract.status?.toLowerCase();
+        const items = [
+          {
+            label: t("common.view"),
+            onSelect: () => navigate(`/contracts/${contract.guid}`),
+          },
+        ];
+
+        if (userRole !== "seller" && ["approved", "closed"].includes(contractStatus)) {
+          items.push({
+            label: t("contracts.paymentSchedule"),
+            onSelect: () => setScheduleContract(contract),
+          });
+        }
+        if (userRole === "admin" && ["pending", "submitted", "rejected"].includes(contractStatus)) {
+          items.push({
+            label: t("contracts.approve"),
+            onSelect: () => handleApprove(contract),
+          });
+        }
+        if (userRole === "admin" && ["pending", "submitted"].includes(contractStatus)) {
+          items.push({
+            label: t("contracts.reject"),
+            onSelect: () => setRejectionContract(contract),
+          });
+        }
+        if (userRole === "admin" && contractStatus === "rejected") {
+          items.push({
+            label: t("common.delete") || "Eliminar",
+            tone: "danger",
+            onSelect: () => handleDeleteContract(contract),
+          });
+        }
+
+        return (
+          <div className="flex justify-end" onClick={(event) => event.stopPropagation()}>
+            <Menu
+              label={t("common.actions")}
+              icon={<FontAwesomeIcon icon={faEllipsisVertical} />}
+              items={items}
+            />
+          </div>
+        );
+      },
+    });
+
+    return base;
+  }, [
+    handleApprove,
+    handleDeleteContract,
+    hasNextPaymentColumn,
+    navigate,
+    t,
+    userRole,
+  ]);
+
+  return (
+    <main className="page-shell min-h-screen w-full bg-canvas px-4 pb-8 sm:px-6 xl:px-[48px] xl:pb-[48px]">
+      <div className="mx-auto max-w-[1600px] space-y-5">
+        <div className="motion-fade-up flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-page font-bold text-ink">
+              {t("contracts.title") || "Contratos"}
+            </h1>
+            <p className="text-body text-ink-3">
+              {t("contracts.summaryLine", {
+                total: stats.total,
+                approved: stats.approved,
+                pending: stats.pending,
+              })}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={refreshContracts}>
+              <FontAwesomeIcon icon={faSync} className="mr-2" />
+              {t("common.refresh") || "Actualizar"}
+            </Button>
+          </div>
+        </div>
+
+        <div id="contract-stats" className="motion-fade-up [animation-delay:45ms]">
           <ContractStats stats={stats} />
         </div>
 
-        {/* Filters and List Section */}
-        <div className="bg-white dark:bg-darkblack-600 rounded-3xl p-6 shadow-xs border border-gray-100 dark:border-darkblack-500">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 relative z-40">
-            <div className="flex-1" id="contracts-filter-section">
-              <GenericFilter
-                searchTerm={searchTerm}
-                filterValue={statusFilter}
-                filterOptions={statusOptions}
-                onSearchChange={setSearchTerm}
-                onFilterChange={setStatusFilter}
-                startDate={startDate}
-                endDate={endDate}
-                onStartDateChange={setStartDate}
-                onEndDateChange={setEndDate}
-                searchPlaceholder={t("contracts.searchPlaceholder")}
-                filterPlaceholder={t("contracts.filterByStatus")}
-                minSearchLength={3}
+        <div className="motion-fade-up flex flex-col gap-3 [animation-delay:90ms] xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="flex h-10 w-full items-center gap-2 rounded-control border border-line bg-surface px-3 sm:w-[300px]"
+            >
+              <FontAwesomeIcon icon={faMagnifyingGlass} className="text-ink-3" />
+              <input
+                type="search"
+                value={searchDraft}
+                onChange={(event) => setSearchDraft(event.target.value)}
+                placeholder={t("contracts.searchPlaceholder")}
+                className="w-full bg-transparent text-label text-ink outline-none placeholder:text-ink-3"
+                aria-label={t("contracts.searchPlaceholder")}
               />
+            </form>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {statusChips.map((chip) => {
+                const selected = statusFilter === chip.value;
+                return (
+                  <button
+                    key={chip.value || "all"}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => handleStatusChange(chip.value)}
+                    className={`h-[30px] rounded-chip px-3 text-label font-semibold transition-colors ${
+                      selected
+                        ? "bg-brand-soft text-brand-strong"
+                        : "border border-line bg-surface text-ink-2 hover:text-ink"
+                    }`}
+                  >
+                    {chip.label} <span className="opacity-70">{chip.count}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={viewMode}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-expanded={showDateFilters}
+              onClick={() => setShowDateFilters((value) => !value)}
+              className={`h-10 rounded-control border px-3 text-label font-semibold transition-colors ${
+                showDateFilters || startDate || endDate
+                  ? "border-brand/30 bg-brand-soft text-brand-strong"
+                  : "border-line bg-surface text-ink-2 hover:bg-surface-2"
+              }`}
             >
-              <GenericList
-                endpoint="/api/v1/contracts"
-                renderItem={renderContractItem}
-                filters={filters}
-                columns={columns}
-                sortBy="contracts.created_at-desc"
-                itemsPerPage={12}
-                emptyMessage={t("contracts.noContractsFound")}
-                loadingMessage={t("contracts.loadingContracts")}
-                entityName="contracts"
-                showMobileCards={true}
-                showDesktopTable={viewMode === "table"}
-                refreshTrigger={refreshTrigger}
-                itemPatch={itemPatch}
+              {t("common.filter")}
+            </button>
+            {showDateFilters && (
+              <>
+            <label className="flex h-10 items-center gap-2 rounded-control border border-line bg-surface px-3 text-label text-ink-3">
+              <span className="whitespace-nowrap">{t("common.startDate")}</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(event) => {
+                  setStartDate(event.target.value);
+                  setPage(1);
+                }}
+                className="bg-transparent text-label text-ink outline-none"
               />
-            </motion.div>
-          </AnimatePresence>
+            </label>
+            <label className="flex h-10 items-center gap-2 rounded-control border border-line bg-surface px-3 text-label text-ink-3">
+              <span className="whitespace-nowrap">{t("common.endDate")}</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(event) => {
+                  setEndDate(event.target.value);
+                  setPage(1);
+                }}
+                className="bg-transparent text-label text-ink outline-none"
+              />
+            </label>
+              </>
+            )}
+          </div>
         </div>
+
+        {error && (
+          <ErrorState
+            title={t("common.error")}
+            description={error}
+            onRetry={refreshContracts}
+          />
+        )}
+
+        <Card className="motion-fade-up [animation-delay:135ms]" bodyClassName="p-0">
+          {loading ? (
+            <div className="p-5">
+              <Skeleton rows={6} />
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto px-2 sm:px-[18px]">
+                <Table
+                  columns={columns}
+                  rows={contracts}
+                  getRowKey={(contract) => contract.id}
+                  sort={sort}
+                  onSortChange={handleSortChange}
+                  onRowClick={(contract) => navigate(`/contracts/${contract.guid}`)}
+                  empty={
+                    <div className="p-5">
+                      <EmptyState
+                        variant="no-results"
+                        title={t("contracts.noContractsFound")}
+                        description={t("common.tryAdjustingFilters")}
+                      />
+                    </div>
+                  }
+                  mobileCard={(contract) => (
+                    <ContractMobileCard
+                      contract={contract}
+                      userRole={userRole}
+                      refreshContracts={refreshContracts}
+                      t={t}
+                      translateFinancingType={translateFinancingType}
+                      formatDate={formatDate}
+                      handleApprove={(event) => {
+                        event?.stopPropagation();
+                        handleApprove(contract);
+                      }}
+                      handleDeleteContract={(event) => {
+                        event?.stopPropagation();
+                        handleDeleteContract(contract);
+                      }}
+                      actionLoading={actionLoading}
+                      deleteLoading={deleteLoading}
+                      setShowSchedule={(open) => open && setScheduleContract(contract)}
+                      setShowRejectionModal={(open) => open && setRejectionContract(contract)}
+                      setShowDetailsModal={() => navigate(`/contracts/${contract.guid}`)}
+                    />
+                  )}
+                />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-[18px] py-3">
+                <p className="text-label text-ink-3">
+                  {t("contracts.showingContracts", {
+                    count: contracts.length,
+                    total,
+                  })}
+                </p>
+                {totalPages > 1 && (
+                  <Pagination
+                    page={page}
+                    pageCount={totalPages}
+                    total={total}
+                    perPage={PER_PAGE}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </div>
+            </>
+          )}
+        </Card>
+
+        {scheduleContract && (
+          <PaymentScheduleModal
+            contract={scheduleContract}
+            open={!!scheduleContract}
+            onClose={() => setScheduleContract(null)}
+            onPaymentSuccess={refreshContracts}
+          />
+        )}
+
+        <RejectionModal
+          isOpen={!!rejectionContract}
+          onClose={() => setRejectionContract(null)}
+          onSubmit={handleReject}
+          loading={actionLoading}
+        />
       </div>
     </main>
   );

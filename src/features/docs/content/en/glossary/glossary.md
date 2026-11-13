@@ -9,7 +9,7 @@ Short definitions of the terms used across Fintera. Follow the links for the ful
 - **Balance** — the remaining debt on a contract. Payments reduce it.
 - **Bank credit status** — where a customer's bank loan stands: not started, pre-qualified, pre-approved, or approved.
 - **Capital repayment** — a payment applied directly to principal, shortening the term. See [Capital repayments and readjustments](/docs/capital-repayments).
-- **Commission** — the amount earned on a sale, based on the project's direct, bank, or cash rate.
+- **Commission** — the amount earned on a sale, based on the project's direct, bank, or cash rate. See [Commissions and payouts](/docs/commissions-and-payouts).
 - **Contract** — the sale of a lot to a customer.
 - **Credit score** — a `300–850` score summarizing payment behavior. See [Customers and credit score](/docs/customers-and-credit-score).
 
@@ -19,6 +19,7 @@ Short definitions of the terms used across Fintera. Follow the links for the ful
 - **Financed** — a lot status. The reservation was approved and payments are being collected.
 - **Financing type** — how the customer pays: direct, bank, or cash. See [Financing types](/docs/financing-types).
 - **Fully paid** — a lot status. The balance reached zero.
+- **In review** — the seller-facing label for a receipt that was uploaded and is waiting for admin approval. Same as **submitted**.
 - **Installment** — one monthly payment of the financed balance.
 - **Ledger** — the contract's record of payments, interest, and capital movements.
 - **Lot** — a single sellable piece of a project.
@@ -26,7 +27,9 @@ Short definitions of the terms used across Fintera. Follow the links for the ful
 ## M–R
 
 - **Moratory interest** — the late-payment charge on overdue installments. See [Overdue (moratory) interest](/docs/overdue-interest).
+- **My day** — the seller's home page with sales, commission, and activity summaries.
 - **Overpayment** — money received above the installment plus interest; it is applied to future installments.
+- **Payment inbox** — the admin **Payments** page where receipts are reviewed. See [Payments inbox and review queue](/docs/payment-inbox).
 - **Payment schedule** — the list of payments generated when a contract is approved. See [Payment schedule](/docs/payment-schedule).
 - **Pending** — a payment or contract status. Not under review yet.
 - **Readjustment** — a payment status meaning the schedule changed after a capital repayment.
@@ -36,5 +39,5 @@ Short definitions of the terms used across Fintera. Follow the links for the ful
 ## S–Z
 
 - **Submitted** — a status meaning a receipt or reservation voucher is waiting for review.
-- **Seller** — a staff role for the sales pipeline.
+- **Seller** — a staff role for the sales workspace.
 - **Admin** — a staff role with full access, including approvals and settings.

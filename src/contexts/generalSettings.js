@@ -12,6 +12,8 @@ export const DEFAULT_GENERAL_SETTINGS = {
   legal_address: "",
   website: "https://omegatech.dev/",
   terms_effective_date: "",
+  terms_content_es: "",
+  terms_content_en: "",
   reservation_hold_hours: 48,
   reservation_min_amount: 5000,
   reservation_due_days: 7,
@@ -74,6 +76,8 @@ export const normalizeGeneralSettings = (raw = {}) => {
   next.website =
     String(next.website || "").trim() || DEFAULT_GENERAL_SETTINGS.website;
   next.terms_effective_date = String(next.terms_effective_date || "").trim();
+  next.terms_content_es = String(next.terms_content_es || "").trim();
+  next.terms_content_en = String(next.terms_content_en || "").trim();
   next.default_currency =
     String(next.default_currency || DEFAULT_GENERAL_SETTINGS.default_currency)
       .trim()

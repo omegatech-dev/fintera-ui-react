@@ -1,8 +1,10 @@
 import { useContext, useEffect } from "react";
 import { ThemeContext } from "../../contexts/ThemeContext";
+import { useLocale } from "../../contexts/LocaleContext";
 
 function ModeToggler() {
   const { theme, setTheme } = useContext(ThemeContext);
+  const { t } = useLocale();
 
   useEffect(() => {
     // Move localStorage validation to useEffect to avoid synchronous access on every render
@@ -28,23 +30,24 @@ function ModeToggler() {
 
   return (
     <button
-      aria-label="none"
+      aria-label={t("header.toggleDarkMode")}
+      aria-pressed={theme === "dark"}
       type="button"
       id="theme-toggle"
       onClick={toggleMode}
-      className="relative flex h-[52px] w-[52px] items-center justify-center rounded-[12px] border border-success-300 dark:border-darkblack-400"
+      className="flex h-10 w-10 items-center justify-center rounded-control border border-line bg-surface text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
     >
       <span className="block dark:hidden">
         <svg
-          className="stroke-bgray-900"
-          width="24"
-          height="24"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
         >
           <path
             d="M18.3284 14.8687C13.249 14.8687 9.13135 10.751 9.13135 5.67163C9.13135 4.74246 9.26914 3.84548 9.5254 3C5.74897 4.14461 3 7.65276 3 11.803C3 16.8824 7.11765 21 12.197 21C16.3472 21 19.8554 18.251 21 14.4746C20.1545 14.7309 19.2575 14.8687 18.3284 14.8687Z"
+            stroke="currentColor"
             strokeWidth="1.5"
             strokeLinejoin="round"
           />
@@ -52,36 +55,16 @@ function ModeToggler() {
       </span>
       <span className="hidden dark:block">
         <svg
-          className="stroke-bgray-900 dark:stroke-bgray-50"
-          width="24"
-          height="24"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
         >
-          <circle cx="12" cy="12" r="5" strokeWidth="1.5" />
-          <path d="M12 2V4" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M12 20V22" strokeWidth="1.5" strokeLinecap="round" />
-          <path
-            d="M20.6602 7L18.9281 8"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-          <path
-            d="M5.07178 16L3.33973 17"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-          <path
-            d="M3.33984 7L5.07189 8"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-          <path
-            d="M18.9282 16L20.6603 17"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
+          <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M12 2v2M12 20v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="m20.66 7-1.73 1M5.07 16l-1.73 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="m3.34 7 1.73 1M18.93 16l1.73 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       </span>
     </button>

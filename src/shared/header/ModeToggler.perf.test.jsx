@@ -1,8 +1,11 @@
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
 import ModeToggler from './ModeToggler';
 import { ThemeContext } from '../../contexts/ThemeContext';
+
+vi.mock('../../contexts/LocaleContext', () => ({
+  useLocale: () => ({ t: (key) => key, locale: 'en' }),
+}));
 
 describe('ModeToggler Performance', () => {
   beforeEach(() => {

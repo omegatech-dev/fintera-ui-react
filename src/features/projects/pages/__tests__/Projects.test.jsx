@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, waitFor, screen, cleanup, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as matchers from '@testing-library/jest-dom/matchers';
@@ -43,17 +42,6 @@ vi.mock('framer-motion', () => {
   return { motion: new Proxy({}, { get: () => Motion }) };
 });
 
-// We want to capture props passed to GenericFilter
-const genericFilterProps = [];
-vi.mock('@/shared/forms/GenericFilter', () => {
-  return {
-    default: (props) => {
-      genericFilterProps.push(props);
-      return <div data-testid="generic-filter">Generic Filter</div>;
-    }
-  };
-});
-
 // Mock contexts
 const mockAuthContext = {
   user: { role: 'admin' },
@@ -78,11 +66,9 @@ afterEach(() => {
 describe('Projects Component Performance', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    genericFilterProps.length = 0;
   });
 
-  it('handleSearchChange and handleSortChange references should be stable across re-renders', async () => {
-    // Mock initial fetch
+  it('renders the toolbar and applies visibility filters through the API params', async () => {
     projectsApi.list.mockResolvedValue({
       projects: [],
       pagination: { pages: 1 }
@@ -90,19 +76,21 @@ describe('Projects Component Performance', () => {
 
     renderProjects();
 
-    // Wait for the effect to run and data to "load" (state update triggers re-render)
     await waitFor(() => expect(projectsApi.list).toHaveBeenCalled());
 
-    // Wait for loading to finish
-    await waitFor(() => expect(screen.queryByText('projectsPage.loadingProjects')).not.toBeInTheDocument());
+    expect(
+      screen.getByPlaceholderText('projectsPage.searchPlaceholder')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('combobox', { name: 'projectsPage.sortPlaceholder' })
+    ).toBeInTheDocument();
 
-    expect(genericFilterProps.length).toBeGreaterThanOrEqual(2);
+    fireEvent.click(screen.getByRole('button', { name: 'projects.publishedPlural' }));
 
-    const firstRenderProps = genericFilterProps[0];
-    const lastRenderProps = genericFilterProps[genericFilterProps.length - 1];
-
-    expect(firstRenderProps.onSearchChange).toBe(lastRenderProps.onSearchChange);
-    expect(firstRenderProps.onFilterChange).toBe(lastRenderProps.onFilterChange);
+    await waitFor(() => {
+      const params = projectsApi.list.mock.calls.at(-1)[0];
+      expect(params.get('is_published')).toBe('1');
+    });
   });
 });
 
@@ -164,7 +152,9 @@ describe('Project card publishing controls', () => {
       'src',
       'http://localhost:8081/uploads/projects/cover.jpg'
     );
-    expect(screen.getByText('projects.publicPortalLink')).toHaveAttribute(
+    expect(
+      screen.getByRole('link', { name: 'projects.publicPortal' })
+    ).toHaveAttribute(
       'href',
       `https://portal.example.com/projects/${baseProject.guid}`
     );
@@ -244,10 +234,7 @@ describe('Project card gallery and metadata', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows delivery, creation, code, and a copyable GUID', () => {
-    const writeText = vi.fn();
-    Object.assign(navigator, { clipboard: { writeText } });
-
+  it('shows the code, lot availability, and price per unit in the card body', () => {
     render(
       <BrowserRouter>
         <Project
@@ -262,20 +249,9 @@ describe('Project card gallery and metadata', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('projects.delivery')).toBeInTheDocument();
-    expect(screen.getByText('projects.created')).toBeInTheDocument();
     expect(screen.getByText('PR-2026')).toBeInTheDocument();
-    expect(
-      screen.queryByText('e5419645-0e1f-435a-b8d8-460a9e0b1ac0')
-    ).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /projects\.projectInfo/ }));
-    expect(
-      screen.getByText('e5419645-0e1f-435a-b8d8-460a9e0b1ac0')
-    ).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /common\.copy/ }));
-    expect(writeText).toHaveBeenCalledWith('e5419645-0e1f-435a-b8d8-460a9e0b1ac0');
+    expect(screen.getByText('projects.freeOfTotal')).toBeInTheDocument();
+    expect(screen.getByText('projects.pricePerUnitShort')).toBeInTheDocument();
   });
 });
 

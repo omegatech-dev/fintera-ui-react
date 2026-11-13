@@ -80,16 +80,16 @@ export default function PhotoDropzone({ onFiles, uploading = false }) {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-8 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+        className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-card border border-dashed p-8 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
           dragActive
-            ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20"
-            : "border-bgray-300 bg-bgray-50 hover:border-indigo-400 dark:border-darkblack-400 dark:bg-darkblack-500"
+            ? "border-brand bg-brand-soft"
+            : "border-line-strong bg-surface-2 hover:border-brand"
         } ${uploading ? "pointer-events-none opacity-60" : ""}`}
       >
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-xl text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-xl text-brand-strong">
           <FontAwesomeIcon icon={uploading ? faImage : faCloudArrowUp} />
         </span>
-        <p className="text-sm font-black text-bgray-900 dark:text-white">
+        <p className="text-body-lg font-bold text-ink">
           {uploading
             ? t("media.uploading")
             : dragActive
@@ -99,7 +99,7 @@ export default function PhotoDropzone({ onFiles, uploading = false }) {
       </div>
 
       {rejected.length > 0 && (
-        <ul className="space-y-1 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-600 dark:border-red-900/30 dark:bg-red-900/10 dark:text-red-400">
+        <ul className="space-y-1 rounded-card border border-danger/20 bg-danger-soft p-4 text-label font-semibold text-danger">
           {rejected.map((item) => (
             <li key={item.name}>
               {item.name}:{" "}

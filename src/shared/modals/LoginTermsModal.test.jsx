@@ -8,9 +8,11 @@ import { useGeneralSettings } from "../../contexts/generalSettings";
 expect.extend(matchers);
 afterEach(cleanup);
 
+const localeState = vi.hoisted(() => ({ locale: "en" }));
+
 vi.mock("../../contexts/LocaleContext", () => ({
   useLocale: () => ({
-    locale: "en",
+    locale: localeState.locale,
     t: (key) => key,
   }),
 }));
@@ -28,12 +30,16 @@ const mockSettings = (settings = {}) => {
       legal_address: "",
       website: "",
       terms_effective_date: "",
+      terms_content_es: "",
+      terms_content_en: "",
       ...settings,
     },
   });
 };
 
 beforeEach(() => {
+  vi.clearAllMocks();
+  localeState.locale = "en";
   mockSettings();
 });
 
@@ -64,5 +70,90 @@ describe("LoginTermsModal", () => {
     expect(screen.queryByText(/support@omegatech\.dev/)).not.toBeInTheDocument();
     expect(screen.queryByText(/31848112/)).not.toBeInTheDocument();
     expect(screen.queryByText(/\[Insert Address\]/)).not.toBeInTheDocument();
+  });
+
+  it("renders configured english terms content with paragraphs", () => {
+    mockSettings({
+      terms_content_en:
+        "First paragraph.\nWith a line break.\n\nSecond paragraph.",
+      terms_content_es: "Spanish content should not render.",
+    });
+
+    render(<LoginTermsModal isActive onClose={() => {}} />);
+
+    const first = screen.getByText(/First paragraph\./);
+    expect(first.textContent).toContain("With a line break.");
+    expect(screen.getByText("Second paragraph.")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Spanish content should not render.")
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/termsAndConditions\.sections\.acceptanceTitle/)
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders the spanish terms content when the locale is spanish", () => {
+    localeState.locale = "es";
+    mockSettings({
+      terms_content_es: "Texto en español.\n\nSegundo párrafo.",
+      terms_content_en: "English content should not render.",
+    });
+
+    render(<LoginTermsModal isActive onClose={() => {}} />);
+
+    expect(screen.getByText("Texto en español.")).toBeInTheDocument();
+    expect(screen.getByText("Segundo párrafo.")).toBeInTheDocument();
+    expect(
+      screen.queryByText("English content should not render.")
+    ).not.toBeInTheDocument();
+  });
+
+  it("falls back to the i18n sections when no custom terms exist", () => {
+    render(<LoginTermsModal isActive onClose={() => {}} />);
+
+    expect(
+      screen.getByText(/termsAndConditions\.sections\.acceptanceTitle/)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/termsAndConditions\.sections\.contactInformationTitle/)
+    ).toBeInTheDocument();
+  });
+
+  it("renders formatted HTML terms inside the modal and sanitizes scripts", () => {
+    mockSettings({
+      terms_content_en:
+        '<h2>Responsible use</h2><p>Read the <strong>terms</strong> and <a href="https://acme.test/terms">policy</a>.</p><ol><li>First</li></ol><script>alert(1)</script>',
+      legal_name: "Acme S.A.",
+    });
+
+    render(<LoginTermsModal isActive onClose={() => {}} />);
+
+    const content = document.body.querySelector(".rich-text-content");
+    expect(content).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Responsible use" })
+    ).toBeInTheDocument();
+    expect(content.querySelector("strong")).toHaveTextContent("terms");
+    expect(content.querySelector("ol")).toHaveTextContent("First");
+    expect(
+      screen.getByRole("link", { name: "policy" })
+    ).toHaveAttribute("href", "https://acme.test/terms");
+    expect(content.querySelector("script")).not.toBeInTheDocument();
+    expect(content.innerHTML).not.toContain("alert(1)");
+    expect(screen.getByText(/Acme S\.A\./)).toBeInTheDocument();
+  });
+
+  it("keeps the contact details visible with custom terms", () => {
+    mockSettings({
+      terms_content_en: "Custom terms.",
+      legal_name: "Acme S.A.",
+      support_email: "help@acme.test",
+    });
+
+    render(<LoginTermsModal isActive onClose={() => {}} />);
+
+    expect(screen.getByText("Custom terms.")).toBeInTheDocument();
+    expect(screen.getByText(/Acme S\.A\./)).toBeInTheDocument();
+    expect(screen.getByText(/help@acme\.test/)).toBeInTheDocument();
   });
 });

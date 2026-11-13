@@ -19,7 +19,7 @@ function Toast({ visible, message, type = "success", duration = 3000, onClose })
         : "bg-gray-800 text-white";
 
   return (
-    <div role="status" aria-live="polite" className={`${base} ${style}`}>
+    <div role="status" aria-live="polite" className={`motion-fade-up ${base} ${style}`}>
       <div className="text-sm">{message}</div>
     </div>
   );

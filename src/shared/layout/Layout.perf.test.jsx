@@ -1,6 +1,5 @@
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
 import Layout from './Layout';
 import AuthContext from '../../contexts/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
@@ -8,7 +7,6 @@ import { BrowserRouter } from 'react-router-dom';
 // Mock child components
 vi.mock('../sidebar', () => ({
   Sidebar: () => <div>Sidebar</div>,
-  SidebarV2: () => <div>SidebarV2</div>,
 }));
 vi.mock('../overlays', () => ({
   Overlay: () => <div>Overlay</div>,
@@ -17,6 +15,9 @@ vi.mock('../overlays', () => ({
 vi.mock('../header', () => ({
   HeaderOne: () => <div>HeaderOne</div>,
   HeaderTwo: () => <div>HeaderTwo</div>,
+}));
+vi.mock('./BottomNav', () => ({
+  default: () => <nav>BottomNav</nav>,
 }));
 
 describe('Layout Performance', () => {

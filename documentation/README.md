@@ -18,6 +18,11 @@ Technical documentation for the FinteraUI frontend.
 | [Testing guide](guides/testing.md) | Vitest, Testing Library, and test conventions |
 | [Deployment guide](guides/deployment.md) | Build, PWA, environment, and hosting |
 
+## Design
+
+- [Redesign implementation map](design/implementation-map.md) — tokens,
+  primitives, routes and migration order for the Pencil redesign.
+
 ## Features
 
 - [GenericList](features/generic-list.md)

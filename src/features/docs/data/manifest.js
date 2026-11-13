@@ -25,24 +25,34 @@ export const SECTIONS = [
     title: { en: "Customers & credit", es: "Clientes y crédito" },
   },
   {
-    id: "reports",
+    id: "commissions",
     order: 6,
+    title: { en: "Commissions", es: "Comisiones" },
+  },
+  {
+    id: "seller-workspace",
+    order: 7,
+    title: { en: "Seller workspace", es: "Espacio del vendedor" },
+  },
+  {
+    id: "reports",
+    order: 8,
     title: { en: "Reports & analytics", es: "Reportes y analítica" },
   },
   {
     id: "administration",
-    order: 7,
+    order: 9,
     title: { en: "Administration", es: "Administración" },
   },
   {
     id: "glossary",
-    order: 8,
+    order: 10,
     title: { en: "Glossary", es: "Glosario" },
   },
 ];
 
-// `audience` controls which staff role can read an article. Admins see every
-// article; sellers only see articles that include `seller`.
+// `audience` controls which staff role can read an article. Include both roles
+// when the article is useful to admins and sellers.
 export const ARTICLES = [
   {
     slug: "overview-and-roles",
@@ -52,9 +62,26 @@ export const ARTICLES = [
     title: { en: "System overview and roles", es: "Descripción general y roles" },
   },
   {
+    slug: "navigation-notifications-and-guide",
+    section: "getting-started",
+    order: 2,
+    audience: ["admin", "seller"],
+    title: {
+      en: "Navigation, notifications, and the guide",
+      es: "Navegación, notificaciones y guía",
+    },
+  },
+  {
+    slug: "keyboard-shortcuts",
+    section: "getting-started",
+    order: 3,
+    audience: ["admin", "seller"],
+    title: { en: "Keyboard shortcuts", es: "Atajos de teclado" },
+  },
+  {
     slug: "projects-and-pricing",
     section: "projects-lots",
-    order: 2,
+    order: 3,
     audience: ["admin", "seller"],
     title: {
       en: "Projects, pricing, and measurement units",
@@ -62,16 +89,26 @@ export const ARTICLES = [
     },
   },
   {
+    slug: "projects-list-and-detail",
+    section: "projects-lots",
+    order: 4,
+    audience: ["admin", "seller"],
+    title: {
+      en: "Projects list and project detail",
+      es: "Lista y detalle de proyectos",
+    },
+  },
+  {
     slug: "lots-and-statuses",
     section: "projects-lots",
-    order: 3,
+    order: 5,
     audience: ["admin", "seller"],
     title: { en: "Lots and their statuses", es: "Lotes y sus estados" },
   },
   {
     slug: "managing-projects",
     section: "projects-lots",
-    order: 4,
+    order: 6,
     audience: ["admin"],
     title: {
       en: "Creating and managing projects and lots",
@@ -81,7 +118,7 @@ export const ARTICLES = [
   {
     slug: "financing-types",
     section: "contracts",
-    order: 5,
+    order: 7,
     audience: ["admin", "seller"],
     title: {
       en: "Financing types: direct, bank, and cash",
@@ -91,7 +128,7 @@ export const ARTICLES = [
   {
     slug: "reservations-and-holds",
     section: "contracts",
-    order: 6,
+    order: 8,
     audience: ["admin", "seller"],
     title: {
       en: "Reservations, down payments, and holds",
@@ -101,14 +138,24 @@ export const ARTICLES = [
   {
     slug: "contract-lifecycle",
     section: "contracts",
-    order: 7,
+    order: 9,
     audience: ["admin", "seller"],
     title: { en: "Contract lifecycle and statuses", es: "Ciclo de vida y estados del contrato" },
   },
   {
+    slug: "contract-detail-and-actions",
+    section: "contracts",
+    order: 10,
+    audience: ["admin", "seller"],
+    title: {
+      en: "Contract list, detail, and actions",
+      es: "Lista, detalle y acciones del contrato",
+    },
+  },
+  {
     slug: "approving-contracts",
     section: "contracts",
-    order: 8,
+    order: 11,
     audience: ["admin"],
     title: {
       en: "Approving, rejecting, and reopening contracts",
@@ -118,14 +165,14 @@ export const ARTICLES = [
   {
     slug: "payment-types-and-statuses",
     section: "payments",
-    order: 9,
+    order: 12,
     audience: ["admin", "seller"],
     title: { en: "Payment types and statuses", es: "Tipos y estados de pago" },
   },
   {
     slug: "payment-schedule",
     section: "payments",
-    order: 10,
+    order: 13,
     audience: ["admin", "seller"],
     title: {
       en: "How the payment schedule is generated",
@@ -135,7 +182,7 @@ export const ARTICLES = [
   {
     slug: "receipts",
     section: "payments",
-    order: 11,
+    order: 14,
     audience: ["admin", "seller"],
     title: {
       en: "Uploading and reviewing payment receipts",
@@ -143,9 +190,19 @@ export const ARTICLES = [
     },
   },
   {
+    slug: "payment-inbox",
+    section: "payments",
+    order: 15,
+    audience: ["admin", "seller"],
+    title: {
+      en: "Payments inbox and review queue",
+      es: "Bandeja de pagos y cola de revisión",
+    },
+  },
+  {
     slug: "approving-payments",
     section: "payments",
-    order: 12,
+    order: 16,
     audience: ["admin"],
     title: {
       en: "Approving, rejecting, and undoing payments",
@@ -155,49 +212,105 @@ export const ARTICLES = [
   {
     slug: "overdue-interest",
     section: "payments",
-    order: 13,
+    order: 17,
     audience: ["admin", "seller"],
     title: { en: "Overdue (moratory) interest", es: "Interés por mora" },
   },
   {
     slug: "capital-repayments",
     section: "payments",
-    order: 14,
+    order: 18,
     audience: ["admin", "seller"],
     title: { en: "Capital repayments and readjustments", es: "Abonos a capital y reajustes" },
   },
   {
     slug: "customers-and-credit-score",
     section: "customers-credit",
-    order: 15,
+    order: 19,
     audience: ["admin", "seller"],
     title: { en: "Customers and credit score", es: "Clientes y puntaje de crédito" },
   },
   {
+    slug: "commissions-and-payouts",
+    section: "commissions",
+    order: 20,
+    audience: ["admin", "seller"],
+    title: { en: "Commissions and payouts", es: "Comisiones y pagos de comisión" },
+  },
+  {
+    slug: "seller-my-day",
+    section: "seller-workspace",
+    order: 21,
+    audience: ["admin", "seller"],
+    title: { en: "My day", es: "Mi día" },
+  },
+  {
+    slug: "seller-clients",
+    section: "seller-workspace",
+    order: 22,
+    audience: ["admin", "seller"],
+    title: { en: "My clients", es: "Mis clientes" },
+  },
+  {
+    slug: "seller-collections",
+    section: "seller-workspace",
+    order: 23,
+    audience: ["admin", "seller"],
+    title: { en: "Collections and receipts", es: "Cobros y comprobantes" },
+  },
+  {
+    slug: "seller-documents",
+    section: "seller-workspace",
+    order: 24,
+    audience: ["admin", "seller"],
+    title: { en: "Seller documents", es: "Documentos del vendedor" },
+  },
+  {
     slug: "reports-and-analytics",
     section: "reports",
-    order: 16,
-    audience: ["admin", "seller"],
+    order: 25,
+    audience: ["admin"],
     title: { en: "Reports and analytics", es: "Reportes y analítica" },
   },
   {
     slug: "users-management",
     section: "administration",
-    order: 17,
-    audience: ["admin", "seller"],
+    order: 26,
+    audience: ["admin"],
     title: { en: "Users and roles", es: "Usuarios y roles" },
   },
   {
     slug: "settings-and-branding",
     section: "administration",
-    order: 18,
+    order: 27,
     audience: ["admin"],
     title: { en: "General settings and branding", es: "Configuración general e identidad de marca" },
   },
   {
+    slug: "profile-and-security",
+    section: "administration",
+    order: 28,
+    audience: ["admin", "seller"],
+    title: { en: "Profile and security", es: "Perfil y seguridad" },
+  },
+  {
+    slug: "terms-and-conditions",
+    section: "administration",
+    order: 29,
+    audience: ["admin", "seller"],
+    title: { en: "Terms and conditions", es: "Términos y condiciones" },
+  },
+  {
+    slug: "audits",
+    section: "administration",
+    order: 30,
+    audience: ["admin"],
+    title: { en: "Audit log", es: "Auditoría" },
+  },
+  {
     slug: "glossary",
     section: "glossary",
-    order: 19,
+    order: 31,
     audience: ["admin", "seller"],
     title: { en: "Glossary", es: "Glosario" },
   },

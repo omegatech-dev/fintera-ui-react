@@ -1,97 +1,150 @@
-import React, { useState, useRef } from "react";
-import ProtoTypes from "prop-types";
+import { useCallback, useRef, useState } from "react";
+import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { useLocale } from "../../contexts/LocaleContext";
-import logoColor from "../../assets/images/logo/logo-color.svg";
-import logoWhite from "../../assets/images/logo/logo-white.svg";
 import { usersApi } from "../../features/users/api";
+import { Banner, Button, Dialog, Field, Input } from "../ui";
 
-// Cross button component remains the same
-export const CrossBtn = ({ close }) => (
-  <div className="absolute top-0 right-0 pt-5 pr-5">
+function CloseButton({ onClose }) {
+  const { t } = useLocale();
+  return (
     <button
-      aria-label="none"
       type="button"
-      onClick={close}
-      className="rounded-md bg-white dark:bg-darkblack-500 focus:outline-hidden"
+      onClick={onClose}
+      aria-label={t("common.close")}
+      className="absolute right-3 top-3 rounded-control p-1.5 text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/30"
     >
-      <span className="sr-only">Close</span>
       <svg
-        className="stroke-darkblack-300"
-        width="24"
-        height="24"
+        width="20"
+        height="20"
         viewBox="0 0 24 24"
         fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
       >
         <path
-          d="M6 6L18 18M6 18L18 6L6 18Z"
+          d="M6 6L18 18M6 18L18 6"
+          stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
       </svg>
     </button>
-  </div>
-);
+  );
+}
 
-export const HeadingLogo = () => (
-  <Link to="/signin" className="block mb-7">
-    <img src={logoColor} className="block dark:hidden" alt="" />
-    <img src={logoWhite} className="hidden dark:block" alt="" />
-  </Link>
-);
+CloseButton.propTypes = {
+  onClose: PropTypes.func.isRequired,
+};
 
-export const ResetPass = ({ email, setEmail, error, loading, onSubmit, onClose }) => {
-  const { t } = useLocale();
+function EyeIcon({ hidden }) {
+  if (hidden) {
+    return (
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10a9.96 9.96 0 012.832-6.906M6.414 6.414A9.97 9.97 0 0012 5c5.523 0 10 4.477 10 10a9.97 9.97 0 01-1.414 5.586M15 15l-3-3m0 0l-3-3m3 3V6" />
+      </svg>
+    );
+  }
   return (
-    <div className="step-content step-1">
-      <div className="relative max-w-[492px] transform overflow-hidden rounded-lg bg-white dark:bg-darkblack-600 p-8 text-left transition-all">
-        <CrossBtn close={onClose} />
-        <div>
-          <HeadingLogo />
-          <h3 className="text-2xl font-bold text-bgray-900 dark:text-white mb-3">
-            {t('auth.resetPassword')}
-          </h3>
-          <p className="text-base font-medium text-bgray-600 dark:text-darkblack-300 mb-7">
-            {t('auth.enterEmailAssociated')}
-          </p>
+    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  );
+}
 
-          {error && <p className="text-red-500 mb-3" aria-live="assertive">{error}</p>}
+EyeIcon.propTypes = {
+  hidden: PropTypes.bool,
+};
 
-          <form onSubmit={onSubmit}>
-            <div className="mb-8">
-              <input
-                type="email"
-                required
-                className="rounded-lg bg-[#F5F5F5] dark:bg-darkblack-500 dark:text-white p-4 border-0 focus:border focus:ring-0 focus:border-success-300 w-full placeholder:font-medium text-base h-14"
-                placeholder={t('auth.email')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <Link
-              to="/signin"
-              className="block text-sm font-bold text-success-300 mb-8 underline"
-            >
-              {t('auth.backToSignIn')}
-            </Link>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full py-4 text-white bg-success-300 hover:bg-success-400 transition-all justify-center text-base font-medium rounded-lg disabled:opacity-50"
-            >
-              {loading ? t('auth.sending') : t('common.continue')}
-            </button>
-          </form>
-        </div>
+function PasswordField({ id, label, value, onChange, autoComplete }) {
+  const { t } = useLocale();
+  const [show, setShow] = useState(false);
+
+  return (
+    <div className="flex w-full flex-col gap-1.5">
+      <label htmlFor={id} className="text-label font-semibold text-ink-2">
+        {label}
+      </label>
+      <div className="relative">
+        <Input
+          id={id}
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={onChange}
+          autoComplete={autoComplete}
+          required
+          className="pr-10"
+        />
+        <button
+          type="button"
+          onClick={() => setShow((current) => !current)}
+          aria-label={show ? t("auth.hidePassword") : t("auth.showPassword")}
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-control p-1.5 text-ink-3 transition-colors hover:bg-surface-2"
+        >
+          <EyeIcon hidden={show} />
+        </button>
       </div>
     </div>
   );
+}
+
+PasswordField.propTypes = {
+  id: PropTypes.string.isRequired,
+  label: PropTypes.node,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  autoComplete: PropTypes.string,
 };
 
-export const CodeVerify = ({
-  email,
+function ErrorBanner({ error }) {
+  if (!error) return null;
+  return <Banner tone="danger">{error}</Banner>;
+}
+
+ErrorBanner.propTypes = {
+  error: PropTypes.string,
+};
+
+function ResetStep({ email, setEmail, error, loading, onSubmit }) {
+  const { t } = useLocale();
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <ErrorBanner error={error} />
+      <Field label={t("auth.email")}>
+        <Input
+          type="email"
+          name="email"
+          autoComplete="email"
+          required
+          placeholder={t("auth.email")}
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          disabled={loading}
+        />
+      </Field>
+      <Link
+        to="/signin"
+        className="block text-label font-bold text-brand-strong hover:underline"
+      >
+        {t("auth.backToSignIn")}
+      </Link>
+      <Button type="submit" className="w-full" loading={loading}>
+        {loading ? t("auth.sending") : t("common.continue")}
+      </Button>
+    </form>
+  );
+}
+
+ResetStep.propTypes = {
+  email: PropTypes.string.isRequired,
+  setEmail: PropTypes.func.isRequired,
+  error: PropTypes.string,
+  loading: PropTypes.bool,
+  onSubmit: PropTypes.func.isRequired,
+};
+
+function VerifyStep({
   digits,
   setDigits,
   error,
@@ -99,89 +152,92 @@ export const CodeVerify = ({
   resending,
   onSubmit,
   onResend,
-  onClose
-}) => {
+}) {
   const { t } = useLocale();
   const inputs = useRef([]);
 
   const handleChange = (index, value) => {
-    if (/^\d$/.test(value)) {
-      const newDigits = [...digits];
-      newDigits[index] = value;
-      setDigits(newDigits);
+    if (value === "") {
+      const next = [...digits];
+      next[index] = "";
+      setDigits(next);
+      return;
+    }
 
-      if (index < 5) {
-        inputs.current[index + 1].focus();
-      }
+    if (!/^\d$/.test(value)) return;
+
+    const next = [...digits];
+    next[index] = value;
+    setDigits(next);
+
+    if (index < 5) {
+      inputs.current[index + 1]?.focus();
     }
   };
 
-  const handlePaste = (e) => {
-    const paste = e.clipboardData.getData('text').slice(0, 6);
-    if (/^\d{6}$/.test(paste)) {
-      const newDigits = paste.split('');
-      setDigits(newDigits);
-      inputs.current[5].focus();
+  const handleKeyDown = (index, event) => {
+    if (event.key === "Backspace" && !digits[index] && index > 0) {
+      inputs.current[index - 1]?.focus();
     }
   };
 
-  const maskedEmail = email.replace(/(\w{3})[\w.-]+@([\w.]+\w)/, '$1***@$2');
+  const handlePaste = (event) => {
+    const pasted = event.clipboardData.getData("text").slice(0, 6);
+    if (/^\d{6}$/.test(pasted)) {
+      setDigits(pasted.split(""));
+      inputs.current[5]?.focus();
+    }
+  };
 
   return (
-    <div className="step-content step-2">
-      <div className="relative max-w-lg transform overflow-hidden rounded-lg bg-white dark:bg-darkblack-600 p-8 text-left transition-all">
-        <CrossBtn close={onClose} />
-        <div>
-          <HeadingLogo />
-          <h3 className="text-2xl font-bold text-bgray-900 dark:text-white mb-3">
-            {t('auth.enterVerificationCode')}
-          </h3>
-          <p className="text-base font-medium text-bgray-600 dark:text-darkblack-300 mb-7">
-            {t('auth.sentTo')} {maskedEmail}
-          </p>
-
-          {error && <p className="text-red-500 mb-3" aria-live="assertive">{error}</p>}
-
-          <form onSubmit={onSubmit}>
-            <div className="flex space-x-6 mb-8">
-              {digits.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={el => inputs.current[index] = el}
-                  type="text"
-                  inputMode="numeric"
-                  className="px-5 py-3 rounded-xl text-2xl border border-transparent focus:ring-0 focus:border focus:border-success-300 font-bold text-bgray-900 bg-[#F5F5F5] dark:bg-darkblack-500 dark:text-white w-14 h-14 text-center"
-                  value={digit}
-                  onChange={(e) => handleChange(index, e.target.value)}
-                  onPaste={handlePaste}
-                  maxLength={1}
-                  autoFocus={index === 0}
-                />
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={onResend}
-              disabled={resending}
-              className="block text-sm font-bold text-success-300 mb-8 disabled:opacity-50"
-            >
-              {resending ? t('auth.sending') : t('auth.resendCode')}
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full py-4 text-white bg-success-300 hover:bg-success-400 transition-all justify-center text-base font-medium rounded-lg disabled:opacity-50"
-            >
-              {loading ? t('auth.verifying') : t('auth.verify')}
-            </button>
-          </form>
-        </div>
+    <form onSubmit={onSubmit} className="space-y-4">
+      <ErrorBanner error={error} />
+      <div className="flex justify-between gap-2">
+        {digits.map((digit, index) => (
+          <input
+            key={index}
+            ref={(element) => {
+              inputs.current[index] = element;
+            }}
+            type="text"
+            inputMode="numeric"
+            value={digit}
+            onChange={(event) => handleChange(index, event.target.value)}
+            onKeyDown={(event) => handleKeyDown(index, event)}
+            onPaste={handlePaste}
+            maxLength={1}
+            autoFocus={index === 0}
+            aria-label={`${t("auth.verificationDigit")} ${index + 1}`}
+            className="h-12 w-full min-w-0 rounded-control border border-line-strong bg-surface text-center text-section font-bold text-ink outline-none focus:border-brand"
+          />
+        ))}
       </div>
-    </div>
+      <button
+        type="button"
+        onClick={onResend}
+        disabled={resending}
+        className="text-label font-bold text-brand-strong hover:underline disabled:opacity-60"
+      >
+        {resending ? t("auth.sending") : t("auth.resendCode")}
+      </button>
+      <Button type="submit" className="w-full" loading={loading}>
+        {loading ? t("auth.verifying") : t("auth.verify")}
+      </Button>
+    </form>
   );
+}
+
+VerifyStep.propTypes = {
+  digits: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setDigits: PropTypes.func.isRequired,
+  error: PropTypes.string,
+  loading: PropTypes.bool,
+  resending: PropTypes.bool,
+  onSubmit: PropTypes.func.isRequired,
+  onResend: PropTypes.func.isRequired,
 };
 
-export const NewPass = ({
+function NewPasswordStep({
   password,
   setPassword,
   confirm,
@@ -189,158 +245,117 @@ export const NewPass = ({
   error,
   loading,
   onSubmit,
-  onClose
-}) => {
+}) {
   const { t } = useLocale();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
   return (
-    <div className="step-content step-3">
-      <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-darkblack-600 p-8 text-left transition-all">
-        <CrossBtn close={onClose} />
-        <div>
-          <HeadingLogo />
-          <h3 className="text-2xl font-bold text-bgray-900 dark:text-white mb-3">
-            {t('auth.createNewPassword')}
-          </h3>
-          <p className="text-base font-medium text-bgray-600 dark:text-darkblack-300 mb-7">
-            {t('auth.enterNewPassword')}
-          </p>
-
-          {error && <p className="text-red-500 mb-3" aria-live="assertive">{error}</p>}
-
-          <form onSubmit={onSubmit}>
-            <div className="mb-6 relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                className="text-bgray-800 text-base border border-bgray-300 h-14 w-full focus:border-success-300 focus:ring-0 rounded-lg px-4 py-3.5 placeholder:text-bgray-500 placeholder:text-base dark:text-white dark:bg-darkblack-500 dark:border-0"
-                placeholder={t('auth.password')}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-4 right-4 bottom-4"
-              >
-                {/* Eye icon SVG remains same */}
-              </button>
-            </div>
-            <div className="mb-8 relative">
-              <input
-                type={showConfirm ? "text" : "password"}
-                className="text-bgray-800 text-base border border-bgray-300 h-14 w-full focus:border-success-300 focus:ring-0 rounded-lg px-4 py-3.5 placeholder:text-bgray-500 placeholder:text-base dark:bg-darkblack-500 dark:border-0"
-                placeholder={t('auth.confirmPassword')}
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute top-4 right-4 bottom-4"
-              >
-                {/* Eye icon SVG remains same */}
-              </button>
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex w-full py-4 text-white bg-success-300 hover:bg-success-400 transition-all justify-center text-base font-medium rounded-lg disabled:opacity-50"
-            >
-              {loading ? t('auth.updating') : t('auth.confirmPassword')}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
+    <form onSubmit={onSubmit} className="space-y-4">
+      <ErrorBanner error={error} />
+      <PasswordField
+        id="reset-new-password"
+        label={t("auth.password")}
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        autoComplete="new-password"
+      />
+      <PasswordField
+        id="reset-confirm-password"
+        label={t("auth.confirmPassword")}
+        value={confirm}
+        onChange={(event) => setConfirm(event.target.value)}
+        autoComplete="new-password"
+      />
+      <Button type="submit" className="w-full" loading={loading}>
+        {loading ? t("auth.updating") : t("auth.confirmPassword")}
+      </Button>
+    </form>
   );
+}
+
+NewPasswordStep.propTypes = {
+  password: PropTypes.string.isRequired,
+  setPassword: PropTypes.func.isRequired,
+  confirm: PropTypes.string.isRequired,
+  setConfirm: PropTypes.func.isRequired,
+  error: PropTypes.string,
+  loading: PropTypes.bool,
+  onSubmit: PropTypes.func.isRequired,
 };
 
-export const SuccessFull = ({ onClose }) => {
+function SuccessStep({ onClose }) {
   const { t } = useLocale();
   return (
-    <div className="step-content step-4">
-      <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-darkblack-600 p-8 text-left transition-all">
-        <CrossBtn close={onClose} />
-        <div className="text-center mt-4">
-          <h3 className="text-2xl font-bold text-bgray-900 dark:text-white mb-3">
-            {t('auth.passwordUpdatedSuccessfully')}
-          </h3>
-          <p className="text-base font-medium text-bgray-600 dark:text-darkblack-300 mb-7">
-            {t('auth.passwordResetCorrectly')}
-          </p>
-          <Link
-            to="/signin"
-            onClick={onClose}
-            className="flex w-full py-4 text-white bg-success-300 hover:bg-success-400 transition-all justify-center text-base font-semibold rounded-lg"
-          >
-            {t('auth.backToSignIn')}
-          </Link>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <Link
+        to="/signin"
+        onClick={onClose}
+        className="inline-flex h-11 w-full items-center justify-center rounded-control bg-brand px-4 text-body-lg font-semibold text-white transition-colors hover:bg-brand-strong"
+      >
+        {t("auth.backToSignIn")}
+      </Link>
     </div>
   );
+}
+
+SuccessStep.propTypes = {
+  onClose: PropTypes.func.isRequired,
 };
 
 function PasswordResetModal({ isActive, handleActive }) {
   const { t } = useLocale();
-  const [step, setStep] = useState('reset');
-  const [email, setEmail] = useState('');
-  const [digits, setDigits] = useState(Array(6).fill(''));
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [error, setError] = useState('');
+  const [step, setStep] = useState("reset");
+  const [email, setEmail] = useState("");
+  const [digits, setDigits] = useState(Array(6).fill(""));
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
-  const resetState = () => {
-    setStep('reset');
-    setEmail('');
-    setDigits(Array(6).fill(''));
-    setPassword('');
-    setConfirm('');
-    setError('');
-  };
+  const resetState = useCallback(() => {
+    setStep("reset");
+    setEmail("");
+    setDigits(Array(6).fill(""));
+    setPassword("");
+    setConfirm("");
+    setError("");
+  }, []);
 
-  const handleSendCode = async (e) => {
-    e.preventDefault();
+  const handleSendCode = async (event) => {
+    event.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      await usersApi.sendRecoveryCode(email);
-      setStep('verify');
+      await usersApi.sendRecoveryCode(email.trim());
+      setStep("verify");
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || t("errors.somethingWentWrong"));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyCode = async (e) => {
-    e.preventDefault();
+  const handleVerifyCode = async (event) => {
+    event.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const code = digits.join('').trim();
+      const code = digits.join("").trim();
       if (code.length !== 6) {
-        setError(t('auth.invalidVerificationCode'));
+        setError(t("auth.invalidVerificationCode"));
         return;
       }
       const data = await usersApi.verifyRecoveryCode(email.trim(), code);
 
       if (data.valid !== true) {
-        setError(data.error || t('auth.invalidVerificationCode'));
+        setError(data.error || t("auth.invalidVerificationCode"));
         return;
       }
 
-      setStep('newPass');
+      setStep("newPass");
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || t("errors.somethingWentWrong"));
     } finally {
       setLoading(false);
     }
@@ -348,116 +363,129 @@ function PasswordResetModal({ isActive, handleActive }) {
 
   const handleResendCode = async () => {
     setResending(true);
-    setError('');
+    setError("");
 
     try {
-      await usersApi.sendRecoveryCode(email);
+      await usersApi.sendRecoveryCode(email.trim());
     } catch {
-      setError('Failed to resend code');
+      setError(t("auth.resendCodeError"));
     } finally {
       setResending(false);
     }
   };
 
-  const handleUpdatePassword = async (e) => {
-    e.preventDefault();
+  const handleUpdatePassword = async (event) => {
+    event.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       if (password !== confirm) {
-        throw new Error(t('auth.passwordsDoNotMatch'));
+        throw new Error(t("auth.passwordsDoNotMatch"));
       }
       if (password.length < 8) {
-        throw new Error(t('auth.passwordMinLength'));
+        throw new Error(t("auth.passwordMinLength"));
       }
       if (!/[A-Z]/.test(password)) {
-        throw new Error(t('auth.passwordUppercaseRequired'));
+        throw new Error(t("auth.passwordUppercaseRequired"));
       }
       if (!/\d/.test(password)) {
-        throw new Error(t('auth.passwordNumberRequired'));
+        throw new Error(t("auth.passwordNumberRequired"));
       }
 
       await usersApi.updatePasswordWithCode({
         email: email.trim(),
-        code: digits.join('').trim(),
+        code: digits.join("").trim(),
         new_password: password,
-        new_password_confirmation: confirm
+        new_password_confirmation: confirm,
       });
 
-      setStep('success');
+      setStep("success");
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || t("errors.somethingWentWrong"));
     } finally {
       setLoading(false);
     }
   };
 
+  const close = useCallback(() => {
+    handleActive(false);
+    resetState();
+  }, [handleActive, resetState]);
+
+  const maskedEmail = email.replace(/(\w{3})[\w.-]+@([\w.]+\w)/, "$1***@$2");
+  const copy = {
+    reset: {
+      title: t("auth.resetPassword"),
+      description: t("auth.enterEmailAssociated"),
+    },
+    verify: {
+      title: t("auth.enterVerificationCode"),
+      description: `${t("auth.sentTo")} ${maskedEmail}`,
+    },
+    newPass: {
+      title: t("auth.createNewPassword"),
+      description: t("auth.enterNewPassword"),
+    },
+    success: {
+      title: t("auth.passwordUpdatedSuccessfully"),
+      description: t("auth.passwordResetCorrectly"),
+    },
+  }[step];
+
   return (
-    <div className={`modal fixed inset-0 z-50 overflow-y-auto flex items-center justify-center ${isActive ? '' : 'hidden'}`}>
-      <div className="modal-overlay absolute inset-0 bg-gray-500 opacity-75 dark:bg-bgray-900 dark:opacity-50"></div>
-      <div className="modal-content w-full max-w-lg mx-auto px-4">
-        {step === 'reset' && (
-          <ResetPass
-            email={email}
-            setEmail={setEmail}
-            error={error}
-            loading={loading}
-            onSubmit={handleSendCode}
-            onClose={() => {
-              handleActive(false);
-              resetState();
-            }}
-          />
-        )}
+    <Dialog
+      open={Boolean(isActive)}
+      onClose={close}
+      title={copy.title}
+      description={copy.description}
+      size="md"
+      className="relative max-w-lg"
+    >
+      {step === "reset" && (
+        <ResetStep
+          email={email}
+          setEmail={setEmail}
+          error={error}
+          loading={loading}
+          onSubmit={handleSendCode}
+        />
+      )}
 
-        {step === 'verify' && (
-          <CodeVerify
-            email={email}
-            digits={digits}
-            setDigits={setDigits}
-            error={error}
-            loading={loading}
-            resending={resending}
-            onSubmit={handleVerifyCode}
-            onResend={handleResendCode}
-            onClose={() => {
-              handleActive(false);
-              resetState();
-            }}
-          />
-        )}
+      {step === "verify" && (
+        <VerifyStep
+          digits={digits}
+          setDigits={setDigits}
+          error={error}
+          loading={loading}
+          resending={resending}
+          onSubmit={handleVerifyCode}
+          onResend={handleResendCode}
+        />
+      )}
 
-        {step === 'newPass' && (
-          <NewPass
-            password={password}
-            setPassword={setPassword}
-            confirm={confirm}
-            setConfirm={setConfirm}
-            error={error}
-            loading={loading}
-            onSubmit={handleUpdatePassword}
-            onClose={() => {
-              handleActive(false);
-              resetState();
-            }}
-          />
-        )}
+      {step === "newPass" && (
+        <NewPasswordStep
+          password={password}
+          setPassword={setPassword}
+          confirm={confirm}
+          setConfirm={setConfirm}
+          error={error}
+          loading={loading}
+          onSubmit={handleUpdatePassword}
+        />
+      )}
 
-        {step === 'success' && (
-          <SuccessFull onClose={() => {
-            handleActive(false);
-            resetState();
-          }} />
-        )}
-      </div>
-    </div>
+      {step === "success" && <SuccessStep onClose={close} />}
+
+      <CloseButton onClose={close} />
+    </Dialog>
   );
 }
 
 PasswordResetModal.propTypes = {
-  isActive: ProtoTypes.bool,
-  handleActive: ProtoTypes.func,
+  isActive: PropTypes.bool,
+  handleActive: PropTypes.func.isRequired,
 };
 
 export default PasswordResetModal;

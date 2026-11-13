@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateReserveAmount } from "./reserveRules";
+import { validateClient, validateReserveAmount } from "./reserveRules";
 
 const t = (key, params) =>
   params ? `${key}:${params.amount}:${params.currency}` : key;
@@ -23,5 +23,31 @@ describe("validateReserveAmount", () => {
   it("accepts the minimum and higher amounts", () => {
     expect(validateReserveAmount(5000, 5000, t, "HNL")).toBe("");
     expect(validateReserveAmount(7500, 5000, t, "HNL")).toBe("");
+  });
+});
+
+describe("validateClient", () => {
+  it("accepts a selected existing client", () => {
+    expect(
+      validateClient({ selectedUser: { id: 7 }, fullName: "", phone: "", identity: "" }, t)
+    ).toBe("");
+  });
+
+  it("requires the new client's name, phone and identity", () => {
+    expect(
+      validateClient({ selectedUser: null, fullName: "", phone: "", identity: "" }, t)
+    ).toBe("reservations.clientRequired");
+    expect(
+      validateClient({ selectedUser: null, fullName: "Ana", phone: "", identity: "" }, t)
+    ).toBe("reservations.clientRequired");
+  });
+
+  it("accepts a complete new client", () => {
+    expect(
+      validateClient(
+        { selectedUser: null, fullName: "Ana", phone: "9999", identity: "0801" },
+        t
+      )
+    ).toBe("");
   });
 });

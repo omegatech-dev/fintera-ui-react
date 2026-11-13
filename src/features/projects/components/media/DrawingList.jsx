@@ -1,3 +1,4 @@
+import { Button } from "@/shared/ui";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { formatBytes, mediaUrl } from "./mediaFiles";
 
@@ -6,7 +7,7 @@ export default function DrawingList({ drawings, canManage, onEdit, onDelete }) {
 
   if (drawings.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-bgray-300 dark:border-darkblack-400 p-6 text-sm font-semibold text-bgray-500">
+      <p className="rounded-control border border-dashed border-line-strong bg-surface-2 p-6 text-body font-semibold text-ink-3">
         {t("media.noDrawings")}
       </p>
     );
@@ -17,23 +18,23 @@ export default function DrawingList({ drawings, canManage, onEdit, onDelete }) {
       {drawings.map((drawing) => (
         <article
           key={drawing.id}
-          className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-bgray-200 dark:border-darkblack-400 p-4"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line p-4"
         >
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-bgray-100 dark:bg-darkblack-500 px-2 py-0.5 text-[10px] font-black text-bgray-600 dark:text-bgray-300">
+              <span className="rounded-chip bg-surface-2 px-2 py-0.5 text-micro font-bold text-ink-2">
                 {String(drawing.file_type || "").toUpperCase()}
               </span>
-              <span className="font-bold text-bgray-900 dark:text-white truncate">
+              <span className="truncate text-body font-bold text-ink">
                 {drawing.name}
               </span>
               {drawing.version && (
-                <span className="text-[10px] font-bold text-bgray-400">
+                <span className="text-micro font-bold text-ink-3">
                   v{drawing.version}
                 </span>
               )}
             </div>
-            <p className="mt-1 text-[11px] font-semibold text-bgray-500">
+            <p className="mt-1 text-micro font-semibold text-ink-3">
               {formatBytes(drawing.size_bytes)}
               {drawing.note ? ` · ${drawing.note}` : ""}
             </p>
@@ -43,26 +44,18 @@ export default function DrawingList({ drawings, canManage, onEdit, onDelete }) {
               href={mediaUrl(drawing.download_url)}
               target="_blank"
               rel="noreferrer"
-              className="rounded-xl border border-bgray-200 dark:border-darkblack-400 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-bgray-600 dark:text-bgray-300 hover:border-indigo-500 hover:text-indigo-600"
+              className="inline-flex h-[34px] shrink-0 items-center rounded-control border border-line-strong px-3 text-label font-semibold text-ink-2 transition-colors hover:bg-surface-2"
             >
               {t("media.download")}
             </a>
             {canManage && (
               <>
-                <button
-                  type="button"
-                  onClick={() => onEdit(drawing)}
-                  className="rounded-xl border border-bgray-200 dark:border-darkblack-400 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-bgray-600 dark:text-bgray-300 hover:border-indigo-500 hover:text-indigo-600"
-                >
+                <Button size="sm" variant="secondary" onClick={() => onEdit(drawing)}>
                   {t("common.edit")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDelete(drawing)}
-                  className="rounded-xl border border-red-200 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50"
-                >
+                </Button>
+                <Button size="sm" variant="danger" onClick={() => onDelete(drawing)}>
                   {t("common.delete")}
-                </button>
+                </Button>
               </>
             )}
           </div>

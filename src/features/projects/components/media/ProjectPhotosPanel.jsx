@@ -3,7 +3,11 @@ import { projectsApi } from "../../api";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import PhotoGalleryManager from "./PhotoGalleryManager";
 
-export default function ProjectPhotosPanel({ projectId, canManage }) {
+export default function ProjectPhotosPanel({
+  projectId,
+  canManage,
+  onPhotosChanged,
+}) {
   const { t } = useLocale();
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +18,9 @@ export default function ProjectPhotosPanel({ projectId, canManage }) {
     setError(null);
     try {
       const data = await projectsApi.listProjectPhotos(projectId);
-      setPhotos(data.photos || data.data || []);
+      const nextPhotos = data.photos || data.data || [];
+      setPhotos(nextPhotos);
+      onPhotosChanged?.(nextPhotos);
     } catch (err) {
       setError(err?.message || t("media.loadError"));
     } finally {

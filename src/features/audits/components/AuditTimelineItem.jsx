@@ -1,209 +1,157 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import PropTypes from "prop-types";
-import { motion, AnimatePresence } from "framer-motion";
-import { useLocale } from "../../../contexts/LocaleContext";
-import { formatAuditEvent, formatAuditModel } from "../modelLabels";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { useLocale } from "@/contexts/LocaleContext";
+import Chip from "@/shared/ui/Chip";
 import {
-    faPlus,
-    faPen,
-    faTrash,
-    faInfo,
-    faUser,
-    faFingerprint,
-    faLaptopCode,
-    faChevronDown
-} from "@fortawesome/free-solid-svg-icons";
+  formatAuditActionPast,
+  formatAuditEntityPhrase,
+  normalizeAuditAction,
+} from "../modelLabels";
+import { ACTION_TONES, getAuditActionMeta } from "./auditActions";
+import { formatAuditTime } from "./auditDates";
 
-const formatEvent = (event, t) => {
-    if (!event) return event;
-    const lower = event.toLowerCase();
-    switch (lower) {
-        case "create":
-        case "created":
-            return { text: t("audits.events.create"), icon: faPlus, color: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" };
-        case "update":
-        case "updated":
-            return { text: t("audits.events.update"), icon: faPen, color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" };
-        case "destroy":
-        case "delete":
-        case "deleted":
-            return { text: t("audits.events.destroy"), icon: faTrash, color: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" };
-        case "approve":
-            return { text: t("audits.events.approve"), icon: faFingerprint, color: "bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400" };
-        case "reject":
-            return { text: t("audits.events.reject"), icon: faTrash, color: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" };
-        case "cancel":
-        case "cancelled":
-        case "canceled":
-            return { text: t("audits.events.cancel"), icon: faTrash, color: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" };
-        case "close":
-        case "closed":
-            return { text: t("audits.events.close"), icon: faInfo, color: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300" };
-        case "login":
-            return { text: t("audits.events.login"), icon: faUser, color: "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400" };
-        case "capital_repayment":
-            return { text: t("audits.events.capital_repayment"), icon: faPlus, color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" };
-        default:
-            return {
-                text: formatAuditEvent(event, t),
-                icon: faInfo,
-                color: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-            };
-    }
-};
-
-const renderValue = (v, t) => {
-    if (v === null || v === undefined) return <span className="text-gray-400 italic">{t("audits.empty")}</span>;
-    if (typeof v === "string") return v;
-    if (typeof v === "number" || typeof v === "boolean") return String(v);
-    try {
-        return <pre className="text-xs whitespace-pre-wrap font-mono bg-gray-50 dark:bg-black/20 p-1 rounded">{JSON.stringify(v, null, 2)}</pre>;
-    } catch {
-        return String(v);
-    }
-};
-
-function AuditTimelineItem({ audit, isLast }) {
-    const { t, locale } = useLocale();
-    const [expanded, setExpanded] = useState(false);
-
-    const {
-        action: event,
-        entity: model,
-        entity_id: itemId,
-        user: userObj,
-        details: changes,
-        created_at: dateStr,
-        ip_address: ipAddress,
-        user_agent: userAgent,
-        parsed_changes: parsed
-    } = audit;
-
-    const dateStrUtc = dateStr?.includes('Z') || dateStr?.includes('+') || dateStr?.includes('-')
-        ? dateStr
-        : `${dateStr}Z`;
-    const date = new Date(dateStrUtc);
-
-    // Format time using the application's locale
-    const localeCode = t('common.locale_code') || (locale === 'es' ? 'es-ES' : 'en-US');
-    const timeString = date.toLocaleTimeString(localeCode, {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-    });
-    const eventInfo = formatEvent(event, t);
-    const userName = userObj ? (userObj.full_name || userObj.email || t("audits.system")) : t("audits.system");
-
-    const changedKeys = parsed ? Object.keys(parsed) : [];
-
+const renderValue = (value, t) => {
+  if (value === null || value === undefined) {
+    return <span className="italic text-ink-3">{t("audits.empty")}</span>;
+  }
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  try {
     return (
-        <div className="relative pl-8 sm:pl-12 py-2 group">
-            {/* Timeline Line */}
-            {!isLast && (
-                <div
-                    className="absolute left-[15px] sm:left-[23px] top-8 bottom-0 w-0.5 bg-gray-200 dark:bg-white/10 group-last:hidden"
-                />
-            )}
-
-            {/* Timeline Icon */}
-            <div className={`absolute left-0 sm:left-2 top-3 w-8 h-8 rounded-full flex items-center justify-center border-2 border-white dark:border-darkblack-700 shadow-xs z-10 ${eventInfo.color}`}>
-                <FontAwesomeIcon icon={eventInfo.icon} className="text-xs" />
-            </div>
-
-            {/* Content Card */}
-            <motion.div
-                layout
-                className={`relative bg-white dark:bg-darkblack-600 rounded-2xl p-5 border border-gray-100 dark:border-white/5 shadow-xs hover:shadow-md transition-shadow duration-300 ${expanded ? 'ring-2 ring-blue-500/20 dark:ring-blue-500/10' : ''}`}
-            >
-                <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-3">
-                    <div className="flex items-start gap-3">
-                        <div className="flex-1">
-                            <h4 className="text-gray-900 dark:text-white font-bold text-sm sm:text-base flex items-center gap-2 flex-wrap">
-                                <span>{eventInfo.text}</span>
-                                <span className="text-gray-400 dark:text-gray-500 font-normal">{t("audits.in")}</span>
-                                <span className="bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-lg text-xs font-semibold">{formatAuditModel(model, t)}</span>
-                                <span className="text-gray-400 dark:text-gray-500 text-xs">#{itemId}</span>
-                            </h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
-                                <FontAwesomeIcon icon={faUser} className="text-xs opacity-70" />
-                                {userName}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-xs font-medium text-gray-400 shrink-0">
-                        <span>{timeString}</span>
-                        <button
-                            onClick={() => setExpanded(!expanded)}
-                            className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-white/10 ${expanded ? 'bg-blue-50 text-blue-500' : ''}`}
-                        >
-                            <FontAwesomeIcon icon={faChevronDown} className={`transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`} />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Change Preview */}
-                {!expanded && changedKeys.length > 0 && (
-                    <div className="text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-black/20 rounded-lg px-3 py-2 border border-gray-100 dark:border-white/5">
-                        <span className="text-gray-400 mr-2">{t("audits.changed")}:</span>
-                        {changedKeys.slice(0, 3).join(", ")}
-                        {changedKeys.length > 3 && <span className="ml-1 opacity-60">+{changedKeys.length - 3} more</span>}
-                    </div>
-                )}
-
-                {/* Details Section */}
-                <AnimatePresence>
-                    {expanded && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden"
-                        >
-                            <div className="pt-4 mt-4 border-t border-gray-100 dark:border-white/5 space-y-4">
-                                {/* Technical Details */}
-                                <div className="flex flex-wrap gap-4 text-xs text-gray-400">
-                                    <div className="flex items-center gap-1.5" title="IP Address">
-                                        <FontAwesomeIcon icon={faLaptopCode} />
-                                        {ipAddress || t("common.notAvailable")}
-                                    </div>
-                                    <div className="flex items-center gap-1.5 max-w-[200px] truncate" title={userAgent}>
-                                        <FontAwesomeIcon icon={faInfo} />
-                                        {userAgent || t("common.notAvailable")}
-                                    </div>
-                                </div>
-
-                                {/* Changes Content */}
-                                <div className="bg-gray-50 dark:bg-black/20 rounded-xl p-4 border border-gray-100 dark:border-white/5">
-                                    {parsed ? (
-                                        <ul className="space-y-3 text-sm">
-                                            {changedKeys.map((key) => (
-                                                <li key={key} className="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-1 sm:gap-4">
-                                                    <span className="font-semibold text-gray-700 dark:text-gray-300 break-words">{key}</span>
-                                                    <div className="text-gray-600 dark:text-gray-400 break-words">
-                                                        {renderValue(parsed[key], t)}
-                                                    </div>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-sm text-gray-500 italic">{changes || t("audits.noDetails")}</p>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </motion.div>
-        </div>
+      <pre className="whitespace-pre-wrap break-words font-mono text-micro text-ink-2">
+        {JSON.stringify(value, null, 2)}
+      </pre>
     );
+  } catch {
+    return String(value);
+  }
+};
+
+function AuditTimelineItem({ audit }) {
+  const { t, locale } = useLocale();
+  const [expanded, setExpanded] = useState(false);
+  const detailsId = useId();
+
+  const {
+    action,
+    entity,
+    entity_id: entityId,
+    user,
+    details,
+    created_at: createdAt,
+    ip_address: ipAddress,
+    user_agent: userAgent,
+    parsed_changes: parsedChanges,
+  } = audit;
+
+  const meta = getAuditActionMeta(action);
+  const showEntity = normalizeAuditAction(action) !== "login";
+  const actor = user?.full_name || user?.email || t("audits.system");
+  const actionLabel = formatAuditActionPast(action, t);
+  const entityPhrase = formatAuditEntityPhrase(entity, t);
+  const time = formatAuditTime(createdAt, locale, t);
+  const changedKeys =
+    parsedChanges && typeof parsedChanges === "object"
+      ? Object.keys(parsedChanges)
+      : [];
+  const hasDetails = Boolean(
+    changedKeys.length || details || ipAddress || userAgent
+  );
+
+  return (
+    <li className="border-b border-slate-100 last:border-b-0 dark:border-line/60">
+      <div className="flex min-h-[46px] items-center gap-2.5 py-1">
+        <span
+          aria-hidden="true"
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${ACTION_TONES[meta.tone]}`}
+        >
+          <FontAwesomeIcon icon={meta.icon} className="text-[13px]" />
+        </span>
+
+        <div className="min-w-0 flex-1 text-label font-medium leading-5 text-ink-2">
+          <span className="font-semibold text-ink">{actor}</span>{" "}
+          <Chip tone={meta.tone} className="mx-0.5 align-middle">
+            {actionLabel}
+          </Chip>{" "}
+          {showEntity && entityPhrase && <span>{entityPhrase}</span>}
+          {showEntity && entityId != null && entityId !== "" && (
+            <span className="ml-1 text-ink-3">#{entityId}</span>
+          )}
+        </div>
+
+        <time
+          dateTime={createdAt || undefined}
+          className="shrink-0 text-micro font-medium tabular-nums text-ink-3"
+        >
+          {time}
+        </time>
+
+        {hasDetails && (
+          <button
+            type="button"
+            onClick={() => setExpanded((value) => !value)}
+            aria-expanded={expanded}
+            aria-controls={detailsId}
+            aria-label={
+              expanded ? t("audits.hideDetails") : t("audits.showDetails")
+            }
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-chip text-ink-3 hover:bg-surface-2 hover:text-ink"
+          >
+            <FontAwesomeIcon
+              icon={faChevronDown}
+              className={`text-[11px] transition-transform ${expanded ? "rotate-180" : ""}`}
+            />
+          </button>
+        )}
+      </div>
+
+      {expanded && hasDetails && (
+        <div
+          id={detailsId}
+          className="mb-2 ml-8 rounded-control border border-line bg-surface-2 p-3"
+        >
+          {changedKeys.length > 0 ? (
+            <dl className="grid gap-1.5 text-micro sm:grid-cols-[140px_1fr]">
+              {changedKeys.map((key) => (
+                <div key={key} className="contents">
+                  <dt className="font-semibold text-ink-2">{key}</dt>
+                  <dd className="min-w-0 break-words text-ink-3">
+                    {renderValue(parsedChanges[key], t)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="text-micro italic text-ink-3">
+              {details || t("audits.noDetails")}
+            </p>
+          )}
+
+          {(ipAddress || userAgent) && (
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 border-t border-line pt-2 text-micro text-ink-3">
+              {ipAddress && (
+                <span>
+                  {t("audits.table.ipAddress")}: {ipAddress}
+                </span>
+              )}
+              {userAgent && (
+                <span className="min-w-0 truncate">
+                  {t("audits.table.userAgent")}: {userAgent}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </li>
+  );
 }
 
 AuditTimelineItem.propTypes = {
-    audit: PropTypes.object.isRequired,
-    isLast: PropTypes.bool,
+  audit: PropTypes.object.isRequired,
 };
 
 export default AuditTimelineItem;

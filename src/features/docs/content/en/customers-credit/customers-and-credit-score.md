@@ -1,10 +1,17 @@
 # Customers and credit score
 
-A **customer** is a user with the `user` role. In this back office you search for existing customers and create new ones when needed.
+A **customer** is a user with the `user` role. Customers sign in to the separate customer portal; staff work with their records from the back office.
+
+## Where customers appear
+
+- **Reservations** — search for an existing customer or create one during the reservation wizard.
+- **Users** — admins can search customers, open the user drawer, and edit their profile.
+- **Contracts** — the contract detail shows the customer's contact data and credit score.
+- **My clients** — sellers see the customers that come from their contracts.
 
 ## Customer record
 
-A customer stores full name, email, phone, identity number, RTN, address, and the preferred language. The identity and RTN are validated when creating a customer.
+A customer stores full name, email, phone, identity number, RTN, address, and the preferred language. The identity is validated as 13 digits and the RTN as 14 digits when creating or editing a customer.
 
 ## Credit score
 
@@ -30,11 +37,12 @@ Then, per contract:
 
 The final value is clamped to the `300–850` range.
 
-## Why it matters
+## Customer documents
 
-The score is a quick signal of how reliably a customer pays. A customer who pays on time and completes contracts rises; one who pays late or abandons contracts falls.
+Admins can open a customer's drawer and download the balance statement PDF. The contract **Documents** tab also offers the customer record, promise contract, rescission contract, and account statement.
 
 ## Related
 
+- [Users and roles](/docs/users-management)
 - [Payment types and statuses](/docs/payment-types-and-statuses)
 - [Contract lifecycle and statuses](/docs/contract-lifecycle)

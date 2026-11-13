@@ -5,6 +5,7 @@ import { useLocale } from "../../../../contexts/LocaleContext";
 import { useToast } from "../../../../contexts/ToastContext";
 import AuthContext from "../../../../contexts/AuthContext";
 import { usersApi } from "../../../users/api";
+import { Button, ErrorState } from "@/shared/ui";
 
 import UserDetailsHeader from "../../../users/components/UserDetailsHeader";
 import PersonalInfoCard from "../../../users/components/PersonalInfoCard";
@@ -35,6 +36,7 @@ function PersonalInfo() {
   const fetchUser = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await usersApi.get(userId);
       setUser(data.user || data);
     } catch (err) {
@@ -59,27 +61,28 @@ function PersonalInfo() {
       const newStatus = user.status === "active" ? "inactive" : "active";
       setUser(prev => ({ ...prev, status: newStatus }));
       showToast(`${t("personalInfo.profileUpdated")}: ${newStatus}`, "success");
-    } catch (error) {
-      console.error("Error:", error);
+    } catch (err) {
+      console.error("Error:", err);
       showToast(t("errors.updateUserFailed"), "error");
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      <div className="space-y-4" aria-live="polite" aria-busy="true">
+        <div className="h-28 animate-pulse rounded-card bg-surface-2" />
+        <div className="h-40 animate-pulse rounded-card bg-surface-2" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-20">
-        <h3 className="text-xl text-red-500 font-bold mb-2">{t("personalInfo.errorLoadingProfile")}</h3>
-        <p className="text-bgray-600 dark:text-bgray-400">{error}</p>
-        <button onClick={fetchUser} className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded-lg">{t("personalInfo.retry")}</button>
-      </div>
+      <ErrorState
+        title={t("personalInfo.errorLoadingProfile")}
+        description={error}
+        onRetry={fetchUser}
+      />
     );
   }
 
@@ -89,23 +92,31 @@ function PersonalInfo() {
         {isEditing ? (
           <motion.div
             key="edit-form"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-bgray-900 dark:text-white">{t("personalInfo.editProfile")}</h2>
-              <button
+            <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-line pb-3">
+              <div>
+                <h2 className="text-[15px] font-bold text-ink">
+                  {t("personalInfo.editProfile")}
+                </h2>
+                <p className="mt-0.5 text-label font-medium text-ink-3">
+                  {t("personalInfo.description")}
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => {
                   setIsEditing(false);
                   fetchUser(); // Refresh data on cancel/back
                 }}
-                className="px-4 py-2 bg-gray-200 dark:bg-darkblack-500 rounded-lg text-sm font-semibold hover:bg-gray-300 transition-colors"
               >
                 {t("common.cancel")}
-              </button>
-            </div>
+              </Button>
+            </header>
             {/* Reuse existing form - pass userId */}
             <PersonalInfoForm userId={userId} />
           </motion.div>
@@ -115,20 +126,28 @@ function PersonalInfo() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-5"
           >
-            {/* Header Section */}
-            <div>
-              <UserDetailsHeader
-                user={user}
-                toggleStatus={toggleUserStatus}
-                onEdit={() => setIsEditing(true)}
-                showActions={canEditUser}
-                showToggleStatus={currentUser?.role === "admin"}
-              />
-            </div>
+            <header className="flex flex-wrap items-start justify-between gap-3 border-b border-line pb-3">
+              <div>
+                <h2 className="text-[15px] font-bold text-ink">
+                  {t("personalInfo.title")}
+                </h2>
+                <p className="mt-0.5 text-label font-medium text-ink-3">
+                  {t("personalInfo.description")}
+                </p>
+              </div>
+            </header>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <UserDetailsHeader
+              user={user}
+              toggleStatus={toggleUserStatus}
+              onEdit={() => setIsEditing(true)}
+              showActions={canEditUser}
+              showToggleStatus={currentUser?.role === "admin"}
+            />
+
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
               <PersonalInfoCard user={user} delay={0.1} />
               <AccountActivityCard user={user} delay={0.2} showCreditScore={showCreditScore} />
             </div>
@@ -138,15 +157,15 @@ function PersonalInfo() {
               <div className="fixed bottom-8 right-8 z-50 xl:hidden">
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-700 transition"
+                  aria-label={t("personalInfo.editProfile")}
+                  className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-pop transition-colors hover:bg-brand-strong"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </button>
               </div>
             )}
-
           </motion.div>
         )}
       </AnimatePresence>

@@ -15,6 +15,7 @@ const SWIPE_THRESHOLD = 40;
 export default function ProjectPhotoCarousel({
   photos = [],
   projectName = "",
+  coverClassName = "aspect-[16/10]",
   children,
 }) {
   const { t } = useLocale();
@@ -75,7 +76,7 @@ export default function ProjectPhotoCarousel({
 
   return (
     <div
-      className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-success-300 via-success-400 to-bgray-800"
+      className={`relative overflow-hidden bg-gradient-to-br from-brand via-brand-strong to-ink ${coverClassName}`}
       role="group"
       aria-roledescription="carousel"
       aria-label={t("projects.galleryFor", { name: projectName })}
@@ -105,7 +106,7 @@ export default function ProjectPhotoCarousel({
         ))
       )}
 
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bgray-900/90 via-bgray-900/10 to-black/10" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/10 to-black/10" />
 
       {children && <div className="absolute inset-0 z-10">{children}</div>}
 
@@ -115,7 +116,7 @@ export default function ProjectPhotoCarousel({
             type="button"
             onClick={() => goTo(activeIndex - 1)}
             aria-label={t("common.previous")}
-            className="absolute left-2 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-bgray-900 shadow-md transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-success-300"
+            className="absolute left-2 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-md transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
           </button>
@@ -123,7 +124,7 @@ export default function ProjectPhotoCarousel({
             type="button"
             onClick={() => goTo(activeIndex + 1)}
             aria-label={t("common.next")}
-            className="absolute right-2 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-bgray-900 shadow-md transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-success-300"
+            className="absolute right-2 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow-md transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             <FontAwesomeIcon icon={faChevronRight} className="text-xs" />
           </button>
@@ -152,6 +153,7 @@ ProjectPhotoCarousel.propTypes = {
     })
   ),
   projectName: PropTypes.string,
+  coverClassName: PropTypes.string,
   children: PropTypes.node,
 };
 

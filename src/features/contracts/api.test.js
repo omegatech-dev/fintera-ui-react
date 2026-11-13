@@ -1,23 +1,39 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../lib/apiClient", () => ({
-  apiClient: {
-    post: vi.fn(),
-  },
+  apiClient: { get: vi.fn() },
 }));
 
 import { apiClient } from "../../lib/apiClient";
 import { contractsApi } from "./api";
 
-describe("contractsApi.capitalRepayment", () => {
-  it("sends the amount in the documented capital_repayment_amount field", async () => {
-    apiClient.post.mockResolvedValueOnce({ message: "ok" });
+describe("contractsApi report downloads", () => {
+  beforeEach(() => {
+    apiClient.get.mockReset();
+    apiClient.get.mockResolvedValue(new Blob(["pdf"]));
+  });
 
-    await contractsApi.capitalRepayment(1, 2, 3, 1500);
+  it("downloads the customer record as a blob", async () => {
+    await contractsApi.downloadCustomerRecord(16);
 
-    expect(apiClient.post).toHaveBeenCalledWith(
-      "/api/v1/projects/1/lots/2/contracts/3/capital_repayment",
-      { capital_repayment_amount: 1500 }
+    expect(apiClient.get).toHaveBeenCalledWith(
+      "/api/v1/reports/customer_record_pdf",
+      { params: { contract_id: 16 }, responseType: "blob" }
+    );
+  });
+
+  it("downloads a named contract document as a blob", async () => {
+    await contractsApi.downloadDocument("user_promise_contract_pdf", {
+      contract_id: 16,
+      user_id: 7,
+    });
+
+    expect(apiClient.get).toHaveBeenCalledWith(
+      "/api/v1/reports/user_promise_contract_pdf",
+      {
+        params: { contract_id: 16, user_id: 7 },
+        responseType: "blob",
+      }
     );
   });
 });

@@ -30,7 +30,26 @@ describe("useDocs", () => {
     );
 
     expect(result.current.sections.every((section) => section.articles.length > 0)).toBe(true);
-    expect(administration.articles.map((article) => article.slug)).toEqual(["users-management"]);
+    expect(administration.articles.map((article) => article.slug)).toEqual([
+      "profile-and-security",
+      "terms-and-conditions",
+    ]);
+  });
+
+  it("shows the seller workspace articles to sellers", () => {
+    const { result } = renderHook(() => useDocs("en", "seller"));
+    const slugs = result.current.articles.map((article) => article.slug);
+
+    expect(slugs).toEqual(
+      expect.arrayContaining([
+        "seller-my-day",
+        "seller-clients",
+        "seller-collections",
+        "seller-documents",
+      ]),
+    );
+    expect(slugs).not.toContain("reports-and-analytics");
+    expect(slugs).not.toContain("audits");
   });
 
   it("loads localized titles and bodies", () => {
@@ -39,6 +58,18 @@ describe("useDocs", () => {
 
     expect(article.title).toBe("Interés por mora");
     expect(article.body).toContain("La fórmula");
+  });
+
+  it("includes the keyboard shortcuts article for staff roles", () => {
+    const admin = renderHook(() => useDocs("en", "admin"));
+    const seller = renderHook(() => useDocs("es", "seller"));
+
+    expect(admin.result.current.articles.map((article) => article.slug)).toContain(
+      "keyboard-shortcuts",
+    );
+    expect(seller.result.current.articles.map((article) => article.slug)).toContain(
+      "keyboard-shortcuts",
+    );
   });
 
   it("normalizes unknown roles to user", () => {

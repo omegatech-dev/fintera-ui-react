@@ -34,9 +34,10 @@ The interest (`13.70`) is added to the payment's interest amount and recorded as
 
 ## Editing the charge
 
-Admins can adjust the moratory amount for a specific payment from the payment schedule when the automatic value needs a correction.
+Admins can adjust the moratory amount for a specific payment from the payment schedule when the automatic value needs a correction. The schedule modal is available from an approved or closed contract.
 
 ## Related
 
-- [Payment schedule](/docs/payment-schedule)
+- [How the payment schedule is generated](/docs/payment-schedule)
 - [Contract lifecycle and statuses](/docs/contract-lifecycle)
+- [Payments inbox and review queue](/docs/payment-inbox)

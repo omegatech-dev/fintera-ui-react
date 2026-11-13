@@ -6,6 +6,7 @@ import { useLocale } from '@/contexts/LocaleContext';
 export const useContractPayments = (contract, open) => {
     const [schedule, setSchedule] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [currentContract, setCurrentContract] = useState(() => contract || null);
     const [ledgerEntries, setLedgerEntries] = useState([]);
     const [undoLoadingPaymentId, setUndoLoadingPaymentId] = useState(null);
@@ -18,11 +19,13 @@ export const useContractPayments = (contract, open) => {
         if (!contractId) return null;
 
         setLoading(true);
+        setError(null);
         try {
             const data = await contractsApi.getDetails(contract.project_id, contract.lot_id, contractId);
             return data.contract || null;
         } catch (error) {
             console.error('Error fetching contract details:', error);
+            setError(error?.message || t('paymentSchedule.loadError'));
             showToast(t('common.error'), 'error');
             return null;
         } finally {
@@ -34,6 +37,7 @@ export const useContractPayments = (contract, open) => {
         if (!contract?.id) {
             setSchedule([]);
             setLedgerEntries([]);
+            setError(null);
             return;
         }
 
@@ -117,6 +121,7 @@ export const useContractPayments = (contract, open) => {
         schedule,
         setSchedule,
         loading,
+        error,
         currentContract,
         setCurrentContract,
         ledgerEntries,

@@ -1,11 +1,11 @@
 # How the payment schedule is generated
 
-The schedule is generated when an admin **approves** a contract. It depends on the financing type.
+The schedule is generated when an admin **approves** a contract. It depends on the financing type and on the due-day settings in **Settings → General**.
 
 ## Direct financing
 
-1. **Reservation** — if the reservation amount is greater than zero, due **7 days** after approval.
-2. **Down payment** — if the down payment is greater than zero, due **14 days** after approval, or **21 days** when there is also a reservation.
+1. **Reservation** — if the reservation amount is greater than zero, it is due the configured **reservation due days** after approval (default `7`).
+2. **Down payment** — if the down payment is greater than zero, it is due the configured **down-payment due days** after approval (default `14`), or the **with reservation** value when a reservation also exists (default `21`).
 3. **Installments** — the remaining balance is `amount − reservation − down payment`.
    - Base installment = `floor(remaining ÷ payment term)`.
    - The **first installment absorbs the remainder**, so `first = remaining − base × (term − 1)`.
@@ -24,10 +24,15 @@ If the division does not come out even, only the first installment changes. For 
 
 ## Bank or cash financing
 
-1. **Reservation** — due **7 days** after approval, when the amount is greater than zero.
+1. **Reservation** — due the configured reservation due days after approval, when the amount is greater than zero.
 2. **Full balance** — `amount − reservation`, due on the contract's **maximum payment date**.
+
+## Editing the schedule
+
+Admins can open the payment schedule from an approved or closed contract. The modal shows the schedule, the payment rows, and the ledger, and allows registering payments, editing moratory interest, and undoing an approval.
 
 ## Related
 
 - [Financing types: direct, bank, and cash](/docs/financing-types)
+- [Reservations, down payments, and holds](/docs/reservations-and-holds)
 - [Overdue (moratory) interest](/docs/overdue-interest)

@@ -1,13 +1,16 @@
 import PropTypes from "prop-types";
+import { useLocale } from "../../contexts/LocaleContext";
 
 function Overlay({ handleClick }) {
+  const { t } = useLocale();
+
   return (
-    <div
-      style={{ zIndex: "25" }}
-      className="aside-overlay fixed left-0 top-0 block h-full w-full bg-black/30 sm:hidden cursor-pointer"
+    <button
+      type="button"
+      className="aside-overlay motion-fade-in fixed left-0 top-0 block h-full w-full cursor-pointer border-0 bg-black/30 p-0 lg:hidden"
       onClick={handleClick}
-      aria-label="Close sidebar"
-    ></div>
+      aria-label={t("header.closeSidebar")}
+    />
   );
 }
 

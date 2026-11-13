@@ -11,12 +11,15 @@ export const projectsApi = {
     delete: (id) => apiClient.delete(`/api/v1/projects/${id}`),
     publish: (id) => apiClient.post(`/api/v1/projects/${id}/publish`, {}),
     unpublish: (id) => apiClient.post(`/api/v1/projects/${id}/unpublish`, {}),
-    import: (formData) => apiClient.post("/api/v1/projects/import", formData), // apiClient handles FormData? Usually fetch handles it better if content-type is not set.
-    // apiClient in src/lib/apiClient.js sets Content-Type: application/json by default.
-    // I might need to handle FormData specially in apiClient or just pass specific headers.
-    // Let's check apiClient implementation again.
+    import: (formData) => apiClient.post("/api/v1/projects/import", formData),
+    importTemplate: () =>
+        apiClient.get("/api/v1/projects/import/template", { responseType: "blob" }),
 
     createLot: (projectId, data) => apiClient.post(`/api/v1/projects/${projectId}/lots`, data),
+    listLots: (projectId, params) => {
+        const query = new URLSearchParams(params).toString();
+        return apiClient.get(`/api/v1/projects/${projectId}/lots?${query}`);
+    },
     getLot: (projectId, lotId) => apiClient.get(`/api/v1/projects/${projectId}/lots/${lotId}`),
     updateLot: (projectId, lotId, data) => apiClient.put(`/api/v1/projects/${projectId}/lots/${lotId}`, data),
     createContract: (projectId, lotId, data) => apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/contracts`, data),

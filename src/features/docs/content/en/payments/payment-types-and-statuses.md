@@ -18,10 +18,12 @@ Every payment row has a **type** and a **status**. The type says what the money 
 | Status | Meaning |
 | --- | --- |
 | **Pending** | Awaiting payment or a receipt. |
-| **Submitted** | A receipt was uploaded and it is waiting for review. |
+| **Submitted** | A receipt was uploaded and it is waiting for review. The payments inbox labels this tab **Pending**. |
 | **Paid** | Approved and recorded in the ledger. |
 | **Rejected** | The receipt was rejected; the customer can upload a new one. |
 | **Readjustment** | The row was adjusted after a capital repayment. |
+
+The seller workspace also shows **In review** after a receipt is uploaded. It means the same as **submitted**: the admin has not approved it yet.
 
 ## Overdue
 
@@ -34,4 +36,5 @@ If the amount received is greater than the installment plus interest, the excess
 ## Related
 
 - [How the payment schedule is generated](/docs/payment-schedule)
+- [Payments inbox and review queue](/docs/payment-inbox)
 - [Approving, rejecting, and undoing payments](/docs/approving-payments)

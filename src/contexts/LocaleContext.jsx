@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
+/* eslint-disable react-refresh/only-export-components -- this context file intentionally exports the LocaleProvider and useLocale hook together. */
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import enTranslations from '../locales/en.json';
 import esTranslations from '../locales/es.json';
 import AuthContext from './AuthContext';
@@ -116,6 +117,14 @@ export const LocaleProvider = ({ children }) => {
       localStorage.setItem(STORAGE_KEY, locale);
     } catch (error) {
       console.warn('Failed to save locale to localStorage:', error);
+    }
+  }, [locale]);
+
+  // Keep the document language in sync so screen readers and the browser
+  // hyphenation follow the active locale.
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = locale;
     }
   }, [locale]);
 

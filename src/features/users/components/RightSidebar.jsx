@@ -1,41 +1,98 @@
 import { useState, useEffect, useContext } from "react";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import AuthContext from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import { useLocale } from "@/contexts/LocaleContext";
 import { usersApi } from "@/features/users/api";
 import { reportsApi } from "@/shared/api/reports";
-import { getInitials, getAvatarColor, getFullImageUrl } from "@/shared/utils/avatarUtils";
+import {
+  getInitials,
+  getAvatarColor,
+  getFullImageUrl,
+} from "@/shared/utils/avatarUtils";
+import { formatDate } from "@/shared/utils/formatters";
+import { Chip } from "@/shared/ui";
 
-// Helper to determine descriptor and color for FICO credit score (300–850)
 const FICO_MIN = 300;
 const FICO_MAX = 850;
+
 const creditScoreInfo = (score, t) => {
-  const s = Number(score);
-  if (Number.isNaN(s) || score === null || score === undefined) return { scoreLabel: "N/A", descriptor: t ? t('creditScore.unknownDesc') : "Unknown", color: "gray" };
-  const fico = Math.max(FICO_MIN, Math.min(FICO_MAX, Math.round(s)));
-  if (fico >= 750) return { scoreLabel: String(fico), descriptor: t ? t('creditScore.excellentDesc') : "Excellent", color: "green" };
-  if (fico >= 670) return { scoreLabel: String(fico), descriptor: t ? t('creditScore.goodDesc') : "Good", color: "emerald" };
-  if (fico >= 580) return { scoreLabel: String(fico), descriptor: t ? t('creditScore.fairDesc') : "Fair", color: "yellow" };
-  return { scoreLabel: String(fico), descriptor: t ? t('creditScore.poorDesc') : "Poor", color: "red" };
+  const value = Number(score);
+  if (Number.isNaN(value) || score === null || score === undefined) {
+    return {
+      scoreLabel: "N/A",
+      descriptor: t ? t("creditScore.unknownDesc") : "Unknown",
+    };
+  }
+  const fico = Math.max(FICO_MIN, Math.min(FICO_MAX, Math.round(value)));
+  if (fico >= 750) {
+    return {
+      scoreLabel: String(fico),
+      descriptor: t ? t("creditScore.excellentDesc") : "Excellent",
+    };
+  }
+  if (fico >= 670) {
+    return {
+      scoreLabel: String(fico),
+      descriptor: t ? t("creditScore.goodDesc") : "Good",
+    };
+  }
+  if (fico >= 580) {
+    return {
+      scoreLabel: String(fico),
+      descriptor: t ? t("creditScore.fairDesc") : "Fair",
+    };
+  }
+  return {
+    scoreLabel: String(fico),
+    descriptor: t ? t("creditScore.poorDesc") : "Poor",
+  };
 };
 
-function RightSidebar({ user, onClose }) {
+const normalizeRole = (role) => {
+  const value = String(role || "user").toLowerCase();
+  return ["admin", "seller", "user"].includes(value) ? value : "user";
+};
+
+const ROLE_TONES = { admin: "violet", seller: "info", user: "neutral" };
+
+const isActiveUser = (user) => {
+  const raw = user?.status ?? user?.is_active;
+  if (typeof raw === "boolean") return raw;
+  return String(raw || "").toLowerCase() === "active";
+};
+
+const getLastAccess = (user) =>
+  user?.last_sign_in_at ||
+  user?.last_login_at ||
+  user?.last_access_at ||
+  user?.last_seen_at ||
+  null;
+
+function ContactRow({ label, value }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <dt className="text-micro text-ink-3">{label}</dt>
+      <dd className="min-w-0 truncate text-label font-semibold text-ink-2">
+        {value || "—"}
+      </dd>
+    </div>
+  );
+}
+
+function RightSidebar({
+  user,
+  onClose,
+  onToggleStatus,
+  onResend,
+  onDelete,
+  showActions = true,
+}) {
   const { t } = useLocale();
   const { showToast } = useToast();
   const [summary, setSummary] = useState(null);
   const [summaryError, setSummaryError] = useState("");
   const { user: loggedUser } = useContext(AuthContext);
-
-  const creditInfo = creditScoreInfo(user?.credit_score, t);
-  const contactTextColor = {
-    green: "text-emerald-600 dark:text-emerald-400",
-    emerald: "text-emerald-600 dark:text-emerald-400",
-    yellow: "text-amber-600 dark:text-amber-400",
-    red: "text-rose-600 dark:text-rose-400",
-    gray: "text-bgray-600 dark:text-bgray-400",
-  }[creditInfo.color] || "text-bgray-700";
 
   useEffect(() => {
     if (!user) return;
@@ -48,14 +105,41 @@ function RightSidebar({ user, onClose }) {
         setSummary(data);
       } catch (error) {
         console.error(error);
-        setSummaryError("Error loading balance");
+        setSummaryError(t("common.error"));
       }
     };
 
     fetchSummary();
-  }, [user, user?.id, user?.role]);
+  }, [user, user?.id, user?.role, t]);
 
   if (!user) return null;
+
+  const role = normalizeRole(user.role);
+  const roleLabel = t(`userFilter.${role === "user" ? "client" : role}`);
+  const active = isActiveUser(user);
+  const lastAccess = getLastAccess(user);
+  const created = user.created_at ? formatDate(user.created_at) : null;
+  const meta = created
+    ? lastAccess
+      ? t("users.profileSummary", {
+          role: roleLabel,
+          date: created,
+          lastAccess: formatDate(lastAccess),
+        })
+      : t("users.profileSummaryNoAccess", { role: roleLabel, date: created })
+    : roleLabel;
+
+  const clientsCount =
+    user.clients_count === null || user.clients_count === undefined
+      ? "—"
+      : String(user.clients_count);
+  const credit = creditScoreInfo(user.credit_score, t);
+  const hasCreditScore =
+    loggedUser?.role === "admin" &&
+    role === "user" &&
+    user.credit_score !== null &&
+    user.credit_score !== undefined;
+  const hasPhoto = Boolean(user.profile_picture || user.profile_picture_thumb);
 
   const downloadUserBalancePDF = async () => {
     if (!user?.id) return;
@@ -71,208 +155,267 @@ function RightSidebar({ user, onClose }) {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error(error);
-      showToast("Failed to download PDF", "error");
+      showToast(t("common.downloadError"), "error");
     }
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0, x: 20 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.4,
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 }
   };
 
   return (
-    <motion.aside
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="h-full 2xl:h-auto 2xl:w-[400px] w-full bg-white/80 dark:bg-darkblack-600/80 backdrop-blur-xl border-l border-white/20 dark:border-white/10 shadow-2xl overflow-y-auto custom-scrollbar"
-    >
-      {/* Header with Background Pattern */}
-      <div className="relative pt-12 pb-8 px-8 overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-transparent"></div>
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl"></div>
-
+    <aside className="custom-scrollbar flex h-full w-full flex-col overflow-y-auto bg-surface">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-line px-4">
+        <h2 className="text-label font-bold text-ink">
+          {t("users.userDrawerTitle")}
+        </h2>
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/50 dark:bg-darkblack-500/50 text-bgray-500 dark:text-bgray-400 hover:text-bgray-900 dark:hover:text-white transition-all backdrop-blur-md"
+          aria-label={t("common.close")}
+          className="rounded-control p-2 text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
-
-        <div className="relative z-10 flex flex-col items-center">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", damping: 15 }}
-            className={`w-32 h-32 rounded-[2rem] ${(!user.profile_picture && !user.profile_picture_thumb) ? getAvatarColor(user.full_name) : ''} flex items-center justify-center shadow-2xl ring-4 ring-white/50 dark:ring-white/10 mb-6 overflow-hidden bg-white dark:bg-darkblack-500`}
-          >
-            {(user.profile_picture || user.profile_picture_thumb) ? (
-              <img
-                src={getFullImageUrl(user.profile_picture || user.profile_picture_thumb)}
-                alt={user.full_name}
-                className="w-full h-full object-cover"
-                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
-              />
-            ) : null}
-            <span className="text-white font-bold text-5xl tracking-tighter" style={{ display: (user.profile_picture || user.profile_picture_thumb) ? 'none' : 'block' }}>
-              {getInitials(user.full_name)}
-            </span>
-          </motion.div>
-
-          <h3 className="text-2xl font-extrabold text-bgray-900 dark:text-white tracking-tight mb-2">
-            {user.full_name}
-          </h3>
-
-          <div className="flex items-center gap-3">
-            <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-500/20`}>
-              {user?.role}
-            </span>
-            <span className="text-bgray-400 dark:text-bgray-500 text-xs font-bold tracking-widest">
-              #{user.id}
-            </span>
-          </div>
-        </div>
       </div>
 
-      <div className="px-8 pb-12 space-y-8">
-        {/* Contact Info Group */}
-        <motion.div variants={itemVariants} className="space-y-4">
-          <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-bgray-400 dark:text-bgray-500 ml-1">
-            {t('contracts.contactInformation')}
+      <div className="flex flex-col items-center gap-2 border-b border-line px-5 py-4 text-center">
+        <div
+          className={`flex h-14 w-14 items-center justify-center overflow-hidden rounded-full text-section font-bold text-white ${
+            hasPhoto ? "" : getAvatarColor(user.full_name)
+          }`}
+        >
+          {hasPhoto ? (
+            <img
+              src={getFullImageUrl(
+                user.profile_picture_thumb || user.profile_picture
+              )}
+              alt={user.full_name || ""}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            getInitials(user.full_name)
+          )}
+        </div>
+        <h3 className="text-section font-bold text-ink">
+          {user.full_name || "—"}
+        </h3>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Chip tone={ROLE_TONES[role]}>{roleLabel}</Chip>
+          <Chip tone={active ? "success" : "neutral"}>
+            {t(active ? "common.active" : "common.inactive")}
+          </Chip>
+        </div>
+        <p className="text-micro text-ink-3">{meta}</p>
+      </div>
+
+      <div className="space-y-5 px-5 py-4">
+        <section>
+          <h4 className="mb-2 text-micro font-bold uppercase tracking-wide text-ink-3">
+            {t("contracts.contactInformation")}
           </h4>
-
-          <div className="grid grid-cols-1 gap-3">
-            {/* Info Items */}
-            {[
-              { icon: "M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z", label: t('personalInfo.email'), value: user.email, color: "indigo" },
-              { icon: "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z", label: t('personalInfo.phone'), value: user.phone || "-", color: "emerald" },
-              { icon: "M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2", label: t('personalInfo.identity'), value: user.identity || "-", color: "amber" }
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl bg-bgray-50/50 dark:bg-darkblack-500/50 border border-transparent hover:border-indigo-500/10 dark:hover:border-indigo-500/20 transition-all group">
-                <div className={`w-10 h-10 rounded-xl bg-${item.color}-100 dark:bg-${item.color}-900/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
-                  <svg className={`w-5 h-5 text-${item.color}-600 dark:text-${item.color}-400`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
-                  </svg>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold text-bgray-400 dark:text-bgray-500 uppercase tracking-wider">{item.label}</p>
-                  <p className="text-sm font-bold text-bgray-900 dark:text-white truncate">{item.value}</p>
-                </div>
-              </div>
-            ))}
-
-            {/* Credit Score Item - Only visible for Admin viewing a regular user profile */}
-            {loggedUser?.role === "admin" && user?.role === "user" && (
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-bgray-50/50 dark:bg-darkblack-500/50 border border-transparent transition-all">
-                <div className={`w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0`}>
-                  <svg className={`w-5 h-5 ${contactTextColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-bgray-400 dark:text-bgray-500 uppercase tracking-wider">{t('users.creditScore') || 'Credit Score'}</p>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-extrabold ${contactTextColor}`}>{creditInfo.scoreLabel}</span>
-                    <span className="text-[10px] font-bold text-bgray-400 dark:text-bgray-500 uppercase">{creditInfo.descriptor}</span>
-                  </div>
-                </div>
-              </div>
+          <dl className="space-y-2.5">
+            <ContactRow label={t("personalInfo.email")} value={user.email} />
+            <ContactRow label={t("personalInfo.phone")} value={user.phone} />
+            <ContactRow
+              label={t("personalInfo.identity")}
+              value={user.identity}
+            />
+            <ContactRow label={t("personalInfo.rtn")} value={user.rtn} />
+            <ContactRow
+              label={t("personalInfo.address")}
+              value={user.address}
+            />
+            <ContactRow label={t("users.clientCount")} value={clientsCount} />
+            {hasCreditScore && (
+              <ContactRow
+                label={t("users.creditScore")}
+                value={`${credit.scoreLabel} · ${credit.descriptor}`}
+              />
             )}
-          </div>
-        </motion.div>
+          </dl>
+        </section>
 
-        {/* Financial Section */}
-        {user?.role === "user" && (
-          <motion.div variants={itemVariants} className="space-y-4">
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-bgray-400 dark:text-bgray-500 ml-1">
-              {t('contracts.balance')}
-            </h4>
-            <div className="p-6 rounded-[2rem] bg-gradient-to-br from-indigo-600 to-purple-600 shadow-xl shadow-indigo-200 dark:shadow-none relative overflow-hidden group">
-              <div className="absolute top-0 right-0 -mr-12 -mt-12 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <Link
-                    to={`/financing/user/${user.id}`}
-                    className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-[10px] font-bold text-white uppercase tracking-wider backdrop-blur-md"
-                  >
-                    {t('common.viewMore') || 'View More'}
-                  </Link>
-                </div>
-                <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">{t('contracts.totalBalance') || 'Total Balance'}</p>
-                <h3 className="text-2xl font-black text-white">
-                  {summary ? `${(Number(summary.balance) || 0).toLocaleString()} ${summary.currency}` : summaryError || '...'}
-                </h3>
+        {role === "user" && (
+          <section className="rounded-card border border-line bg-surface-2 p-3.5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-micro font-bold uppercase tracking-wide text-ink-3">
+                  {t("contracts.balance")}
+                </p>
+                <p className="mt-1 text-title font-bold tabular-nums text-ink">
+                  {summary
+                    ? `${(Number(summary.balance) || 0).toLocaleString()} ${
+                        summary.currency || ""
+                      }`
+                    : summaryError || "—"}
+                </p>
               </div>
+              <Link
+                to={`/financing/user/${user.id}`}
+                className="text-label font-semibold text-brand hover:underline"
+              >
+                {t("common.viewMore")}
+              </Link>
             </div>
-          </motion.div>
+          </section>
         )}
 
-        {/* Documents */}
-        {user?.role === "user" && (
-          <motion.div variants={itemVariants} className="space-y-4">
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-bgray-400 dark:text-bgray-500 ml-1">
-              {t('contracts.documents')}
+        {role === "user" && (
+          <section>
+            <h4 className="mb-2 text-micro font-bold uppercase tracking-wide text-ink-3">
+              {t("contracts.documents")}
             </h4>
             <button
+              type="button"
               onClick={downloadUserBalancePDF}
-              className="w-full p-4 rounded-2xl bg-white dark:bg-darkblack-500 border border-bgray-100 dark:border-transparent hover:border-indigo-500 transition-all flex items-center justify-between group"
+              className="flex w-full items-center justify-between gap-3 rounded-card border border-line bg-surface p-3 text-left transition-colors hover:bg-surface-2"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <svg className="w-6 h-6 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              <span className="flex min-w-0 items-center gap-2.5">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control bg-danger-soft text-danger">
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
                   </svg>
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-bold text-bgray-900 dark:text-white truncate max-w-[150px]">Balance_{user.id}.pdf</p>
-                  <p className="text-[10px] font-bold text-bgray-400 dark:text-bgray-500 uppercase">{t('contracts.accountStatement')}</p>
-                </div>
-              </div>
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              </div>
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-label font-semibold text-ink">
+                    Balance_{user.id}.pdf
+                  </span>
+                  <span className="block text-micro text-ink-3">
+                    {t("contracts.accountStatement")}
+                  </span>
+                </span>
+              </span>
+              <svg
+                className="h-4 w-4 shrink-0 text-ink-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
             </button>
-          </motion.div>
+          </section>
         )}
 
-        {/* Note if exists */}
-        {user?.note && (
-          <motion.div variants={itemVariants} className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20">
-            <div className="flex gap-3">
-              <svg className="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div>
-                <p className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-widest mb-1">{t('contracts.note')}</p>
-                <p className="text-xs text-amber-800 dark:text-amber-200/70 font-medium leading-relaxed">{user.note}</p>
-              </div>
-            </div>
-          </motion.div>
+        <section>
+          <h4 className="mb-2 text-micro font-bold uppercase tracking-wide text-ink-3">
+            {t("users.activityTitle")}
+          </h4>
+          {created || lastAccess || user.confirmed_at ? (
+            <ul className="space-y-2.5">
+              {lastAccess && (
+                <li className="flex items-center justify-between gap-3">
+                  <span className="text-label text-ink-2">
+                    {t("users.lastAccess")}
+                  </span>
+                  <span className="text-micro text-ink-3">
+                    {formatDate(lastAccess)}
+                  </span>
+                </li>
+              )}
+              {user.confirmed_at && (
+                <li className="flex items-center justify-between gap-3">
+                  <span className="text-label text-ink-2">
+                    {t("personalInfo.lastConfirmed")}
+                  </span>
+                  <span className="text-micro text-ink-3">
+                    {formatDate(user.confirmed_at)}
+                  </span>
+                </li>
+              )}
+              {created && (
+                <li className="flex items-center justify-between gap-3">
+                  <span className="text-label text-ink-2">
+                    {t("personalInfo.memberSince")}
+                  </span>
+                  <span className="text-micro text-ink-3">{created}</span>
+                </li>
+              )}
+            </ul>
+          ) : (
+            <p className="text-body text-ink-3">{t("users.noActivity")}</p>
+          )}
+        </section>
+
+        {user.note && (
+          <section className="rounded-card border border-warning/30 bg-warning-soft p-3.5">
+            <p className="text-micro font-bold uppercase tracking-wide text-warning">
+              {t("contracts.note")}
+            </p>
+            <p className="mt-1 text-label leading-relaxed text-warning">
+              {user.note}
+            </p>
+          </section>
         )}
       </div>
-    </motion.aside>
+
+      {showActions && (
+        <div className="mt-auto space-y-2 border-t border-line p-4">
+          <Link
+            to={`/users/${user.id}/edit`}
+            className="flex h-10 w-full items-center justify-center rounded-control bg-brand text-label font-bold text-white transition-colors hover:bg-brand-strong"
+          >
+            {t("users.editUser")}
+          </Link>
+          <Link
+            to={`/settings/user/${user.id}/security`}
+            className="flex h-10 w-full items-center justify-center rounded-control border border-line-strong bg-surface text-label font-semibold text-ink-2 transition-colors hover:bg-surface-2"
+          >
+            {t("users.resetPassword")}
+          </Link>
+          <div className="flex items-center justify-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => onToggleStatus?.(user)}
+              className="text-label font-semibold text-ink-2 hover:underline"
+            >
+              {t(active ? "users.deactivate" : "users.activate")}
+            </button>
+            <span aria-hidden="true" className="text-ink-3">·</span>
+            <button
+              type="button"
+              onClick={() => onResend?.(user)}
+              className="text-label font-semibold text-ink-2 hover:underline"
+            >
+              {t("users.invite")}
+            </button>
+          </div>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(user)}
+              className="w-full py-1 text-label font-semibold text-danger hover:underline"
+            >
+              {t("common.delete")}
+            </button>
+          )}
+        </div>
+      )}
+    </aside>
   );
 }
 

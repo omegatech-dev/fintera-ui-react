@@ -1,20 +1,38 @@
 import ProtoTypes from "prop-types";
-import { Suspense, useContext, useState } from "react";
-import { Sidebar, SidebarV2 } from "../sidebar";
+import { Suspense, useCallback, useContext, useEffect, useState } from "react";
+import { Sidebar } from "../sidebar";
 import { Overlay, OnboardingTour } from "../overlays";
-import { HeaderOne, HeaderTwo } from "../header";
+import { HeaderOne } from "../header";
+import { ShortcutsDialog } from "../ui";
+import BottomNav from "./BottomNav";
+import { useKeyboardShortcuts } from "./useKeyboardShortcuts";
 
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import AuthContext from "../../contexts/AuthContext";
 
 import { ThemeContext } from "../../contexts/ThemeContext";
 
 function Layout({ bg, overlay, children }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Settings keeps its own nested AnimatePresence, so it only fades once per
+  // section instead of remounting on every settings tab.
+  const pageKey = location.pathname.startsWith("/settings")
+    ? "/settings"
+    : location.pathname;
   const { user, logout } = useContext(AuthContext);
   const [sidebar, setSidebar] = useState(
     typeof window !== "undefined" && window.innerWidth > 1024
   );
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const openShortcuts = useCallback(() => setShortcutsOpen(true), []);
+  const closeShortcuts = useCallback(() => setShortcutsOpen(false), []);
+  const { shortcuts } = useKeyboardShortcuts({
+    user,
+    navigate,
+    onOpenHelp: openShortcuts,
+    enabled: Boolean(user) && !shortcutsOpen,
+  });
   const [theme, setTheme] = useState(() => {
     const storedTheme = localStorage.getItem("theme");
     return storedTheme === "" || storedTheme ? storedTheme : "";
@@ -25,32 +43,80 @@ function Layout({ bg, overlay, children }) {
     navigate("/signin");
   };
 
+  // On phones the sidebar is an off-canvas drawer; any navigation should
+  // dismiss it. On desktop it stays docked and open.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setSidebar(false);
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || window.innerWidth >= 1024 || !sidebar) {
+      return undefined;
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setSidebar(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [sidebar]);
+
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
-      <div
-        className={`layout-wrapper ${sidebar && "active"
-          }  w-full dark:bg-darkblack-600 `}
-        style={{
-          borderColor: "#2a313c",
-        }}
-      >
+      <div className={`layout-wrapper ${sidebar ? "active" : ""} w-full bg-canvas`}>
         <div className="relative flex w-full">
-          {user ? <Sidebar handleActive={() => setSidebar(!sidebar)} user={user} handleLogout={handleLogout} /> : <div>Sidebar render ...</div>}
+          {user ? (
+            <Sidebar
+              handleActive={() => setSidebar(!sidebar)}
+              user={user}
+              handleLogout={handleLogout}
+              open={sidebar}
+            />
+          ) : (
+            <div>Sidebar render ...</div>
+          )}
           {/* Only show overlay on mobile when sidebar is active */}
-          {overlay ? overlay : (sidebar && <Overlay handleClick={() => setSidebar(false)} />)}
-          {user ? <SidebarV2 user={user} handleLogout={handleLogout} /> : <div>Sidebar render ...</div>}
+          {overlay ? overlay : sidebar && <Overlay handleClick={() => setSidebar(false)} />}
           <div
-            className={`body-wrapper flex-1 overflow-x-hidden ${bg ? bg : "dark:bg-darkblack-500"
-              } `}
+            className={`body-wrapper min-h-screen flex-1 overflow-x-hidden bg-canvas pb-[72px] md:pb-0 ${
+              bg || ""
+            }`}
           >
-            <HeaderOne handleSidebar={() => setSidebar(!sidebar)} />
-            <HeaderTwo handleSidebar={() => setSidebar(!sidebar)} />
-            <Suspense fallback={<div className="flex items-center justify-center w-full h-[calc(100vh-64px)]"><div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>}>
-              <Outlet />
+            <HeaderOne
+              handleSidebar={() => setSidebar(!sidebar)}
+              sidebarOpen={sidebar}
+              onOpenShortcuts={openShortcuts}
+            />
+            <Suspense
+              fallback={
+                <div className="flex h-[calc(100vh-64px)] w-full items-center justify-center">
+                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand border-t-transparent" />
+                </div>
+              }
+            >
+              <div key={pageKey} className="motion-page">
+                <Outlet />
+              </div>
             </Suspense>
             <OnboardingTour />
             {children}
           </div>
+          {user && (
+            <BottomNav role={user.role} onOpenMenu={() => setSidebar(true)} />
+          )}
+          {user && shortcutsOpen && (
+            <ShortcutsDialog
+              open
+              shortcuts={shortcuts}
+              onClose={closeShortcuts}
+            />
+          )}
         </div>
       </div>
     </ThemeContext.Provider>

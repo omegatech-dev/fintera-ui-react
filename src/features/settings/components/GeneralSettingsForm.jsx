@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { useToast } from "../../../contexts/ToastContext";
-import { SettingsSaveBar } from "../../../shared/ui";
+import SettingsSaveBar from "./SettingsSaveBar";
 import SettingsSection from "./SettingsSection";
+import { useSettingsSaveBarRegistration } from "../hooks/useSettingsSaveBarRegistration";
 import { useSettingsDraft } from "../hooks/useSettingsDraft";
 import {
   settingsErrorClass,
   settingsGridClass,
+  settingsGridWideClass,
   settingsHelperClass,
   settingsInputClass,
   settingsInputDefaultClass,
@@ -44,8 +46,7 @@ function GeneralSettingsForm() {
     setErrors({});
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const submitDraft = async () => {
     const nextErrors = {};
     const whatsapp = String(draft.support_whatsapp || "").trim();
     const email = String(draft.support_email || "").trim();
@@ -145,6 +146,18 @@ function GeneralSettingsForm() {
     }
   };
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    submitDraft();
+  };
+
+  const inShell = useSettingsSaveBarRegistration("general", {
+    dirty,
+    saving,
+    onDiscard: handleDiscard,
+    onSubmit: submitDraft,
+  });
+
   return (
     <SettingsSection
       title={t("branding.supportReservations.title")}
@@ -152,12 +165,12 @@ function GeneralSettingsForm() {
     >
       {loading ? (
         <div className="space-y-3" aria-live="polite">
-          <div className="h-12 animate-pulse rounded-xl bg-bgray-100 dark:bg-darkblack-500" />
-          <div className="h-12 animate-pulse rounded-xl bg-bgray-100 dark:bg-darkblack-500" />
-          <div className="h-12 animate-pulse rounded-xl bg-bgray-100 dark:bg-darkblack-500" />
+          <div className="h-10 animate-pulse rounded-control bg-surface-2" />
+          <div className="h-10 animate-pulse rounded-control bg-surface-2" />
+          <div className="h-10 animate-pulse rounded-control bg-surface-2" />
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className={settingsGridClass}>
             <div>
               <label htmlFor="support-whatsapp" className={settingsLabelClass}>
@@ -214,11 +227,11 @@ function GeneralSettingsForm() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-bgray-50 p-5 dark:bg-darkblack-500/50">
-            <h3 className="text-sm font-bold uppercase tracking-wide text-bgray-500 dark:text-bgray-400">
+          <div className="mt-[18px] border-t border-line pt-[18px]">
+            <h3 className="text-[15px] font-bold text-ink">
               {t("branding.supportReservations.reservationTitle")}
             </h3>
-            <div className={`mt-4 ${settingsGridClass}`}>
+            <div className={`mt-2.5 ${settingsGridWideClass}`}>
               <div>
                 <label htmlFor="reservation-min-amount" className={settingsLabelClass}>
                   {t("branding.supportReservations.minAmount")}
@@ -369,18 +382,21 @@ function GeneralSettingsForm() {
             </div>
           </div>
 
-          <SettingsSaveBar
-            visible={dirty}
-            saving={saving}
-            disabled={saving || loading}
-            onDiscard={handleDiscard}
-            labels={{
-              unsaved: t("branding.saveBar.unsaved"),
-              discard: t("branding.saveBar.discard"),
-              save: t("branding.save"),
-              saving: t("branding.saving"),
-            }}
-          />
+          {!inShell && (
+            <SettingsSaveBar
+              visible={dirty}
+              saving={saving}
+              saveDisabled={saving || loading}
+              onDiscard={handleDiscard}
+              onSave={submitDraft}
+              labels={{
+                unsaved: t("settings.saveBar.unsaved"),
+                discard: t("settings.saveBar.discard"),
+                save: t("settings.saveBar.save"),
+                saving: t("settings.saveBar.saving"),
+              }}
+            />
+          )}
         </form>
       )}
     </SettingsSection>

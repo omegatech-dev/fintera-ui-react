@@ -8,9 +8,9 @@ import {
 } from "../logoRules";
 
 const STATUS_STYLES = {
-  good: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
-  small: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
-  ratio: "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+  good: "bg-brand-soft text-brand-strong",
+  small: "bg-warning-soft text-warning",
+  ratio: "bg-warning-soft text-warning",
 };
 
 function LogoUploadCard({
@@ -74,12 +74,10 @@ function LogoUploadCard({
   return (
     <div className="flex min-w-0 flex-col gap-3">
       <div>
-        <p className="mb-1 block text-sm font-semibold text-bgray-700 dark:text-bgray-300">
+        <p className="mb-1 block text-label font-semibold text-ink-2">
           {label}
         </p>
-        {hint && (
-          <p className="text-xs text-bgray-500 dark:text-bgray-400">{hint}</p>
-        )}
+        {hint && <p className="text-label text-ink-3">{hint}</p>}
       </div>
 
       <motion.button
@@ -99,14 +97,14 @@ function LogoUploadCard({
           }
         }}
         onDrop={handleDrop}
-        whileHover={reduceMotion ? undefined : { scale: 1.01 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.99 }}
-        className={`group relative flex min-h-[190px] w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-dashed p-5 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-darkblack-600 ${
+        whileHover={reduceMotion ? undefined : { scale: 1.005 }}
+        whileTap={reduceMotion ? undefined : { scale: 0.995 }}
+        className={`group relative flex min-h-[140px] w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-[12px] border-2 border-dashed p-4 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 ${
           isDragging
-            ? "border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-950/30"
+            ? "border-brand bg-brand-soft/50"
             : error
-              ? "border-red-300 bg-red-50/60 dark:border-red-900/60 dark:bg-red-950/20"
-              : "border-bgray-200 bg-bgray-50/70 hover:border-blue-300 hover:bg-blue-50/40 dark:border-darkblack-400 dark:bg-darkblack-500/40 dark:hover:border-blue-800"
+              ? "border-danger/60 bg-danger-soft/50"
+              : "border-line-strong bg-surface-2 hover:border-brand/60 hover:bg-brand-soft/30"
         }`}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -124,16 +122,14 @@ function LogoUploadCard({
             animate={{ opacity: 1, scale: 1 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
             transition={{ duration: reduceMotion ? 0 : 0.2 }}
-            className="max-h-24 max-w-full object-contain"
+            className="max-h-16 max-w-full object-contain"
           />
         </AnimatePresence>
 
-        <span className="text-sm font-semibold text-bgray-700 dark:text-bgray-200">
+        <span className="text-label font-semibold text-ink-2">
           {isDragging ? labels.dropActive : labels.drop}
         </span>
-        <span className="text-xs text-bgray-500 dark:text-bgray-400">
-          {labels.dropHint}
-        </span>
+        <span className="text-micro text-ink-3">{labels.dropHint}</span>
       </motion.button>
 
       <input
@@ -149,7 +145,7 @@ function LogoUploadCard({
       />
 
       {error && (
-        <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">
+        <p role="alert" className="text-label font-medium text-danger">
           {error === "size" ? labels.errorSize : labels.errorType}
         </p>
       )}
@@ -157,13 +153,13 @@ function LogoUploadCard({
       {showDetails && (fileDetails || statusLabel) && (
         <div className="flex flex-wrap items-center gap-2">
           {fileDetails && (
-            <span className="rounded-full bg-bgray-100 px-2.5 py-1 text-xs font-medium text-bgray-600 dark:bg-darkblack-500 dark:text-bgray-300">
+            <span className="rounded-chip bg-surface-2 px-2.5 py-1 text-micro font-medium text-ink-3">
               {fileDetails}
             </span>
           )}
           {statusLabel && (
             <span
-              className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[quality.status]}`}
+              className={`rounded-chip px-2.5 py-1 text-micro font-semibold ${STATUS_STYLES[quality.status]}`}
             >
               {statusLabel}
             </span>
@@ -175,7 +171,7 @@ function LogoUploadCard({
         <button
           type="button"
           onClick={onClear}
-          className="self-start rounded-lg border border-bgray-200 px-3.5 py-2 text-sm font-semibold text-bgray-700 transition-colors hover:bg-bgray-100 dark:border-darkblack-400 dark:text-bgray-200 dark:hover:bg-darkblack-500"
+          className="self-start rounded-control border border-line-strong bg-surface px-3 py-1.5 text-label font-semibold text-ink-2 transition-colors hover:bg-surface-2"
         >
           {labels.undo}
         </button>
@@ -184,7 +180,7 @@ function LogoUploadCard({
         <button
           type="button"
           onClick={onClear}
-          className="self-start rounded-lg border border-red-200 px-3.5 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-900/20"
+          className="self-start rounded-control border border-danger/40 bg-surface px-3 py-1.5 text-label font-semibold text-danger transition-colors hover:bg-danger-soft"
         >
           {labels.remove}
         </button>

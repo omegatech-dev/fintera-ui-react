@@ -1,0 +1,61 @@
+import PropTypes from "prop-types";
+import Button from "./Button";
+
+function SaveBar({
+  dirty = false,
+  visible,
+  saving = false,
+  onSave,
+  onDiscard,
+  saveLabel = "Guardar cambios",
+  discardLabel = "Descartar",
+  message = "Cambios sin guardar",
+  className = "",
+  saveType = "button",
+  saveForm,
+  saveDisabled = false,
+}) {
+  if (!(visible ?? dirty)) return null;
+
+  return (
+    <div
+      className={`motion-fade-up sticky bottom-0 z-20 flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface px-4 py-3 shadow-pop ${className}`}
+    >
+      <span className="text-label font-semibold text-warning" role="status">
+        {message}
+      </span>
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" onClick={onDiscard} disabled={saving}>
+          {discardLabel}
+        </Button>
+        <Button
+          size="sm"
+          type={saveType}
+          form={saveForm}
+          onClick={onSave}
+          loading={saving}
+          disabled={saveDisabled}
+        >
+          {saveLabel}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+SaveBar.propTypes = {
+  dirty: PropTypes.bool,
+  visible: PropTypes.bool,
+  saving: PropTypes.bool,
+  onSave: PropTypes.func,
+  onDiscard: PropTypes.func,
+  saveLabel: PropTypes.node,
+  discardLabel: PropTypes.node,
+  message: PropTypes.node,
+  className: PropTypes.string,
+  saveType: PropTypes.string,
+  saveForm: PropTypes.string,
+  saveDisabled: PropTypes.bool,
+};
+
+export default SaveBar;

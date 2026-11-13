@@ -1,32 +1,48 @@
 # Reports and analytics
 
-Reports turn contract and payment data into files you can share. Both admins and sellers can read reports.
+> **Admin only.** Analytics and its exports are not available in the seller workspace.
 
-## Available reports
+## Analytics page
 
-| Report | What it shows |
-| --- | --- |
-| **Commissions** | Commission earned per contract, using the project's commission rates. |
-| **Revenue flow** | Money collected over a date range. |
-| **Overdue payments** | Installments that are past due. |
+Open **Analytics** from the admin menu. The page is scoped to one month and optionally one project.
 
-Choose a start and end date, then download the CSV. Commission totals depend on the **financing type** of each contract, because direct, bank, and cash have different commission rates.
+- Use the **project selector** to compare all projects or a single one.
+- Use the **previous/next month** buttons to change the period.
+- **Export** opens the export menu.
 
-## Analytics
+## KPIs
 
-The analytics section summarizes performance:
-
-- **Total revenue** — collected money.
+- **Total revenue** — collected money in the period.
 - **Active contracts** — contracts currently being paid.
 - **Average payment** — average installment value.
-- **Occupancy** — how much of the inventory is sold or financed.
-- **Revenue trend**, **contract distribution**, and **seller performance**.
+- **Occupancy rate** — share of lots sold or financed; the caption shows sold lots over total lots.
 
-## PDF documents
+Each KPI shows the change against the previous month when comparison data exists.
 
-The system can also generate customer-facing PDFs such as the customer record, balance statement, and contract documents, from the customer or contract view.
+## Charts
+
+- **Revenue trend** — monthly revenue with its own project and year controls.
+- **Lots availability** — doughnut chart of available, reserved, financed, and fully paid lots.
+- **Monthly performance** — performance by month.
+- **Growth by project** — comparison against the previous month.
+- **Overdue balance** — amount overdue, with installments and clients when available. **View collections** opens the payments inbox filtered to overdue payments.
+- **Seller performance** — sales and approved contracts by seller.
+
+## Exports
+
+The export menu offers two kinds of downloads:
+
+1. **Data export** — the current period as **CSV** or **Excel**.
+2. **Financial reports** — **Commissions CSV**, **Revenue flow CSV**, and **Overdue payments CSV** for the selected dates.
+
+Commission totals depend on the **financing type** of each contract, because direct, bank, and cash have different commission rates.
+
+## Seller access
+
+Sellers do not have Analytics or Audits in the sidebar. They see their own commission totals in the seller workspace and can review contract documents, but they do not export organization reports.
 
 ## Related
 
+- [Commissions and payouts](/docs/commissions-and-payouts)
 - [Financing types: direct, bank, and cash](/docs/financing-types)
 - [Contract lifecycle and statuses](/docs/contract-lifecycle)

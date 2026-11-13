@@ -17,7 +17,26 @@ export const setAuthToken = (token) => {
  * @returns {Promise<any>} - Parsed JSON response
  */
 export async function request(endpoint, { body, ...customConfig } = {}) {
-    const token = authToken;
+    if (customConfig.params) {
+        const query = new URLSearchParams(
+            Object.entries(customConfig.params).filter(
+                ([, value]) => value !== undefined && value !== null && value !== ""
+            )
+        ).toString();
+        if (query) {
+            endpoint += `${endpoint.includes("?") ? "&" : "?"}${query}`;
+        }
+        delete customConfig.params;
+    }
+
+    // The AuthContext hydrates the in-memory token in an effect. Requests that
+    // fire during the first paint (for example the notifications bell) can run
+    // before that effect, so fall back to the persisted token instead of
+    // sending an unauthenticated request that returns a spurious 401.
+    let token = authToken;
+    if (!token && typeof window !== "undefined") {
+        token = window.localStorage.getItem("token");
+    }
     const headers = { ...HEADERS_DEFAULT };
 
     if (token) {
@@ -54,10 +73,13 @@ export async function request(endpoint, { body, ...customConfig } = {}) {
         throw new Error("Network error", { cause: error });
     }
 
-    // Handle 401 Unauthorized globally
+    // Handle 401 Unauthorized globally. Only broadcast when the request
+    // actually carried a token; an anonymous 401 is not a session expiry.
     if (response.status === 401) {
-        console.warn("Unauthorized access - dispatching auth:unauthorized event");
-        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+        if (token) {
+            console.warn("Unauthorized access - dispatching auth:unauthorized event");
+            window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+        }
         return Promise.reject({ message: "Unauthorized", status: 401 });
     }
 

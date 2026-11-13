@@ -1,251 +1,239 @@
-import { useRef, useEffect } from "react";
 import PropTypes from "prop-types";
-import { motion } from "framer-motion";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHome, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useLocale } from "../../../../contexts/LocaleContext";
-import { getStatusLabel, getStatusBadgeClass } from "../../../../shared/utils/statusUtils";
+import { getStatusLabel } from "../../../../shared/utils/statusUtils";
 import { calculateLotAreas } from "../../../../shared/utils/areaUtils";
 import { areaUnitLabel, linearUnitLabel } from "../../../../shared/utils/units";
 import { getDefaultCurrency } from "../../../../shared/utils/formatSettings";
+import { mediaUrl } from "../media/mediaFiles";
+import { Button, Chip, Dialog } from "@/shared/ui";
 
-function LotDetailsModal({ lot, onClose }) {
-    const { t } = useLocale();
-    const modalRef = useRef(null);
+const STATUS_TONES = {
+  available: "success",
+  reserved: "warning",
+  pending: "warning",
+  financed: "info",
+  fully_paid: "info",
+  sold: "neutral",
+};
 
-    // Close on Escape key
-    useEffect(() => {
-        const handleEsc = (e) => {
-            if (e.key === "Escape") onClose();
-        };
-        window.addEventListener("keydown", handleEsc);
-        return () => window.removeEventListener("keydown", handleEsc);
-    }, [onClose]);
+function LotDetailsModal({ lot, onClose, onReserve, onEdit, isAdmin = false }) {
+  const { t } = useLocale();
 
-    if (!lot) return null;
+  if (!lot) return null;
 
-    const {
-        id,
-        project_name,
-        name,
-        address,
-        length,
-        width,
-        measurement_unit,
-        area,
-        override_area,
-        price,
-        override_price,
-        effective_price,
-        status,
-        registration_number,
-        north,
-        south,
-        east,
-        west,
-        note,
-    } = lot;
+  const {
+    project_name,
+    name,
+    length,
+    width,
+    measurement_unit,
+    area,
+    override_area,
+    price,
+    override_price,
+    effective_price,
+    status,
+    registration_number,
+    code,
+    reserved_by,
+    cover_photo_url,
+    photo_url,
+    photos,
+  } = lot;
 
-    const statusLabel = getStatusLabel(status);
-    const badgeClass = getStatusBadgeClass(status);
+  const statusKey = String(status || "").toLowerCase();
+  const statusKeyLabel = statusKey ? `status.${statusKey}` : "";
+  const translatedStatus = statusKeyLabel ? t(statusKeyLabel) : "";
+  const statusLabel =
+    translatedStatus && translatedStatus !== statusKeyLabel
+      ? translatedStatus
+      : getStatusLabel(status);
+  const tone = STATUS_TONES[statusKey] || "neutral";
 
-    // Calculate final price
-    const finalPrice = effective_price !== undefined ? effective_price : (override_price && override_price > 0 ? override_price : price);
-    const hasPriceOverride = price > 0 && Math.abs(finalPrice - price) > 0.01;
+  const finalPrice =
+    effective_price !== undefined && effective_price !== null
+      ? effective_price
+      : override_price && override_price > 0
+        ? override_price
+        : price;
 
-    // Calculate areas
-    const displayArea = (override_area && override_area > 0) ? override_area : area;
-    const detailedAreas = calculateLotAreas(displayArea, measurement_unit);
+  const displayArea =
+    override_area && override_area > 0 ? override_area : area;
+  const detailedAreas = calculateLotAreas(displayArea, measurement_unit);
+  const currency = getDefaultCurrency();
 
-    const formatPrice = (value) => {
-        if (!value && value !== 0) return "N/A";
-        return `${Number(value).toLocaleString()} ${getDefaultCurrency()}`;
-    };
+  const formatPrice = (value) => {
+    if (!value && value !== 0) return "—";
+    return `${Number(value).toLocaleString()} ${currency}`;
+  };
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={onClose}
-                className="absolute inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-xs"
+  const pricePerArea =
+    finalPrice && displayArea
+      ? `${Number(finalPrice / displayArea).toLocaleString(undefined, {
+          maximumFractionDigits: 2,
+        })} ${currency} / ${areaUnitLabel(measurement_unit)}`
+      : null;
+
+  const cover = cover_photo_url || photo_url || photos?.[0]?.url || "";
+  const codeLabel = code || registration_number || "—";
+  const dimensions = `${width || "—"} × ${length || "—"} ${linearUnitLabel(
+    measurement_unit
+  )}`;
+
+  const facts = [
+    {
+      label: t("lots.front"),
+      value: width ? `${width} ${linearUnitLabel(measurement_unit)}` : "—",
+    },
+    {
+      label: t("lots.back"),
+      value: length ? `${length} ${linearUnitLabel(measurement_unit)}` : "—",
+    },
+    { label: t("lots.code"), value: codeLabel },
+    {
+      label: t("lots.status"),
+      value: statusLabel,
+      className:
+        statusKey === "available"
+          ? "text-brand-strong"
+          : statusKey === "reserved"
+            ? "text-warning"
+            : "text-ink",
+    },
+  ];
+
+  return (
+    <Dialog
+      open={!!lot}
+      onClose={onClose}
+      size="md"
+      side="right"
+      flush
+    >
+      <div className="flex h-12 items-center justify-between rounded-t-sheet border-b border-line px-4">
+        <h2 className="text-label font-bold text-ink">
+          {t("projects.lotDetails")}
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t("common.close")}
+          className="flex h-8 w-8 items-center justify-center rounded-control text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
+        </button>
+      </div>
+
+      <div className="relative h-[190px] bg-gradient-to-br from-brand-soft via-surface-2 to-line">
+        {cover ? (
+          <img
+            src={mediaUrl(cover)}
+            alt={name || ""}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <FontAwesomeIcon
+              icon={faHome}
+              className="text-5xl text-ink-3/40"
+              aria-hidden="true"
             />
+          </div>
+        )}
+      </div>
 
-            <motion.div
-                ref={modalRef}
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-darkblack-600 rounded-[2.5rem] shadow-2xl border-2 border-bgray-100 dark:border-darkblack-500 flex flex-col"
-            >
-                {/* Decorative background */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-success-300/10 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none" />
+      <div className="flex flex-col gap-3.5 p-5">
+        <p className="text-micro font-medium text-ink-3">
+          {[project_name, name].filter(Boolean).join("  /  ")}
+        </p>
 
-                        {/* Header */}
-                        <div className="flex items-start justify-between p-8 border-b border-bgray-100 dark:border-darkblack-500 bg-bgray-50/50 dark:bg-darkblack-500/30 sticky top-0 z-10 backdrop-blur-md">
-                            <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <span className="text-xs font-bold uppercase tracking-widest text-bgray-500 dark:text-bgray-400">
-                                        {project_name}
-                                    </span>
-                                    <span className="text-[10px] font-mono text-bgray-400 bg-white dark:bg-darkblack-500 px-2 py-0.5 rounded border border-bgray-200 dark:border-darkblack-400">
-                                        #{id}
-                                    </span>
-                                    <span className={`${badgeClass} px-3 py-1 text-[10px] font-black uppercase tracking-tighter rounded-full border border-current/20`}>
-                                        {statusLabel}
-                                    </span>
-                                </div>
-                                <h2 className="text-3xl font-black text-bgray-900 dark:text-white tracking-tight">
-                                    {name}
-                                </h2>
-                            </div>
-                            <button
-                                onClick={onClose}
-                                className="p-3 rounded-2xl bg-white dark:bg-darkblack-500 text-bgray-500 hover:text-red-500 dark:hover:text-red-400 border-2 border-bgray-100 dark:border-darkblack-400 hover:border-red-100 dark:hover:border-red-900/30 transition-all shadow-xs group"
-                            >
-                                <svg className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-8 space-y-8">
-                            {/* Financial & Dimensions Grid */}
-                            <div className="grid md:grid-cols-2 gap-6">
-                                {/* Financial Info */}
-                                <div className="p-6 rounded-3xl bg-green-50/50 dark:bg-green-900/10 border-2 border-green-100 dark:border-green-900/30">
-                                    <h3 className="text-xs font-black text-green-600 dark:text-green-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        {t("lotsTable.price")}
-                                    </h3>
-                                    <div className="space-y-2">
-                                        {hasPriceOverride && (
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm line-through text-bgray-500">{formatPrice(price)}</span>
-                                                <span className="text-[10px] font-bold bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Override</span>
-                                            </div>
-                                        )}
-                                        <p className="text-4xl font-black text-bgray-900 dark:text-white tracking-tight">
-                                            {formatPrice(finalPrice)}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Dimensions Info */}
-                                <div className="p-6 rounded-3xl bg-blue-50/50 dark:bg-blue-900/10 border-2 border-blue-100 dark:border-blue-900/30">
-                                    <h3 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
-                                        {t("lotsTable.dimensions")}
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <p className="text-[10px] uppercase font-bold text-bgray-400">Dimensions</p>
-                                            <p className="text-xl font-black text-bgray-900 dark:text-white">
-                                                {width} x {length} <span className="text-sm text-bgray-500 font-medium">{linearUnitLabel(measurement_unit)}</span>
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] uppercase font-bold text-bgray-400">Base Area</p>
-                                            <p className="text-xl font-black text-bgray-900 dark:text-white">
-                                                {displayArea} <span className="text-sm text-bgray-500 font-medium">{areaUnitLabel(measurement_unit)}</span>
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Detailed Areas */}
-                                    <div className="mt-4 pt-4 border-t border-blue-200/50 dark:border-blue-800/30 grid grid-cols-3 gap-2">
-                                        <div className="text-center p-2 rounded-xl bg-white/50 dark:bg-black/20">
-                                            <p className="text-[10px] font-bold text-bgray-400">{t("projects.squareMeters")}</p>
-                                            <p className="text-sm font-black text-bgray-800 dark:text-gray-200">{detailedAreas.m2}</p>
-                                        </div>
-                                        <div className="text-center p-2 rounded-xl bg-white/50 dark:bg-black/20">
-                                            <p className="text-[10px] font-bold text-bgray-400">{t("projects.squareFeet")}</p>
-                                            <p className="text-sm font-black text-bgray-800 dark:text-gray-200">{detailedAreas.ft2}</p>
-                                        </div>
-                                        <div className="text-center p-2 rounded-xl bg-white/50 dark:bg-black/20">
-                                            <p className="text-[10px] font-bold text-bgray-400">{t("projects.squareVaras")}</p>
-                                            <p className="text-sm font-black text-bgray-800 dark:text-gray-200">{detailedAreas.vara2}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* General Details */}
-                            <div className="space-y-6">
-                                <h3 className="text-lg font-bold text-bgray-900 dark:text-white flex items-center gap-2">
-                                    <span className="w-8 h-8 rounded-lg bg-bgray-100 dark:bg-darkblack-500 flex items-center justify-center text-bgray-500">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                    </span>
-                                    {t("lots.basicInfo")}
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="p-4 rounded-2xl bg-bgray-50 dark:bg-darkblack-500">
-                                        <p className="text-xs font-bold text-bgray-400 uppercase mb-1">{t("lots.address")}</p>
-                                        <p className="font-semibold text-bgray-900 dark:text-white">{address || "—"}</p>
-                                    </div>
-                                    <div className="p-4 rounded-2xl bg-bgray-50 dark:bg-darkblack-500">
-                                        <p className="text-xs font-bold text-bgray-400 uppercase mb-1">{t("lots.registrationNumber")}</p>
-                                        <p className="font-semibold text-bgray-900 dark:text-white">{registration_number || "—"}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Boundaries */}
-                            <div className="space-y-6">
-                                <h3 className="text-lg font-bold text-bgray-900 dark:text-white flex items-center gap-2">
-                                    <span className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-500">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                    </span>
-                                    {t("lots.boundaryDescriptions")}
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {[
-                                        { label: t("lots.north"), value: north, icon: "N" },
-                                        { label: t("lots.south"), value: south, icon: "S" },
-                                        { label: t("lots.east"), value: east, icon: "E" },
-                                        { label: t("lots.west"), value: west, icon: "W" },
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex items-start gap-3 p-4 rounded-2xl border border-bgray-100 dark:border-darkblack-500 bg-white dark:bg-darkblack-600">
-                                            <span className="w-8 h-8 rounded-full bg-bgray-100 dark:bg-darkblack-500 flex items-center justify-center text-xs font-black text-bgray-500 shrink-0">
-                                                {item.icon}
-                                            </span>
-                                            <div>
-                                                <p className="text-[10px] font-black uppercase text-bgray-400">{item.label}</p>
-                                                <p className="text-sm font-medium text-bgray-900 dark:text-white">{item.value || "—"}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Notes */}
-                            {note && (
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-bold text-bgray-900 dark:text-white">{t("lots.notes")}</h3>
-                                    <div className="p-6 rounded-3xl bg-yellow-50 dark:bg-yellow-900/10 border-2 border-yellow-100 dark:border-yellow-900/30 text-bgray-700 dark:text-bgray-300 italic">
-                                        "{note}"
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                {/* Footer */}
-                <div className="p-8 border-t border-bgray-100 dark:border-darkblack-500 flex justify-end">
-                    <button
-                        onClick={onClose}
-                        className="px-8 py-3 rounded-xl bg-bgray-100 dark:bg-darkblack-500 text-bgray-700 dark:text-white font-bold hover:bg-bgray-200 dark:hover:bg-darkblack-400 transition-colors"
-                    >
-                        {t("common.close")}
-                    </button>
-                </div>
-            </motion.div>
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="min-w-0 truncate text-2xl font-bold tracking-tight text-ink">
+            {name}
+          </h3>
+          <Chip tone={tone}>{statusLabel}</Chip>
         </div>
-    );
+
+        <p className="text-label font-medium text-ink-3">
+          {[
+            dimensions,
+            displayArea
+              ? `${Number(displayArea).toLocaleString()} ${areaUnitLabel(measurement_unit)}`
+              : null,
+            detailedAreas.vara2
+              ? `${Number(detailedAreas.vara2).toLocaleString()} varas²`
+              : null,
+          ]
+            .filter(Boolean)
+            .join("  ·  ")}
+        </p>
+
+        <div className="flex items-end gap-2">
+          <p className="text-2xl font-bold tracking-tight text-ink">
+            {formatPrice(finalPrice)}
+          </p>
+          {pricePerArea && (
+            <p className="pb-0.5 text-label font-medium text-ink-3">
+              {pricePerArea}
+            </p>
+          )}
+        </div>
+
+        <dl className="grid grid-cols-2 gap-x-5 gap-y-2.5 border-y border-line py-3">
+          {facts.map((fact) => (
+            <div key={fact.label} className="min-w-0">
+              <dt className="text-[10px] font-bold uppercase tracking-[0.6px] text-ink-3">
+                {fact.label}
+              </dt>
+              <dd
+                className={`mt-0.5 truncate text-body-lg font-semibold ${
+                  fact.className || "text-ink"
+                }`}
+              >
+                {fact.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.6px] text-ink-3">
+            {t("lots.reservedBy") || t("lotsTable.reservedBy")}
+          </p>
+          <p
+            className={`mt-0.5 text-body font-medium ${
+              reserved_by ? "text-ink" : "text-ink-3/70"
+            }`}
+          >
+            {reserved_by || t("lots.noOwner")}
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2 pt-0.5">
+          {statusKey === "available" && onReserve && (
+            <Button onClick={onReserve} className="h-[46px] w-full">
+              {t("projects.reserveLot")}
+            </Button>
+          )}
+          {isAdmin && onEdit && (
+            <Button variant="secondary" onClick={onEdit} className="h-[42px] w-full">
+              {t("lots.editLot")}
+            </Button>
+          )}
+        </div>
+      </div>
+    </Dialog>
+  );
 }
 
 LotDetailsModal.propTypes = {
-    lot: PropTypes.object,
-    onClose: PropTypes.func.isRequired,
+  lot: PropTypes.object,
+  onClose: PropTypes.func.isRequired,
+  onReserve: PropTypes.func,
+  onEdit: PropTypes.func,
+  isAdmin: PropTypes.bool,
 };
 
 export default LotDetailsModal;

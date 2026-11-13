@@ -1,9 +1,21 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { useLocale } from "./LocaleContext";
+import AuthContext from "./AuthContext";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 
 const OnboardingContext = createContext();
+
+const storageKey = (userId) => `fintera_onboarding_status:${userId}`;
+
+const readCompletedTours = (userId) => {
+    if (!userId) return {};
+    try {
+        return JSON.parse(localStorage.getItem(storageKey(userId)) || "{}");
+    } catch {
+        return {};
+    }
+};
 
 export const useOnboarding = () => {
     const context = useContext(OnboardingContext);
@@ -15,15 +27,15 @@ export const useOnboarding = () => {
 
 export const OnboardingProvider = ({ children }) => {
     const { t } = useLocale();
+    const { user } = useContext(AuthContext);
+    const userId = user?.id ?? null;
 
-    // Cache completed tours in state using lazy initialization
-    const [completedTours, setCompletedTours] = useState(() => {
-        try {
-            return JSON.parse(localStorage.getItem("fintera_onboarding_status") || "{}");
-        } catch {
-            return {};
-        }
-    });
+    // Tours are scoped per user so a new account still gets the onboarding.
+    const [completedTours, setCompletedTours] = useState(() => readCompletedTours(userId));
+
+    useEffect(() => {
+        setCompletedTours(readCompletedTours(userId));
+    }, [userId]);
 
     // Helper to check if a specific tour is completed
     const isTourCompleted = useCallback((tourKey) => {
@@ -34,10 +46,12 @@ export const OnboardingProvider = ({ children }) => {
     const markTourCompleted = useCallback((tourKey) => {
         setCompletedTours((prev) => {
             const next = { ...prev, [tourKey]: true };
-            localStorage.setItem("fintera_onboarding_status", JSON.stringify(next));
+            if (userId) {
+                localStorage.setItem(storageKey(userId), JSON.stringify(next));
+            }
             return next;
         });
-    }, []);
+    }, [userId]);
 
     const startTour = useCallback((tourKey = "home") => {
         // Define steps for each tour
@@ -247,54 +261,6 @@ export const OnboardingProvider = ({ children }) => {
                 }
             ],
 
-            contracts: [
-                {
-                    element: "#contract-stats",
-                    popover: {
-                        title: t("onboarding.contractsTour.stats.title") || "Contract Stats",
-                        description: t("onboarding.contractsTour.stats.desc") || "Quick overview of contract statuses.",
-                        side: "bottom",
-                        align: "start"
-                    }
-                },
-                {
-                    element: "#contracts-filter-section",
-                    popover: {
-                        title: t("onboarding.contractsTour.filter.title") || "Manage Contracts",
-                        description: t("onboarding.contractsTour.filter.desc") || "Search and filter through your contracts.",
-                        side: "bottom",
-                        align: "start"
-                    }
-                },
-                {
-                    element: "#view-mode-toggles",
-                    popover: {
-                        title: t("onboarding.contractsTour.viewMode.title") || "View Mode",
-                        description: t("onboarding.contractsTour.viewMode.desc") || "Switch between grid and list views.",
-                        side: "left",
-                        align: "start"
-                    }
-                },
-                {
-                    element: "#contract-schedule-btn",
-                    popover: {
-                        title: t("onboarding.contractsTour.schedule.title") || "Payment Schedule",
-                        description: t("onboarding.contractsTour.schedule.desc") || "View and manage the complete payment schedule for this contract.",
-                        side: "left",
-                        align: "start"
-                    }
-                },
-                {
-                    element: "#contract-view-details-btn",
-                    popover: {
-                        title: t("onboarding.contractsTour.viewDetails.title") || "View Contract Details",
-                        description: t("onboarding.contractsTour.viewDetails.desc") || "Click here to access complete contract information, payment schedules, and documents.",
-                        side: "left",
-                        align: "start"
-                    }
-                }
-            ],
-
             users: [
                 {
                     element: "#users-search-bar",
@@ -451,10 +417,11 @@ export const OnboardingProvider = ({ children }) => {
 
         const steps = stepsConfig[tourKey] || [];
 
-        // Filter out steps where element doesn't exist to prevent errors
+        // Filter out steps where element doesn't exist to prevent errors and
+        // avoid a misleading "1 of 1" tour on pages whose targets changed.
         const validSteps = steps.filter(step => document.querySelector(step.element));
 
-        if (validSteps.length === 0) return;
+        if (validSteps.length < 2) return;
 
         const driverObj = driver({
             showProgress: true,

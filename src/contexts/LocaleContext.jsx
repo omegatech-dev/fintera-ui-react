@@ -119,6 +119,14 @@ export const LocaleProvider = ({ children }) => {
     }
   }, [locale]);
 
+  // Keep the document language in sync so screen readers and the browser
+  // hyphenation follow the active locale.
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = locale;
+    }
+  }, [locale]);
+
   const t = useCallback((key, params = {}) => {
     const keys = key.split('.');
     let value = getNestedValue(translations[locale], keys);

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Urbanist:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700&display=swap");
 
 @import "tailwindcss";
 @config "../tailwind.config.js";
@@ -8,6 +8,51 @@
 @theme {
   --default-ring-width: 3px;
   --default-ring-color: var(--color-blue-500);
+
+  /* Fintera design tokens (light). Dark overrides live in @layer base .dark. */
+  --color-canvas: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-surface-2: #f8fafc;
+  --color-line: #e5e9f0;
+  --color-line-strong: #cbd5e1;
+  --color-ink: #0f172a;
+  --color-ink-2: #475569;
+  --color-ink-3: #64748b;
+  --color-brand: #15803d;
+  --color-brand-strong: #166534;
+  --color-brand-soft: #dcfce7;
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fee2e2;
+  --color-warning: #b45309;
+  --color-warning-soft: #fef3c7;
+  --color-info: #1d4ed8;
+  --color-info-soft: #dbeafe;
+  --color-violet: #6d28d9;
+  --color-violet-soft: #ede9fe;
+
+  --text-micro: 11px;
+  --text-micro--line-height: 14px;
+  --text-label: 12px;
+  --text-label--line-height: 16px;
+  --text-body: 13px;
+  --text-body--line-height: 18px;
+  --text-body-lg: 14px;
+  --text-body-lg--line-height: 20px;
+  --text-title: 16px;
+  --text-title--line-height: 22px;
+  --text-section: 18px;
+  --text-section--line-height: 24px;
+  --text-page: 26px;
+  --text-page--line-height: 32px;
+  --text-display: 30px;
+  --text-display--line-height: 36px;
+
+  --radius-chip: 6px;
+  --radius-control: 10px;
+  --radius-card: 14px;
+  --radius-sheet: 16px;
+
+  --shadow-pop: 0 10px 24px #0f172a1f;
 }
 
 @layer base {
@@ -27,6 +72,35 @@
   input::placeholder,
   textarea::placeholder {
     color: var(--color-gray-400);
+  }
+
+  /* Fintera dark tokens. Tailwind utilities reference these variables. */
+  .dark {
+    --color-canvas: #0b1220;
+    --color-surface: #111827;
+    --color-surface-2: #0f172a;
+    --color-line: #1f2937;
+    --color-line-strong: #334155;
+    --color-ink: #f8fafc;
+    --color-ink-2: #cbd5e1;
+    --color-ink-3: #94a3b8;
+    --color-brand: #15803d;
+    --color-brand-strong: #16a34a;
+    --color-brand-soft: #052e16;
+    --color-danger: #fca5a5;
+    --color-danger-soft: #450a0a;
+    --color-warning: #fbbf24;
+    --color-warning-soft: #451a03;
+    --color-info: #93c5fd;
+    --color-info-soft: #172554;
+    --color-violet: #c4b5fd;
+    --color-violet-soft: #2e1065;
+  }
+
+  /* One visible focus ring for every control. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand) !important;
+    outline-offset: 2px !important;
   }
 }
 

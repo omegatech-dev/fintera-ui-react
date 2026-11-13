@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilePdf, faImage, faReceipt } from "@fortawesome/free-solid-svg-icons";
+import { faFilePdf, faImage } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/shared/ui";
 import { formatCurrency, formatDate } from "@/shared/utils/formatters";
 import { paymentsApi } from "@/features/payments/api";
@@ -154,7 +154,7 @@ export default function PaymentReceipt({ row, t, className = "" }) {
   return (
     <>
       <div className={`flex min-w-0 items-center justify-end ${className}`}>
-        {receiptAvailable ? (
+        {receiptAvailable && (
           <Button
             size="sm"
             variant="secondary"
@@ -164,11 +164,6 @@ export default function PaymentReceipt({ row, t, className = "" }) {
             <FontAwesomeIcon icon={isPdf ? faFilePdf : faImage} />
             {t("paymentSchedule.viewReceipt")}
           </Button>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 text-micro text-ink-3">
-            <FontAwesomeIcon icon={faReceipt} />
-            {t("paymentSchedule.noReceipt")}
-          </span>
         )}
       </div>
 

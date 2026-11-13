@@ -93,13 +93,13 @@ describe("PaymentRow receipts", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows a discreet empty state when there is no receipt", () => {
+  it("keeps the row clean when there is no receipt", () => {
     renderRow({ ...baseRow, status: "pending", has_receipt: false, receipt_url: null });
 
-    expect(screen.getByText("paymentSchedule.noReceipt")).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "paymentSchedule.viewReceipt" })
     ).not.toBeInTheDocument();
+    expect(screen.queryByText("paymentSchedule.noReceipt")).not.toBeInTheDocument();
   });
 
   it("downloads the receipt and previews it in a dialog", async () => {

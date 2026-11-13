@@ -1,15 +1,14 @@
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCheckCircle,
   faCoins,
   faEllipsisVertical,
   faExclamationTriangle,
-  faLock,
   faPlus,
   faUndo,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button, Chip, Menu } from "@/shared/ui";
+import { formatDate } from "@/shared/utils/formatters";
 
 import PaymentReceipt from "./PaymentReceipt";
 
@@ -95,129 +94,93 @@ const PaymentRow = ({
 
   return (
     <div
-      className={`rounded-card border border-line bg-surface ${
+      className={`flex flex-col gap-3 rounded-card border border-line bg-surface p-3 sm:flex-row sm:items-center sm:justify-between ${
         isReadjustment ? "opacity-60" : ""
       }`}
     >
-      <div className="flex flex-col gap-2.5 p-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <div
-              className={`flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-control ${
-                isCapital
-                  ? "bg-brand-soft text-brand-strong"
-                  : isPaid
-                    ? "bg-surface-2 text-ink-2"
-                    : "bg-warning-soft text-warning"
-              }`}
-            >
-              <span className="text-[9px] font-bold uppercase">
-                {isCapital ? t("contracts.capitalShort") : t("contracts.installment")}
+      <div className="flex min-w-0 items-center gap-3">
+        <div
+          className={`flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-control ${
+            isCapital
+              ? "bg-brand-soft text-brand-strong"
+              : isPaid
+                ? "bg-surface-2 text-ink-2"
+                : "bg-warning-soft text-warning"
+          }`}
+        >
+          <span className="text-[9px] font-bold uppercase">
+            {isCapital ? t("contracts.capitalShort") : t("contracts.installment")}
+          </span>
+          <span className="text-body font-bold">
+            {isCapital ? <FontAwesomeIcon icon={faCoins} /> : row.number || idx + 1}
+          </span>
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-body font-semibold text-ink">
+            {row.description ||
+              `${t("contracts.installment")} ${row.number || idx + 1}`}
+          </p>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-micro text-ink-3">
+            <span>{formatDate(row.due_date)}</span>
+            <span aria-hidden="true">·</span>
+            <span>{translatePaymentType(row.payment_type)}</span>
+            {moratoryDays > 0 && !isPaid && (
+              <span className="font-semibold text-danger">
+                {t("contracts.moratory")} {moratoryDays}
+                {t("paymentSchedule.days")}
               </span>
-              <span className="text-body font-bold">
-                {isCapital ? <FontAwesomeIcon icon={faCoins} /> : row.number || idx + 1}
-              </span>
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-body font-semibold text-ink">
-                {row.description ||
-                  `${t("contracts.installment")} ${row.number || idx + 1}`}
-              </p>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-micro text-ink-3">
-                <span>
-                  {row.due_date
-                    ? new Date(row.due_date).toLocaleDateString("es-HN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : "—"}
-                </span>
-                <span aria-hidden="true">·</span>
-                <span>{translatePaymentType(row.payment_type)}</span>
-                {moratoryDays > 0 && !isPaid && (
-                  <span className="font-semibold text-danger">
-                    {t("contracts.moratory")} {moratoryDays}
-                    {t("paymentSchedule.days")}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="shrink-0 text-right">
-            <p className="text-body font-bold text-ink">{fmt(amount)}</p>
-            {interest > 0 && (
-              <p className="inline-flex items-center gap-1 text-micro font-semibold text-danger">
-                <FontAwesomeIcon icon={faExclamationTriangle} />
-                +{fmt(interest)}
-              </p>
             )}
-            {extraAmount > 0 && (
-              <p className="inline-flex items-center gap-1 text-micro font-semibold text-info">
-                <FontAwesomeIcon icon={faPlus} />+{fmt(extraAmount)}
-              </p>
-            )}
-            <div className="mt-1">
-              <Chip tone={STATUS_TONE[status] || "neutral"}>{statusLabel}</Chip>
-            </div>
           </div>
         </div>
+      </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line/70 pt-2.5">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {isReadjustment ? (
-              <span className="inline-flex items-center gap-1.5 text-micro font-semibold text-ink-3">
-                <FontAwesomeIcon icon={faLock} />
-                {t("paymentSchedule.readjustment")}
-              </span>
-            ) : (
-              <>
-                {!isReadOnly && !isPaid && (
-                  <Button
-                    size="sm"
-                    onClick={openPayment}
-                    aria-label={t("paymentSchedule.applyPayment")}
-                    title={t("paymentSchedule.applyPayment")}
-                    className="min-h-10"
-                  >
-                    <FontAwesomeIcon icon={faCoins} />
-                    {t("paymentSchedule.applyPayment")}
-                  </Button>
-                )}
-                {!isReadOnly && isPaid && (
-                  <span className="inline-flex items-center gap-1.5 text-micro font-semibold text-brand-strong">
-                    <FontAwesomeIcon icon={faCheckCircle} />
-                    {t("paymentSchedule.paid")}
-                  </span>
-                )}
-                {isReadOnly && !isPaid && (
-                  <span className="inline-flex items-center gap-1.5 text-micro font-semibold text-ink-3">
-                    <FontAwesomeIcon icon={faLock} />
-                    {t("contracts.readOnly")}
-                  </span>
-                )}
-                {isUndoing ? (
-                  <span className="flex h-10 w-10 items-center justify-center">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-danger border-t-transparent" />
-                  </span>
-                ) : (
-                  secondaryActions.length > 0 && (
-                    <div className="[&>div>button]:h-10 [&>div>button]:w-10">
-                      <Menu
-                        label={t("common.actions")}
-                        icon={<FontAwesomeIcon icon={faEllipsisVertical} />}
-                        items={secondaryActions}
-                      />
-                    </div>
-                  )
-                )}
-              </>
-            )}
-          </div>
-
-          <PaymentReceipt row={row} t={t} className="ml-auto" />
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
+        <div className="text-right">
+          <p className="text-body font-bold text-ink">{fmt(amount)}</p>
+          {interest > 0 && (
+            <p className="inline-flex items-center gap-1 text-micro font-semibold text-danger">
+              <FontAwesomeIcon icon={faExclamationTriangle} />
+              +{fmt(interest)}
+            </p>
+          )}
+          {extraAmount > 0 && (
+            <p className="inline-flex items-center gap-1 text-micro font-semibold text-info">
+              <FontAwesomeIcon icon={faPlus} />+{fmt(extraAmount)}
+            </p>
+          )}
         </div>
+        <Chip tone={STATUS_TONE[status] || "neutral"}>{statusLabel}</Chip>
+
+        {!isReadOnly && !isReadjustment && !isPaid && (
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={openPayment}
+            aria-label={t("paymentSchedule.applyPayment")}
+            title={t("paymentSchedule.applyPayment")}
+          >
+            <FontAwesomeIcon icon={faCoins} />
+            {t("paymentSchedule.applyPayment")}
+          </Button>
+        )}
+
+        {isUndoing ? (
+          <span className="flex h-9 w-9 items-center justify-center">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-danger border-t-transparent" />
+          </span>
+        ) : (
+          secondaryActions.length > 0 && (
+            <div className="[&>div>button]:h-9 [&>div>button]:w-9">
+              <Menu
+                label={t("common.actions")}
+                icon={<FontAwesomeIcon icon={faEllipsisVertical} />}
+                items={secondaryActions}
+              />
+            </div>
+          )
+        )}
+
+        <PaymentReceipt row={row} t={t} />
       </div>
     </div>
   );

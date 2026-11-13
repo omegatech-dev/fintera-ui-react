@@ -17,6 +17,10 @@ export const projectsApi = {
     // Let's check apiClient implementation again.
 
     createLot: (projectId, data) => apiClient.post(`/api/v1/projects/${projectId}/lots`, data),
+    listLots: (projectId, params) => {
+        const query = new URLSearchParams(params).toString();
+        return apiClient.get(`/api/v1/projects/${projectId}/lots?${query}`);
+    },
     getLot: (projectId, lotId) => apiClient.get(`/api/v1/projects/${projectId}/lots/${lotId}`),
     updateLot: (projectId, lotId, data) => apiClient.put(`/api/v1/projects/${projectId}/lots/${lotId}`, data),
     createContract: (projectId, lotId, data) => apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/contracts`, data),

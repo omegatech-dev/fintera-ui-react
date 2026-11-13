@@ -78,6 +78,20 @@ describe("Pagination", () => {
       "page"
     );
   });
+
+  it("windows the page numbers around the current page", () => {
+    render(
+      <Pagination page={8} pageCount={12} onPageChange={() => {}} />
+    );
+
+    expect(screen.getByRole("button", { name: "6" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "10" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "1" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "8" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+  });
 });
 
 describe("Toggle", () => {

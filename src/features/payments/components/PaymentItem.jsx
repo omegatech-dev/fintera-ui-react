@@ -10,7 +10,61 @@ import { useToast } from "../../../contexts/ToastContext";
 import { getDefaultCurrency } from "../../../shared/utils/formatSettings";
 import { reservationApprovalBlocked } from "../utils/approval";
 
-function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobileCard = false }) {
+// Pure helpers shared by the card view and the desktop table on the payments page
+export function getPaymentMeta(paymentInfo, t) {
+  const paidAmount = Number(paymentInfo.paid_amount ?? 0);
+  const totalAmount =
+    Number(paymentInfo.amount || 0) + Number(paymentInfo.interest_amount || 0);
+  const statusLower = (paymentInfo.status || "").toLowerCase();
+  const isOverdue =
+    paymentInfo.due_date && !paymentInfo.payment_date
+      ? isBefore(parseISO(paymentInfo.due_date), startOfDay(new Date()))
+      : false;
+  const isOverpayment =
+    statusLower === "paid" && paidAmount > totalAmount && totalAmount > 0;
+  const overpaymentAmount = isOverpayment ? paidAmount - totalAmount : 0;
+  const hasReceipt = Boolean(paymentInfo.has_receipt || paymentInfo.document_url);
+  const approvalBlocked = reservationApprovalBlocked(paymentInfo);
+
+  const config = (() => {
+    switch (statusLower) {
+      case "paid":
+        return { tone: "info", dot: "bg-blue-500" };
+      case "submitted":
+        return { tone: "warning", dot: "bg-amber-500" };
+      case "rejected":
+        return { tone: "danger", dot: "bg-rose-500" };
+      default:
+        return isOverdue
+          ? { tone: "danger", dot: "bg-rose-500" }
+          : { tone: "neutral", dot: "bg-slate-400" };
+    }
+  })();
+
+  const label =
+    statusLower === "submitted"
+      ? t("payments.statusOptions.submitted")
+      : statusLower === "paid"
+        ? t("payments.statusOptions.paid")
+        : statusLower === "rejected"
+          ? t("payments.statusOptions.rejected")
+          : formatStatus(paymentInfo.status, t);
+
+  return {
+    paidAmount,
+    totalAmount,
+    statusLower,
+    isOverdue,
+    isOverpayment,
+    overpaymentAmount,
+    hasReceipt,
+    approvalBlocked,
+    config,
+    label,
+  };
+}
+
+function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, _isMobileCard = false }) {
   const { t } = useLocale();
   const { showToast } = useToast();
 
@@ -38,12 +92,6 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
     } catch {
       return dateString;
     }
-  };
-
-  const maskIdentity = (identity) => {
-    if (!identity) return "N/A";
-    const str = String(identity);
-    return str.length <= 8 ? str : `${str.slice(0, 4)}••••${str.slice(-4)}`;
   };
 
   const isOverdue = paymentInfo.due_date && !paymentInfo.payment_date
@@ -175,10 +223,9 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
     visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", damping: 15, stiffness: 100 } }
   };
 
-  // --- VERSION 2.0 MOBILE VIEW ---
-  if (isMobileCard) {
-    return (
-      <motion.div
+  // --- VERSION 2.0 CARD VIEW ---
+  return (
+    <motion.div
         layout
         variants={cardVariants}
         initial="hidden"
@@ -298,137 +345,6 @@ function PaymentItem({ paymentInfo, userRole, refreshPayments, onClick, isMobile
         />}
       </motion.div>
     );
-  }
-
-  // --- VERSION 2.0 DESKTOP VIEW ---
-  return (
-    <motion.tr
-      layout
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
-      onClick={onClick}
-      className="group border-b border-slate-100/50 dark:border-white/5 last:border-0 hover:bg-slate-50/40 dark:hover:bg-white/[0.02] transition-colors duration-400 cursor-pointer"
-    >
-      <td className="px-6 py-4">
-        <div className="flex items-center gap-5">
-          <div className="relative w-10 h-10 rounded-xl bg-white dark:bg-darkblack-500 shadow-xs border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-400 group-hover:text-blue-500 group-hover:border-blue-500/20 transition-all duration-500 overflow-hidden">
-            <svg className="w-5 h-5 z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-900 dark:text-white mb-0.5 truncate">{paymentInfo.description}</p>
-            <div className="flex items-center gap-2">
-              <span className="text-[9px] font-bold tracking-wider text-blue-500 uppercase opacity-40">PROPERTY</span>
-              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase">
-                {paymentInfo.project_name || paymentInfo.contract?.lot?.project?.name ? `${paymentInfo.project_name || paymentInfo.contract?.lot?.project?.name} - ` : ""}
-                {paymentInfo.lot_name || paymentInfo.contract?.lot?.name || "-"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </td>
-      <td className="px-6 py-4">
-        <div className="flex flex-col">
-          <span className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">{paymentInfo.applicant_name || paymentInfo.contract?.applicant_user?.full_name || "-"}</span>
-          <span className="text-[10px] text-slate-400 dark:text-slate-500 opacity-60 mt-0.5">{maskIdentity(paymentInfo.applicant_identity || paymentInfo.contract?.applicant_user?.identity)}</span>
-        </div>
-      </td>
-      <td className="px-6 py-4 text-right">
-        <div className="flex flex-col items-end">
-          <div className="flex items-center gap-1.5">
-            <span className={`text-xl font-bold ${isOverdue ? "text-rose-600 dark:text-rose-400" : "text-slate-900 dark:text-white"}`}>
-              {formatCurrency(totalAmount, paymentInfo.contract?.currency)}
-            </span>
-          </div>
-          {paymentInfo.interest_amount > 0 && <span className="text-[9px] font-bold text-rose-600 mt-0.5">+{formatCurrency(paymentInfo.interest_amount)} {t('payments.accrued')}</span>}
-          {isOverpayment && (
-            <div className="mt-1.5 space-y-0.5 text-right">
-              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase block">+{formatCurrency(overpaymentAmount)} {t('payments.overpayment')}</span>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 block">{t('payments.totalPaid')}: {formatCurrency(paidAmount, paymentInfo.contract?.currency)}</span>
-            </div>
-          )}
-        </div>
-      </td>
-      <td className="px-6 py-4">
-        <div className="flex flex-col">
-          <span className={`text-[13px] font-bold ${isOverdue ? "text-rose-600" : "text-slate-900 dark:text-slate-300"}`}>{formatDate(paymentInfo.due_date)}</span>
-          {isOverdue && <span className="text-[9px] font-bold text-rose-600 tracking-wider mt-1">{t('payments.pastDue')}</span>}
-        </div>
-      </td>
-      <td className="px-6 py-4">
-        <div className="flex flex-col gap-1.5">
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} shadow-xs shadow-black/5`}>
-            <span className={`w-1.5 h-1.5 rounded-full mr-2 ${statusConfig.dot} animate-pulse`} />
-            {statusLabel}
-          </div>
-        </div>
-      </td>
-      <td className="px-6 py-4">
-        <div className="flex flex-wrap justify-end gap-3 transition-opacity duration-300">
-          {statusLower === "submitted" && userRole === "admin" && (
-            <>
-              <motion.button
-                whileHover={approvalBlocked ? undefined : { scale: 1.05 }}
-                whileTap={approvalBlocked ? undefined : { scale: 0.95 }}
-                onClick={(e) => { e.stopPropagation(); if (approvalBlocked) return; setShowApproveModal(true); }}
-                disabled={approvalBlocked}
-                aria-disabled={approvalBlocked}
-                title={approvalBlocked ? t('payments.reservationRequiresContract') : undefined}
-                className={`px-5 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-md transition-all ${approvalBlocked ? "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed" : "bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95"}`}
-              >
-                {t('payments.approve')}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => { e.stopPropagation(); setShowRejectModal(true); }}
-                className="px-5 py-2 bg-rose-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-md hover:bg-rose-600 active:scale-95 transition-all"
-              >
-                {t('payments.reject')}
-              </motion.button>
-              {approvalBlocked && (
-                <p className="w-full text-right text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                  {t('payments.reservationRequiresContract')}
-                </p>
-              )}
-            </>
-          )}
-          {statusLower === "paid" && (
-            <motion.button
-              whileHover={{ scale: 1.1, rotate: -5 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={(e) => { e.stopPropagation(); hasReceipt && handleDownloadReceipt(); }}
-              disabled={!hasReceipt}
-              className={`p-3 rounded-2xl transition-all ${hasReceipt ? "bg-white dark:bg-darkblack-500 text-blue-600 shadow-lg border border-slate-100 dark:border-white/10" : "text-slate-200 cursor-not-allowed"}`}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            </motion.button>
-          )}
-        </div>
-      </td>
-
-      <AnimatePresence>
-        {showApproveModal && (
-          <ApproveModal
-            key="approve-modal"
-            paymentInfo={paymentInfo} onClose={() => setShowApproveModal(false)}
-            handleApprove={handleApprove} approveLoading={approveLoading} approvalResult={approvalResult}
-            editAmount={editAmount} setEditAmount={setEditAmount} editInterest={editInterest} setEditInterest={setEditInterest}
-            t={t} hasReceipt={hasReceipt} handleDownloadReceipt={handleDownloadReceipt}
-          />
-        )}
-        {showRejectModal && (
-          <RejectPaymentModal
-            key="reject-modal"
-            paymentInfo={paymentInfo} onClose={() => setShowRejectModal(false)}
-            handleReject={handleReject} rejectLoading={rejectLoading} rejectResult={rejectResult}
-            t={t}
-          />
-        )}
-      </AnimatePresence>
-    </motion.tr>
-  );
 }
 
 /**
@@ -1059,3 +975,5 @@ PaymentDetailModal.propTypes = {
 };
 
 export default memo(PaymentItem);
+
+export { ApproveModal, RejectPaymentModal };

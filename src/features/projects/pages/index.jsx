@@ -12,9 +12,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
   faFileUpload,
-  faSearch,
   faFilter
 } from "@fortawesome/free-solid-svg-icons";
+import { EmptyState, ErrorState, Pagination, Skeleton } from "@/shared/ui";
 
 function Projects() {
   const [projects, setProjects] = useState([]);
@@ -82,9 +82,7 @@ function Projects() {
   }, []);
 
   const handleAddProject = () => navigate("/projects/create");
-  const handleImportClick = () => fileInputRef.current?.click();
-
-  const handleImportChange = async (e) => {
+  const handleImportClick = () => fileInputRef.current?.click();  const handleImportChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
@@ -104,9 +102,6 @@ function Projects() {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
-
-  const handlePrevPage = () => { if (page > 1) setPage(page - 1); };
-  const handleNextPage = () => { if (pagination.pages && page < pagination.pages) setPage(page + 1); };
 
   return (
     <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell bg-bgray-50 dark:bg-darkblack-700 min-h-screen">
@@ -213,25 +208,24 @@ function Projects() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20" data-aos="zoom-in">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-success-300 mb-4"></div>
-          <p className="text-bgray-600 dark:text-bgray-400 font-medium">
+        <div className="space-y-4">
+          <Skeleton rows={6} />
+          <p className="text-center text-body text-ink-3">
             {t('projectsPage.loadingProjects')}
           </p>
         </div>
       ) : error ? (
-        <div className="bg-error-50 dark:bg-error-300/10 border border-error-200 text-error-300 p-6 rounded-2xl text-center" data-aos="shake">
-          <p className="font-bold text-lg mb-1">{t('common.error')}</p>
-          <p>{t('projectsPage.errorPrefix')} {error}</p>
-        </div>
+        <ErrorState
+          title={t('common.error')}
+          description={`${t('projectsPage.errorPrefix')} ${error}`}
+          onRetry={fetchProjects}
+        />
       ) : projects.length === 0 ? (
-        <div className="text-center py-20 bg-white dark:bg-darkblack-600 rounded-3xl border border-dashed border-bgray-300 dark:border-darkblack-400 shadow-xs" data-aos="zoom-in" data-aos-duration="400">
-          <div className="w-20 h-20 bg-bgray-100 dark:bg-darkblack-500 rounded-full flex items-center justify-center mx-auto mb-4 text-bgray-400">
-            <FontAwesomeIcon icon={faSearch} size="2x" />
-          </div>
-          <h3 className="text-xl font-bold text-bgray-900 dark:text-white">{t('common.noItemsFound')}</h3>
-          <p className="text-bgray-600 dark:text-bgray-400">{t('common.tryAdjustingFilters')}</p>
-        </div>
+        <EmptyState
+          variant="no-results"
+          title={t('common.noItemsFound')}
+          description={t('common.tryAdjustingFilters')}
+        />
       ) : (
         <>
           <div className="grid lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
@@ -256,28 +250,15 @@ function Projects() {
 
 
           {pagination.pages && pagination.pages > 1 && (
-            <div className="flex justify-center items-center mt-12 gap-4" data-aos="fade" data-aos-duration="400">
-              <button
-                onClick={handlePrevPage}
-                disabled={page <= 1}
-                className="w-10 h-10 flex items-center justify-center bg-white dark:bg-darkblack-600 border border-bgray-200 dark:border-darkblack-400 rounded-xl text-bgray-700 dark:text-white disabled:opacity-50 hover:bg-bgray-50 transition-all active:scale-95 shadow-xs"
-              >
-                <span className="sr-only">Previous</span>
-                &lsaquo;
-              </button>
-
-              <div className="px-4 py-2 bg-white dark:bg-darkblack-600 border border-bgray-200 dark:border-darkblack-400 rounded-xl text-sm font-bold text-bgray-900 dark:text-white shadow-xs transition-all hover:shadow-md">
-                {t('projectsPage.page')} {page} <span className="text-bgray-400 mx-1">/</span> {pagination.pages}
-              </div>
-
-              <button
-                onClick={handleNextPage}
-                disabled={page >= pagination.pages}
-                className="w-10 h-10 flex items-center justify-center bg-white dark:bg-darkblack-600 border border-bgray-200 dark:border-darkblack-400 rounded-xl text-bgray-700 dark:text-white disabled:opacity-50 hover:bg-bgray-50 transition-all active:scale-95 shadow-xs"
-              >
-                <span className="sr-only">Next</span>
-                &rsaquo;
-              </button>
+            <div className="mt-12 flex justify-center">
+              <Pagination
+                page={page}
+                pageCount={pagination.pages}
+                onPageChange={(newPage) => {
+                  setPage(newPage);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              />
             </div>
           )}
         </>

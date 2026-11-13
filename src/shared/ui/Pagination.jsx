@@ -11,7 +11,13 @@ function Pagination({
   const start = total != null && perPage ? (page - 1) * perPage + 1 : null;
   const end =
     total != null && perPage ? Math.min(page * perPage, total) : null;
-  const pages = Array.from({ length: Math.min(pageCount, 5) }, (_, i) => i + 1);
+  const maxVisible = 5;
+  const lastVisible = Math.min(pageCount, Math.max(page + 2, maxVisible));
+  const firstVisible = Math.max(1, lastVisible - maxVisible + 1);
+  const pages = Array.from(
+    { length: lastVisible - firstVisible + 1 },
+    (_, i) => firstVisible + i
+  );
 
   const go = (next) => {
     if (next < 1 || next > pageCount) return;

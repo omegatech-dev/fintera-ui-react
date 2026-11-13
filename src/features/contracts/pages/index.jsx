@@ -1,137 +1,95 @@
 import { useState, useContext, useMemo, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faThLarge,
-  faList,
-  faSync
-} from "@fortawesome/free-solid-svg-icons";
+import { faSync } from "@fortawesome/free-solid-svg-icons";
 
 import { useLocale } from "../../../contexts/LocaleContext";
 import AuthContext from "../../../contexts/AuthContext";
-import GenericList from "../../../shared/ui/GenericList";
+import { useToast } from "../../../contexts/ToastContext";
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import GenericFilter from "../../../shared/forms/GenericFilter";
-import ContractItem from "../components/ContractItem";
-import ContractStats from "../components/ContractStats";
 import { contractsApi } from "../api";
+import { getStatusTheme } from "../../../shared/utils/statusUtils";
+import { formatStatus } from "../../../shared/utils/formatStatus";
+import { formatDate } from "../../../shared/utils/formatters";
+import ContractStats from "../components/ContractStats";
+import ContractMobileCard from "../components/ContractItem/ContractMobileCard";
+import PaymentScheduleModal from "../components/PaymentScheduleModal";
+import RejectionModal from "../components/RejectionModal";
+import {
+  Button,
+  Card,
+  Chip,
+  EmptyState,
+  ErrorState,
+  Pagination,
+  Skeleton,
+  Table,
+} from "@/shared/ui";
+
+const translateFinancingType = (type, t) => {
+  switch (type?.toLowerCase()) {
+    case "direct":
+      return t("contracts.financingTypes.direct") || "Directo";
+    case "cash":
+      return "Contado";
+    case "bank":
+      return t("contracts.financingTypes.bank") || "Bancario";
+    default:
+      return "N/A";
+  }
+};
+
+const STATUS_TONES = {
+  approved: "success",
+  closed: "info",
+  rejected: "danger",
+  pending: "warning",
+  submitted: "info",
+};
+
+const PER_PAGE = 12;
 
 function Contract() {
   const { user } = useContext(AuthContext);
   const { t } = useLocale();
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const userRole = user?.role;
 
-  // Search and filter state
+  const [contracts, setContracts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sort, setSort] = useState({
+    field: "contracts.created_at",
+    direction: "desc",
+  });
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [itemPatch, setItemPatch] = useState(null); // Updated contract (e.g. after payment) for optimistic list update
-  const [viewMode, setViewMode] = useState("grid"); // "grid" or "table"
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
     approved: 0,
     rejected: 0,
   });
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
 
-  // Fetch stats separately to keep it clean
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const stats = await contractsApi.getStats();
-        if (stats) {
-          setStats({
-            total: stats.total,
-            pending: stats.pending,
-            approved: stats.approved,
-            rejected: stats.rejected,
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching contract stats:", error);
-      }
-    };
-    fetchStats();
-  }, [refreshTrigger]);
-
-  // Status filter options: pending, approved, rejected, closed (cancelled no longer used)
-  const statusOptions = useMemo(
-    () => [
-      { value: "", label: t('contracts.allStatuses') },
-      { value: "pending", label: t('contracts.status.pending') },
-      { value: "approved", label: t('contracts.status.approved') },
-      { value: "rejected", label: t('contracts.status.rejected') },
-      { value: "closed", label: t('contracts.status.closed') },
-    ],
-    [t]
-  );
-
-  const columns = useMemo(
-    () => [
-      {
-        label: t('contracts.lot'),
-        align: "left",
-        sortKey: "lot_id",
-        defaultSortDirection: "asc",
-      },
-      {
-        label: t('contracts.client'),
-        align: "left",
-        sortKey: "applicant_user_id",
-        defaultSortDirection: "asc",
-      },
-      {
-        label: t('contracts.financing'),
-        align: "center",
-        sortKey: "financing_type",
-        defaultSortDirection: "asc",
-      },
-      {
-        label: t('common.status'),
-        align: "center",
-        sortKey: "status",
-        defaultSortDirection: "asc",
-      },
-      {
-        label: t('contracts.created'),
-        align: "center",
-        sortKey: "contracts.created_at",
-        defaultSortDirection: "desc",
-      },
-      { label: t('contracts.createdBy'), align: "center" },
-      { label: t('contracts.actions'), align: "center" },
-    ],
-    [t]
-  );
-
-  const refreshContracts = useCallback((updatedContract) => {
-    if (updatedContract?.id) {
-      setItemPatch((prev) => (prev?.id === updatedContract.id ? { ...prev, ...updatedContract } : updatedContract));
-    }
-    setRefreshTrigger((prev) => prev + 1);
-  }, []);
-
-  const renderContractItem = useCallback(
-    (contract, index, isMobileCard) => {
-      // Force card view for grid mode even on desktop
-      const forceCard = viewMode === "grid" || isMobileCard;
-      return (
-        <ContractItem
-          key={contract.id}
-          contract={contract}
-          userRole={user?.role}
-          refreshContracts={refreshContracts}
-          isMobileCard={forceCard}
-        />
-      );
-    },
-    [user?.role, refreshContracts, viewMode]
-  );
+  // Row-level modal state lifted from ContractItem
+  const [scheduleContract, setScheduleContract] = useState(null);
+  const [rejectionContract, setRejectionContract] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const filters = useMemo(() => {
     const obj = {};
     const trimmedTerm = searchTerm.trim();
-    // Check if searchTerm is a valid UUID (more relaxed regex to catch all variants)
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (trimmedTerm) {
       if (uuidRegex.test(trimmedTerm)) {
@@ -146,92 +104,468 @@ function Contract() {
     return obj;
   }, [searchTerm, statusFilter, startDate, endDate]);
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await contractsApi.getStats();
+        if (data) {
+          setStats({
+            total: data.total,
+            pending: data.pending,
+            approved: data.approved,
+            rejected: data.rejected,
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching contract stats:", err);
+      }
+    };
+    fetchStats();
+  }, [refreshTrigger]);
+
+  const refreshContracts = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
+
+  const fetchContracts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = {
+        ...filters,
+        page,
+        per_page: PER_PAGE,
+        sort: `${sort.field}-${sort.direction}`,
+      };
+      const data = await contractsApi.list(params);
+      setContracts(data.contracts || []);
+      const pagination = data.pagination || {};
+      setTotalPages(Math.max(1, parseInt(pagination.pages || 1, 10)));
+      setTotal(parseInt(pagination.count || pagination.total || 0, 10));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, page, sort]);
+
+  useEffect(() => {
+    fetchContracts();
+  }, [fetchContracts, refreshTrigger]);
+
+  const handleSearchChange = useCallback((term) => {
+    setSearchTerm(term);
+    setPage(1);
+  }, []);
+
+  const handleFilterChange = useCallback((value) => {
+    setStatusFilter(value);
+    setPage(1);
+  }, []);
+
+  const statusOptions = useMemo(
+    () => [
+      { value: "", label: t("contracts.allStatuses") },
+      { value: "pending", label: t("contracts.status.pending") },
+      { value: "approved", label: t("contracts.status.approved") },
+      { value: "rejected", label: t("contracts.status.rejected") },
+      { value: "closed", label: t("contracts.status.closed") },
+    ],
+    [t]
+  );
+
+  const handleSortChange = useCallback((field) => {
+    setSort((prev) => ({
+      field,
+      direction:
+        prev.field === field && prev.direction === "asc" ? "desc" : "asc",
+    }));
+    setPage(1);
+  }, []);
+
+  const handlePageChange = useCallback((newPage) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const handleNavigateToLot = useCallback(
+    (contract) => {
+      if (contract.project_id) {
+        navigate(`/projects/${contract.project_id}/lots`, {
+          state: {
+            selectedLotId: contract.lot_id,
+            selectedLotName: contract.lot_name,
+            selectedLotAddress: contract.lot_address,
+          },
+        });
+      }
+    },
+    [navigate]
+  );
+
+  const handleNavigateToClient = useCallback(
+    (contract) => {
+      navigate("/users", {
+        state: {
+          selectedUserId: contract.applicant_identity,
+          selectedUserName: contract.applicant_name,
+          selectedUserPhone: contract.applicant_phone,
+        },
+      });
+    },
+    [navigate]
+  );
+
+  const handleApprove = useCallback(
+    async (contract) => {
+      if (!contract.id) return;
+      setActionLoading(true);
+      try {
+        await contractsApi.approve(contract.project_id, contract.lot_id, contract.id);
+        showToast("Contrato aprobado exitosamente.", "success");
+        refreshContracts();
+      } catch (err) {
+        showToast(`Error: ${err.message}`, "error");
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [refreshContracts, showToast]
+  );
+
+  const handleReject = useCallback(
+    async (reason) => {
+      const contract = rejectionContract;
+      if (!contract?.id) return;
+      setActionLoading(true);
+      try {
+        await contractsApi.reject(contract.project_id, contract.lot_id, contract.id, reason);
+        showToast("Contrato rechazado exitosamente.", "success");
+        setRejectionContract(null);
+        refreshContracts();
+      } catch (err) {
+        showToast(`Error: ${err.message}`, "error");
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [rejectionContract, refreshContracts, showToast]
+  );
+
+  const handleDeleteContract = useCallback(
+    async (contract) => {
+      if (!contract?.id) return;
+      const confirmed = await confirmDialog({
+        title: t("contractDetailsModal.deleteConfirm"),
+        confirmLabel: t("common.delete") || "Eliminar",
+      });
+      if (!confirmed) return;
+      setDeleteLoading(true);
+      try {
+        const data = await contractsApi.delete(contract.project_id, contract.lot_id, contract.id);
+        showToast(data.message || t("contractDetailsModal.deletedSuccess"), "success");
+        refreshContracts();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        setDeleteLoading(false);
+      }
+    },
+    [refreshContracts, showToast, t]
+  );
+
+  const columns = useMemo(
+    () => [
+      {
+        key: "lot_id",
+        header: t("contracts.lot"),
+        sortable: true,
+        render: (contract) => (
+          <button
+            type="button"
+            onClick={() => handleNavigateToLot(contract)}
+            className="text-left"
+          >
+            <span className="block truncate text-body font-semibold text-ink">
+              {contract.lot_name || "N/A"}
+            </span>
+            <span className="block truncate text-micro text-ink-3">
+              {contract.project_name || "—"}
+            </span>
+          </button>
+        ),
+      },
+      {
+        key: "applicant_user_id",
+        header: t("contracts.client"),
+        sortable: true,
+        render: (contract) => (
+          <button
+            type="button"
+            onClick={() => handleNavigateToClient(contract)}
+            className="text-left"
+          >
+            <span className="block truncate text-body text-ink">
+              {contract.applicant_name || "N/A"}
+            </span>
+            <span className="block truncate text-micro text-ink-3">
+              {contract.applicant_identity || "—"}
+            </span>
+          </button>
+        ),
+      },
+      {
+        key: "financing_type",
+        header: t("contracts.financing"),
+        sortable: true,
+        render: (contract) => (
+          <Chip>{translateFinancingType(contract.financing_type, t)}</Chip>
+        ),
+      },
+      {
+        key: "status",
+        header: t("common.status"),
+        sortable: true,
+        render: (contract) => (
+          <Chip tone={STATUS_TONES[contract.status?.toLowerCase()] || "neutral"}>
+            {formatStatus(contract.status?.toLowerCase(), t)}
+          </Chip>
+        ),
+      },
+      {
+        key: "contracts.created_at",
+        header: t("contracts.created"),
+        sortable: true,
+        align: "right",
+        render: (contract) => (
+          <span className="text-body text-ink-2">
+            {formatDate(contract.created_at)}
+          </span>
+        ),
+      },
+      {
+        key: "created_by",
+        header: t("contracts.createdBy"),
+        align: "right",
+        render: (contract) => contract.created_by || "—",
+      },
+      {
+        key: "actions",
+        header: "",
+        align: "right",
+        render: (contract) => {
+          const contractStatus = contract.status?.toLowerCase();
+          return (
+            <div className="flex items-center justify-end gap-2">
+              {userRole === "admin" &&
+                ["pending", "submitted", "rejected"].includes(contractStatus) && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    loading={actionLoading}
+                    onClick={() => handleApprove(contract)}
+                  >
+                    {t("contracts.approve")}
+                  </Button>
+                )}
+              {userRole === "admin" &&
+                ["pending", "submitted"].includes(contractStatus) && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setRejectionContract(contract)}
+                  >
+                    {t("contracts.reject")}
+                  </Button>
+                )}
+              {userRole === "admin" && contractStatus === "rejected" && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  loading={deleteLoading}
+                  onClick={() => handleDeleteContract(contract)}
+                >
+                  {t("common.delete") || "Eliminar"}
+                </Button>
+              )}
+              {userRole !== "seller" &&
+                ["approved", "closed"].includes(contractStatus) && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setScheduleContract(contract)}
+                  >
+                    {t("contracts.paymentSchedule")}
+                  </Button>
+                )}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => navigate(`/contracts/${contract.guid}`)}
+                title={t("common.view")}
+              >
+                {t("common.view")}
+              </Button>
+            </div>
+          );
+        },
+      },
+    ],
+    [
+      actionLoading,
+      deleteLoading,
+      handleApprove,
+      handleDeleteContract,
+      handleNavigateToClient,
+      handleNavigateToLot,
+      navigate,
+      t,
+      userRole,
+    ]
+  );
+
   return (
     <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell dark:bg-darkblack-700 min-h-screen">
-      <div className="max-w-[1600px] mx-auto">
-        {/* Controls Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-center justify-end mb-4 gap-4"
-        >
-          <div className="flex items-center space-x-3">
-            <div id="view-mode-toggles" className="flex bg-white dark:bg-darkblack-600 rounded-xl p-1 shadow-xs border border-gray-100 dark:border-darkblack-500">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-blue-500 text-white shadow-md" : "text-bgray-400 hover:text-bgray-600 dark:hover:text-bgray-200"}`}
-              >
-                <FontAwesomeIcon icon={faThLarge} className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("table")}
-                className={`p-2 rounded-lg transition-all ${viewMode === "table" ? "bg-blue-500 text-white shadow-md" : "text-bgray-400 hover:text-bgray-600 dark:hover:text-bgray-200"}`}
-              >
-                <FontAwesomeIcon icon={faList} className="w-4 h-4" />
-              </button>
-            </div>
-
-            <button
-              onClick={refreshContracts}
-              className="p-3 bg-white dark:bg-darkblack-600 hover:bg-gray-50 dark:hover:bg-darkblack-500 rounded-xl shadow-xs border border-gray-100 dark:border-darkblack-500 text-bgray-600 dark:text-bgray-300 transition-all"
-            >
-              <FontAwesomeIcon icon={faSync} className={`w-4 h-4 ${refreshTrigger > 0 ? 'animate-spin-once' : ''}`} />
-            </button>
+      <div className="max-w-[1600px] mx-auto space-y-5">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-page font-bold text-ink">
+              {t("contracts.title") || "Contratos"}
+            </h1>
+            <p className="text-body text-ink-3">
+              {t("contracts.subtitle") || "Financiamientos y reservas por cliente."}
+            </p>
           </div>
-        </motion.div>
+          <Button variant="secondary" onClick={refreshContracts}>
+            <FontAwesomeIcon icon={faSync} className="mr-2" />
+            {t("common.refresh") || "Actualizar"}
+          </Button>
+        </div>
 
-        {/* Stats Section */}
         <div id="contract-stats">
           <ContractStats stats={stats} />
         </div>
 
-        {/* Filters and List Section */}
-        <div className="bg-white dark:bg-darkblack-600 rounded-3xl p-6 shadow-xs border border-gray-100 dark:border-darkblack-500">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 relative z-40">
-            <div className="flex-1" id="contracts-filter-section">
-              <GenericFilter
-                searchTerm={searchTerm}
-                filterValue={statusFilter}
-                filterOptions={statusOptions}
-                onSearchChange={setSearchTerm}
-                onFilterChange={setStatusFilter}
-                startDate={startDate}
-                endDate={endDate}
-                onStartDateChange={setStartDate}
-                onEndDateChange={setEndDate}
-                searchPlaceholder={t("contracts.searchPlaceholder")}
-                filterPlaceholder={t("contracts.filterByStatus")}
-                minSearchLength={3}
-              />
-            </div>
-          </div>
+        <Card bodyClassName="p-5">
+          <GenericFilter
+            searchTerm={searchTerm}
+            filterValue={statusFilter}
+            filterOptions={statusOptions}
+            onSearchChange={handleSearchChange}
+            onFilterChange={handleFilterChange}
+            startDate={startDate}
+            endDate={endDate}
+            onStartDateChange={setStartDate}
+            onEndDateChange={setEndDate}
+            searchPlaceholder={t("contracts.searchPlaceholder")}
+            filterPlaceholder={t("contracts.filterByStatus")}
+            minSearchLength={3}
+          />
+        </Card>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={viewMode}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <GenericList
-                endpoint="/api/v1/contracts"
-                renderItem={renderContractItem}
-                filters={filters}
+        {error && (
+          <ErrorState
+            title={t("common.error")}
+            description={error}
+            onRetry={refreshContracts}
+          />
+        )}
+
+        <Card bodyClassName="p-0">
+          {loading ? (
+            <div className="p-5">
+              <Skeleton rows={6} />
+            </div>
+          ) : (
+            <>
+              <Table
                 columns={columns}
-                sortBy="contracts.created_at-desc"
-                itemsPerPage={12}
-                emptyMessage={t("contracts.noContractsFound")}
-                loadingMessage={t("contracts.loadingContracts")}
-                entityName="contracts"
-                showMobileCards={true}
-                showDesktopTable={viewMode === "table"}
-                refreshTrigger={refreshTrigger}
-                itemPatch={itemPatch}
+                rows={contracts}
+                getRowKey={(contract) => contract.id}
+                sort={sort}
+                onSortChange={handleSortChange}
+                empty={
+                  <div className="p-5">
+                    <EmptyState
+                      variant="no-results"
+                      title={t("contracts.noContractsFound")}
+                      description={t("common.tryAdjustingFilters")}
+                    />
+                  </div>
+                }
+                mobileCard={(contract) => (
+                  <ContractMobileCard
+                    contract={contract}
+                    userRole={userRole}
+                    refreshContracts={refreshContracts}
+                    t={t}
+                    getStatusTheme={getStatusTheme}
+                    translateFinancingType={translateFinancingType}
+                    formatDate={formatDate}
+                    handleNavigateToLot={(e) => {
+                      e?.stopPropagation();
+                      handleNavigateToLot(contract);
+                    }}
+                    handleNavigateToClient={(e) => {
+                      e?.stopPropagation();
+                      handleNavigateToClient(contract);
+                    }}
+                    handleApprove={(e) => {
+                      e?.stopPropagation();
+                      handleApprove(contract);
+                    }}
+                    handleReject={handleReject}
+                    handleDeleteContract={(e) => {
+                      e?.stopPropagation();
+                      handleDeleteContract(contract);
+                    }}
+                    actionLoading={actionLoading}
+                    deleteLoading={deleteLoading}
+                    showSchedule={false}
+                    setShowSchedule={(open) =>
+                      open && setScheduleContract(contract)
+                    }
+                    showRejectionModal={false}
+                    setShowRejectionModal={(open) =>
+                      open && setRejectionContract(contract)
+                    }
+                    showDetailsModal={false}
+                    setShowDetailsModal={() =>
+                      navigate(`/contracts/${contract.guid}`)
+                    }
+                  />
+                )}
               />
-            </motion.div>
-          </AnimatePresence>
-        </div>
+              {totalPages > 1 && (
+                <div className="px-5 pb-4">
+                  <Pagination
+                    page={page}
+                    pageCount={totalPages}
+                    total={total}
+                    perPage={PER_PAGE}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </Card>
+
+        {scheduleContract && (
+          <PaymentScheduleModal
+            contract={scheduleContract}
+            open={!!scheduleContract}
+            onClose={() => setScheduleContract(null)}
+            onPaymentSuccess={refreshContracts}
+          />
+        )}
+
+        <RejectionModal
+          isOpen={!!rejectionContract}
+          onClose={() => setRejectionContract(null)}
+          onSubmit={handleReject}
+          loading={actionLoading}
+        />
       </div>
     </main>
   );

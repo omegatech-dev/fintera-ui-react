@@ -4,7 +4,6 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 
 import Sidebar from "./Sidebar";
-import SidebarV2 from "./SidebarV2";
 
 expect.extend(matchers);
 afterEach(cleanup);
@@ -29,13 +28,9 @@ const renderSidebar = (Component, role, path = "/") =>
   );
 
 describe("admin Settings navigation", () => {
-  it("shows the Settings entry to admins in both sidebar variants", () => {
-    const { unmount } = renderSidebar(Sidebar, "admin");
+  it("shows the Settings entry to admins", () => {
+    renderSidebar(Sidebar, "admin");
     expect(screen.getByText("settings.admin.nav")).toBeInTheDocument();
-    unmount();
-
-    renderSidebar(SidebarV2, "admin");
-    expect(screen.getByTitle("settings.admin.nav")).toBeInTheDocument();
   });
 
   it("hides the Settings entry from sellers and regular users", () => {
@@ -43,7 +38,7 @@ describe("admin Settings navigation", () => {
     expect(screen.queryByText("settings.admin.nav")).not.toBeInTheDocument();
     unmount();
 
-    renderSidebar(SidebarV2, "user");
-    expect(screen.queryByTitle("settings.admin.nav")).not.toBeInTheDocument();
+    renderSidebar(Sidebar, "user");
+    expect(screen.queryByText("settings.admin.nav")).not.toBeInTheDocument();
   });
 });

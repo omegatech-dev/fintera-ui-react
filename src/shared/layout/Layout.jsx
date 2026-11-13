@@ -1,6 +1,6 @@
 import ProtoTypes from "prop-types";
 import { Suspense, useContext, useState } from "react";
-import { Sidebar, SidebarV2 } from "../sidebar";
+import { Sidebar } from "../sidebar";
 import { Overlay, OnboardingTour } from "../overlays";
 import { HeaderOne, HeaderTwo } from "../header";
 
@@ -38,7 +38,6 @@ function Layout({ bg, overlay, children }) {
           {user ? <Sidebar handleActive={() => setSidebar(!sidebar)} user={user} handleLogout={handleLogout} /> : <div>Sidebar render ...</div>}
           {/* Only show overlay on mobile when sidebar is active */}
           {overlay ? overlay : (sidebar && <Overlay handleClick={() => setSidebar(false)} />)}
-          {user ? <SidebarV2 user={user} handleLogout={handleLogout} /> : <div>Sidebar render ...</div>}
           <div
             className={`body-wrapper flex-1 overflow-x-hidden ${bg ? bg : "dark:bg-darkblack-500"
               } `}

@@ -106,6 +106,42 @@ export const usePageTitle = () => {
       };
     }
 
+    // Project sub-routes (lots, reserve, payment instructions).
+    if (/^\/projects\/[^/]+\/lots\/[^/]+\/contracts\/create$/.test(path)) {
+      return {
+        title: t('header.pageTitle.reserve'),
+        subtitle: t('reservations.createReservation')
+      };
+    }
+
+    if (/^\/projects\/[^/]+\/lots$/.test(path)) {
+      return {
+        title: t('header.pageTitle.lotsList'),
+        subtitle: t('lots.manageLots')
+      };
+    }
+
+    if (/^\/projects\/[^/]+\/lots\/create$/.test(path)) {
+      return {
+        title: t('header.pageTitle.createLot'),
+        subtitle: t('lots.manageLots')
+      };
+    }
+
+    if (/^\/projects\/[^/]+\/payment-instructions$/.test(path)) {
+      return {
+        title: t('paymentInstructions.title'),
+        subtitle: t('paymentInstructions.description')
+      };
+    }
+
+    if (/^\/contracts\/[^/]+$/.test(path)) {
+      return {
+        title: t('header.pageTitle.contracts'),
+        subtitle: t('contracts.manageContracts')
+      };
+    }
+
     // Check for dynamic routes (settings, edit, etc.)
     if (path.startsWith('/settings/user/')) {
       const segments = path.split('/');

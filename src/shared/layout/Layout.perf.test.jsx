@@ -8,7 +8,6 @@ import { BrowserRouter } from 'react-router-dom';
 // Mock child components
 vi.mock('../sidebar', () => ({
   Sidebar: () => <div>Sidebar</div>,
-  SidebarV2: () => <div>SidebarV2</div>,
 }));
 vi.mock('../overlays', () => ({
   Overlay: () => <div>Overlay</div>,

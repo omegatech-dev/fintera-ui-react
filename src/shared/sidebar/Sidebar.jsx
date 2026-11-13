@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 
 import { BrandingLogo } from "../branding";
+import { isRouteActive } from "../layout/nav";
 
 import { Link, useLocation } from "react-router-dom";
 import { useLocale } from "../../contexts/LocaleContext";
@@ -152,7 +153,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
               {/* Transactions: Only Admin */}
               {isAdmin && (
                 <li
-                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${location === "/payments" ? "nav-active" : ""
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${isRouteActive(location, "/payments") ? "nav-active" : ""
                     }`}
                 >
                   <Link to="/payments">
@@ -217,7 +218,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
               {/* Contracts: Admin or Seller */}
               {(isAdmin || isSeller) && (
                 <li
-                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${location === "/contracts" ? "nav-active" : ""
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${isRouteActive(location, "/contracts") ? "nav-active" : ""
                     }`}
                 >
                   <Link to="/contracts">
@@ -256,7 +257,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
               {/* Projects: Admin or Seller */}
               {(isAdmin || isSeller) && (
                 <li
-                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${location === "/projects" ? "nav-active" : ""
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${isRouteActive(location, "/projects") ? "nav-active" : ""
                     }`}
                 >
                   <Link to="/projects">
@@ -303,7 +304,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
               {/* Users: Admin or Seller */}
               {(isAdmin || isSeller) && (
                 <li
-                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${location === "/users" ? "nav-active" : ""
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${isRouteActive(location, "/users") ? "nav-active" : ""
                     }`}
                 >
                   <Link to="/users">
@@ -341,7 +342,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
               {/* Analytics: Admin only */}
               {isAdmin && (
                 <li
-                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${location === "/analytics" ? "nav-active" : ""
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${isRouteActive(location, "/analytics") ? "nav-active" : ""
                     }`}
                 >
                   <Link to="/analytics">
@@ -373,7 +374,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
               {/* Audits: Only Admin */}
               {isAdmin && (
                 <li
-                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${location === "/audits" ? "nav-active" : ""
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${isRouteActive(location, "/audits") ? "nav-active" : ""
                     }`}
                 >
                   <Link to="/audits">
@@ -489,42 +490,6 @@ function Sidebar({ handleActive, user, handleLogout }) {
           <div className="item-wrapper mb-4 sm:mb-5">
             <h4 className="border-b border-bgray-200 text-xs sm:text-sm font-medium leading-7 text-bgray-700 dark:border-darkblack-400 dark:text-bgray-50"></h4>
             <ul className="mt-2 sm:mt-2.5">
-              {/* Signin: All roles can see or you can hide if already signed in */}
-              <li
-                className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${location === "/signin" ? "nav-active" : ""
-                  }`}
-              >
-                <Link to="/signin">
-                  <div className="flex items-center space-x-2 sm:space-x-2.5">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
-                    >
-                      <ellipse
-                        cx="11.7778"
-                        cy="17.5555"
-                        rx="7.77778"
-                        ry="4.44444"
-                        fill="#1A202C"
-                      />
-                      <circle
-                        cx="11.7778"
-                        cy="6.44444"
-                        r="4.44444"
-                        fill="#22C55E"
-                      />
-                    </svg>
-                    <span className="item-text text-sm sm:text-base lg:text-lg font-medium leading-none min-w-0 truncate">
-                      {t("dashboard.signIn")}
-                    </span>
-                  </div>
-                </Link>
-              </li>
-
               {/* Logout */}
               <li
                 className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white`}

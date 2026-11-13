@@ -14,6 +14,7 @@ const EditMoratoryModal = ({
   setMoratoryAmount,
   schedule,
   setSchedule,
+  onSuccess,
 }) => {
   const { showToast } = useToast();
   const { t } = useLocale();
@@ -35,6 +36,7 @@ const EditMoratoryModal = ({
       setSchedule(updatedSchedule);
 
       showToast(t("contracts.moratoryUpdated"), "success");
+      onSuccess?.();
       onClose();
     } catch {
       showToast(t("contracts.errorUpdatingMoratory"), "error");
@@ -102,6 +104,7 @@ EditMoratoryModal.propTypes = {
   setMoratoryAmount: PropTypes.func.isRequired,
   schedule: PropTypes.array,
   setSchedule: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func,
 };
 
 export default EditMoratoryModal;

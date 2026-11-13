@@ -145,7 +145,8 @@ describe("PaymentRow receipts", () => {
     const card = container.firstChild;
 
     expect(card).toHaveClass("rounded-card");
-    expect(card.innerHTML).toContain("md:flex-row");
+    expect(card.innerHTML).toContain("flex-col");
+    expect(card.innerHTML).toContain("flex-wrap");
     expect(
       screen.getByRole("button", { name: "paymentSchedule.viewReceipt" })
     ).toBeInTheDocument();

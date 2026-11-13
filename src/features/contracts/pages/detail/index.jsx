@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
+  faArrowUpRightFromSquare,
   faBan,
   faBell,
   faCheckCircle,
@@ -21,7 +22,9 @@ import { useToast } from "@/contexts/ToastContext";
 import { sanitizeHtml } from "@/shared/utils/sanitizeHtml";
 import { formatStatus } from "@/shared/utils/formatStatus";
 import { formatDate } from "@/shared/utils/formatters";
+import { areaUnitLabel, linearUnitLabel } from "@/shared/utils/units";
 import { contractsApi } from "../../api";
+import { projectsApi } from "@/features/projects/api";
 import {
   Button,
   Card,
@@ -36,8 +39,8 @@ import {
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import CreditScoreCard from "../../components/CreditScoreCard";
 import DocumentsTab from "../../components/ContractDetails/tabs/DocumentsTab";
-import PaymentReceipt from "../../components/PaymentSchedule/PaymentReceipt";
-import PaymentScheduleModal from "../../components/PaymentScheduleModal";
+import PaymentSchedulePanel from "../../components/PaymentSchedulePanel";
+import LotDetailsModal from "@/features/projects/components/lots/LotDetailsModal";
 
 const money = (value) => {
   if (value === null || value === undefined || value === "") return "—";
@@ -56,6 +59,15 @@ const STATUS_TONES = {
   closed: "neutral",
   paid: "success",
   overdue: "danger",
+};
+
+const LOT_TONES = {
+  available: "success",
+  reserved: "warning",
+  pending: "warning",
+  financed: "info",
+  fully_paid: "info",
+  sold: "neutral",
 };
 
 const BANNER_TONES = {
@@ -146,7 +158,9 @@ function ContractDetail() {
   const [editingNote, setEditingNote] = useState(false);
   const [savingNote, setSavingNote] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const [showPayments, setShowPayments] = useState(false);
+  const [paymentRequestToken, setPaymentRequestToken] = useState(0);
+  const [lotDetails, setLotDetails] = useState(null);
+  const [lotLoading, setLotLoading] = useState(false);
 
   const tabs = useMemo(
     () => [
@@ -159,8 +173,8 @@ function ContractDetail() {
     [t]
   );
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const response = await contractsApi.getByGuid(guid);
@@ -168,9 +182,11 @@ function ContractDetail() {
     } catch (err) {
       setError(err?.status === 404 ? "not-found" : "error");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [guid]);
+
+  const refreshContract = useCallback(() => load({ silent: true }), [load]);
 
   useEffect(() => {
     load();
@@ -200,40 +216,6 @@ function ContractDetail() {
             /cuota/i.test(item.description || ""))
       ).length,
     [schedule]
-  );
-
-  const scheduleColumns = useMemo(
-    () => [
-      {
-        key: "description",
-        header: t("contracts.description"),
-        render: (row) => row.description || "—",
-      },
-      {
-        key: "due_date",
-        header: t("paymentSchedule.date"),
-        render: (row) => formatDate(row.due_date),
-      },
-      {
-        key: "amount",
-        header: t("paymentSchedule.amount"),
-        align: "right",
-        render: (row) => money(row.amount),
-      },
-      {
-        key: "status",
-        header: t("common.status"),
-        render: (row) => <StatusChip status={row.status} t={t} />,
-      },
-      {
-        key: "receipt",
-        header: t("paymentSchedule.receipt"),
-        render: (row) => (
-          <PaymentReceipt row={row} t={t} />
-        ),
-      },
-    ],
-    [t]
   );
 
   const ledgerRows = useMemo(() => {
@@ -354,6 +336,20 @@ function ContractDetail() {
     }
   };
 
+  const openLotDetails = useCallback(async () => {
+    if (!contract?.project_id || !contract?.lot_id) return;
+    setLotLoading(true);
+    try {
+      const response = await projectsApi.getLot(contract.project_id, contract.lot_id);
+      const lot = response?.lot || response?.data || response;
+      setLotDetails(lot || null);
+    } catch (err) {
+      showToast(err?.message || t("contracts.lotLoadError"), "error");
+    } finally {
+      setLotLoading(false);
+    }
+  }, [contract?.lot_id, contract?.project_id, showToast, t]);
+
   const handleSendReminder = async () => {
     if (!contract?.guid) return;
     try {
@@ -432,7 +428,7 @@ function ContractDetail() {
           <ErrorState
             title={t("contracts.loadErrorTitle")}
             description={t("contracts.loadErrorDescription")}
-            onRetry={load}
+            onRetry={() => load()}
           />
         </div>
       </main>
@@ -453,7 +449,27 @@ function ContractDetail() {
   const isAdmin = user?.role === "admin";
   const canEditNote = isAdmin && Boolean(contract.project_id && contract.lot_id);
   const canRegisterPayment =
-    user?.role !== "seller" && !isCancelled && !isClosed;
+    user?.role !== "seller" &&
+    !isCancelled &&
+    !isClosed &&
+    status !== "rejected";
+  const hasLot = Boolean(contract.project_id && contract.lot_id);
+  const lotStatus = String(contract.lot_status || "").toLowerCase();
+  const lotArea = contract.lot_area ?? contract.lot_effective_area;
+  const lotPrice = contract.lot_price ?? contract.lot_effective_price;
+  const lotUnit = areaUnitLabel(contract.lot_measurement_unit);
+  const lotDimensions =
+    contract.lot_width && contract.lot_length
+      ? `${contract.lot_width} × ${contract.lot_length} ${linearUnitLabel(
+          contract.lot_measurement_unit
+        )}`
+      : "—";
+  const lotStatusKey = lotStatus ? `status.${lotStatus}` : "";
+  const lotStatusLabel = lotStatusKey
+    ? t(lotStatusKey) === lotStatusKey
+      ? lotStatus
+      : t(lotStatusKey)
+    : "—";
   const banner = BANNER_TONES[status] || BANNER_TONES.closed;
   const bannerTitle = isCancelled
     ? t("contracts.status.cancelled")
@@ -482,18 +498,11 @@ function ContractDetail() {
     });
   }
 
-  if (contract.project_id) {
+  if (contract.project_id && contract.lot_id) {
     actionItems.push({
       label: t("contracts.viewLot"),
       icon: <FontAwesomeIcon icon={faLocationDot} className="w-3.5" />,
-      onSelect: () =>
-        navigate(`/projects/${contract.project_id}/lots`, {
-          state: {
-            selectedLotId: contract.lot_id,
-            selectedLotName: contract.lot_name,
-            selectedLotAddress: contract.lot_address,
-          },
-        }),
+      onSelect: openLotDetails,
     });
   }
 
@@ -532,15 +541,12 @@ function ContractDetail() {
   const upcoming = schedule.filter((item) => item.status !== "paid").slice(0, 4);
 
   const registerPayment = () => {
-    if (canRegisterPayment) {
-      setShowPayments(true);
-    } else {
-      navigate("/payments");
-    }
+    setTab("cronograma");
+    setPaymentRequestToken((value) => value + 1);
   };
 
   return (
-    <main className="page-shell min-h-screen w-full bg-canvas px-4 pb-40 sm:px-6 sm:pb-8 xl:px-[48px] xl:pb-[48px]">
+    <main className="page-shell min-h-screen w-full bg-canvas px-4 pb-8 sm:px-6 xl:px-[48px] xl:pb-[48px]">
       <div className="mx-auto w-full max-w-[1600px] space-y-5">
         <div className="motion-fade-up flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
@@ -557,13 +563,35 @@ function ContractDetail() {
               </h1>
               <StatusChip status={status} t={t} />
             </div>
-            <p className="text-body text-ink-3">
-              {[contract.lot_name, contract.project_name, contract.applicant_name]
-                .filter(Boolean)
-                .join(" · ")}
-            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body text-ink-3">
+              <span className="truncate">{contract.applicant_name || "—"}</span>
+              {hasLot && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <Link
+                    to={`/projects/${contract.project_id}/lots`}
+                    state={{
+                      selectedLotId: contract.lot_id,
+                      selectedLotName: contract.lot_name,
+                      selectedLotAddress: contract.lot_address,
+                    }}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      openLotDetails();
+                    }}
+                    className="inline-flex items-center gap-1 font-semibold text-brand-strong hover:underline"
+                  >
+                    {t("contracts.viewLotShort")}
+                    <FontAwesomeIcon
+                      icon={faArrowUpRightFromSquare}
+                      className="text-[10px]"
+                    />
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
-          <div className="flex max-w-full flex-wrap items-center justify-end gap-2">
+          <div className="flex w-full max-w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
             <Button
               variant="secondary"
               className="hidden sm:inline-flex"
@@ -572,8 +600,8 @@ function ContractDetail() {
               <FontAwesomeIcon icon={faDownload} />
               {t("contracts.downloadPdf")}
             </Button>
-            {canRegisterPayment && (
-              <Button className="hidden sm:inline-flex" onClick={registerPayment}>
+            {canRegisterPayment && nextPayment && tab !== "cronograma" && (
+              <Button className="grow sm:grow-0" onClick={registerPayment}>
                 <FontAwesomeIcon icon={faWallet} />
                 {t("contracts.registerPayment")}
               </Button>
@@ -792,6 +820,77 @@ function ContractDetail() {
                   )}
               </Card>
 
+              <Card
+                title={t("contracts.lotCard")}
+                action={
+                  lotStatus ? (
+                    <Chip tone={LOT_TONES[lotStatus] || "neutral"}>
+                      {lotStatusLabel}
+                    </Chip>
+                  ) : null
+                }
+                bodyClassName="px-5 pb-5 pt-3"
+              >
+                {hasLot ? (
+                  <>
+                    <div className="min-w-0">
+                      <p className="truncate text-body-lg font-bold text-ink">
+                        {contract.lot_name || "—"}
+                      </p>
+                      <p className="truncate text-micro text-ink-3">
+                        {contract.project_name || "—"}
+                      </p>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-line pt-3 text-label">
+                      <div>
+                        <dt className="text-micro text-ink-3">
+                          {t("projects.area")}
+                        </dt>
+                        <dd className="font-semibold text-ink">
+                          {lotArea ? `${lotArea} ${lotUnit}` : "—"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-micro text-ink-3">
+                          {t("projects.dimensions")}
+                        </dt>
+                        <dd className="font-semibold text-ink">{lotDimensions}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-micro text-ink-3">
+                          {t("contracts.unit")}
+                        </dt>
+                        <dd className="font-semibold text-ink">{lotUnit}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-micro text-ink-3">
+                          {t("contracts.price")}
+                        </dt>
+                        <dd className="font-semibold text-ink">
+                          {money(lotPrice)}
+                        </dd>
+                      </div>
+                    </dl>
+                    {contract.lot_address && (
+                      <p className="mt-3 text-label text-ink-3">
+                        {contract.lot_address}
+                      </p>
+                    )}
+                    <Button
+                      variant="secondary"
+                      className="mt-3 w-full"
+                      onClick={openLotDetails}
+                      loading={lotLoading}
+                    >
+                      <FontAwesomeIcon icon={faLocationDot} />
+                      {t("contracts.viewLotShort")}
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-body text-ink-3">{t("contracts.lotUnavailable")}</p>
+                )}
+              </Card>
+
               <Card title={t("contracts.termsCard")} bodyClassName="px-5 pb-5 pt-3">
                 <dl className="space-y-1.5 text-label">
                   <div className="flex justify-between gap-3">
@@ -864,47 +963,24 @@ function ContractDetail() {
         )}
 
         {tab === "cronograma" && (
-          <Card
-            title={t("contracts.paymentSchedule")}
-            action={
+          <section
+            id="contract-payment-schedule"
+            className="motion-fade-up space-y-3.5 [animation-delay:60ms]"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+              <h2 className="text-section font-bold text-ink">
+                {t("contracts.paymentSchedule")}
+              </h2>
               <span className="text-label text-ink-3">
                 {t("contracts.installmentsRemaining", { count: pendingInstallments })}
               </span>
-            }
-            bodyClassName="p-4 pt-3"
-            className="motion-fade-up [animation-delay:60ms]"
-          >
-            <Table
-              columns={scheduleColumns}
-              rows={schedule}
-              getRowKey={(row) => row.id}
-              empty={
-                <EmptyState
-                  title={t("contracts.noScheduleTitle")}
-                  description={t("contracts.noScheduleDescription")}
-                />
-              }
-              mobileCard={(row) => (
-                <div className="rounded-card border border-line bg-surface p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-body font-semibold text-ink">
-                        {row.description}
-                      </p>
-                      <p className="text-micro text-ink-3">{formatDate(row.due_date)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-body font-semibold text-ink">{money(row.amount)}</p>
-                      <StatusChip status={row.status} t={t} />
-                    </div>
-                  </div>
-                  <div className="mt-2.5 border-t border-line/70 pt-2">
-                    <PaymentReceipt row={row} t={t} />
-                  </div>
-                </div>
-              )}
+            </div>
+            <PaymentSchedulePanel
+              contract={contract}
+              openNextPaymentToken={paymentRequestToken}
+              onChanged={refreshContract}
             />
-          </Card>
+          </section>
         )}
 
         {tab === "pagos" && (
@@ -1060,24 +1136,11 @@ function ContractDetail() {
         )}
       </div>
 
-      {canRegisterPayment && (
-        <div className="fixed inset-x-0 bottom-[calc(64px+env(safe-area-inset-bottom))] z-30 border-t border-line bg-surface p-3 sm:hidden">
-          <Button className="w-full" onClick={registerPayment}>
-            <FontAwesomeIcon icon={faWallet} />
-            {t("contracts.registerPayment")}
-          </Button>
-        </div>
-      )}
-
-      {showPayments && (
-        <PaymentScheduleModal
-          contract={contract}
-          open={showPayments}
-          onClose={() => setShowPayments(false)}
-          onPaymentSuccess={() => {
-            setShowPayments(false);
-            load();
-          }}
+      {lotDetails && (
+        <LotDetailsModal
+          lot={lotDetails}
+          onClose={() => setLotDetails(null)}
+          isAdmin={isAdmin}
         />
       )}
     </main>

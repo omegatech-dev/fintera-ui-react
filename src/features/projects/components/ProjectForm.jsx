@@ -64,6 +64,22 @@ function ProjectForm({
             />
           </Field>
 
+          <Field
+            label={t("projects.projectType")}
+            hint={t("projects.projectTypeHint")}
+          >
+            <Select
+              value={values.project_type}
+              onChange={setField("project_type")}
+            >
+              {PROJECT_TYPES.map(([value, key]) => (
+                <option key={value} value={value}>
+                  {t(key)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
           {isEdit && (
             <div className="relative sm:col-span-3">
               <Field label={t("projects.guid")}>
@@ -205,19 +221,6 @@ function ProjectForm({
               placeholder={t("projects.enterCity")}
               autoComplete="address-level2"
             />
-          </Field>
-
-          <Field label={t("projects.projectType")}>
-            <Select
-              value={values.project_type}
-              onChange={setField("project_type")}
-            >
-              {PROJECT_TYPES.map(([value, key]) => (
-                <option key={value} value={value}>
-                  {t(key)}
-                </option>
-              ))}
-            </Select>
           </Field>
 
           <Field label={t("projects.deliveryDate")}>

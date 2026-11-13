@@ -159,7 +159,7 @@ export default function PaymentReceipt({ row, t, className = "" }) {
             size="sm"
             variant="secondary"
             onClick={handleOpen}
-            className="gap-1.5"
+            className="gap-1.5 min-h-10"
           >
             <FontAwesomeIcon icon={isPdf ? faFilePdf : faImage} />
             {t("paymentSchedule.viewReceipt")}

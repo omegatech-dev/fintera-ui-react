@@ -19,8 +19,10 @@ const PaymentScheduleTab = memo(function PaymentScheduleTab({
   setApplyPaymentModal,
   setEditingMora,
   setMoratoryAmount,
+  onEditMoratory,
   onUndoPayment,
   undoLoadingPaymentId,
+  footerAction,
 }) {
   const { t } = useLocale();
 
@@ -74,6 +76,7 @@ const PaymentScheduleTab = memo(function PaymentScheduleTab({
               setApplyPaymentModal={setApplyPaymentModal}
               setEditingMora={setEditingMora}
               setMoratoryAmount={setMoratoryAmount}
+              onEditMoratory={onEditMoratory}
               onUndoPayment={onUndoPayment}
               undoLoadingPaymentId={undoLoadingPaymentId}
               isReadOnly={isReadOnly}
@@ -82,7 +85,7 @@ const PaymentScheduleTab = memo(function PaymentScheduleTab({
         </div>
       )}
 
-      <PaymentScheduleFooter totals={totals} fmt={fmt} t={t} />
+      <PaymentScheduleFooter totals={totals} fmt={fmt} t={t} action={footerAction} />
     </div>
   );
 });
@@ -99,8 +102,10 @@ PaymentScheduleTab.propTypes = {
   setApplyPaymentModal: PropTypes.func.isRequired,
   setEditingMora: PropTypes.func.isRequired,
   setMoratoryAmount: PropTypes.func.isRequired,
+  onEditMoratory: PropTypes.func,
   onUndoPayment: PropTypes.func,
   undoLoadingPaymentId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  footerAction: PropTypes.node,
 };
 
 export default PaymentScheduleTab;

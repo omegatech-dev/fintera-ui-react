@@ -39,10 +39,20 @@ body {
   background: #8e8e8e;
 }
 
-/* Desktop (>=1024px): sidebar docked, content shifted when active */
+/* Desktop (>=1024px): sidebar slides in as a dock and shifts the content */
 @media (min-width: 1024px) {
   .layout-wrapper .sidebar-wrapper {
+    left: -308px;
+    transition: left 0.5s ease-in-out;
+  }
+
+  .layout-wrapper.active .sidebar-wrapper {
     left: 0;
+  }
+
+  .layout-wrapper .body-wrapper {
+    margin-left: 0;
+    transition: margin-left 0.5s ease-in-out;
   }
 
   .layout-wrapper.active .body-wrapper {

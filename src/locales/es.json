@@ -77,7 +77,8 @@
     "viewAll": "Ver Todo",
     "viewMore": "Ver Más",
     "export": "Exportar",
-    "downloadCsv": "Descargar .csv"
+    "downloadCsv": "Descargar .csv",
+    "refresh": "Actualizar"
   },
   "months": {
     "january": "Enero",
@@ -633,7 +634,10 @@
     "deleteError": "Error al eliminar usuario",
     "deleteActiveContractsError": "No se puede eliminar un usuario con contratos activos",
     "confirmDelete": "¿Estás seguro de que deseas eliminar permanentemente a {name}? Esta acción no se puede deshacer.",
-    "changePhoto": "Cambiar Foto"
+    "changePhoto": "Cambiar Foto",
+    "uploadPhoto": "Subir foto de perfil",
+    "optional": "opcional — dejar vacío para generar y enviar una contraseña temporal",
+    "imageTooLarge": "La imagen es demasiado grande. El tamaño máximo es 5 MB."
   },
   "settings": {
     "personal": "Personal",
@@ -1111,7 +1115,9 @@
     "terms": "Términos",
     "paid": "Pagado",
     "rate": "Tasa de Int.",
-    "completed": "Completado"
+    "completed": "Completado",
+    "title": "Contratos",
+    "subtitle": "Financiamientos y reservas por cliente."
   },
   "contractNotes": {
     "generalNotes": "Notas Generales",

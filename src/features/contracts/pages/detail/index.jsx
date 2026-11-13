@@ -193,8 +193,10 @@ function ContractDetail() {
 
   const total = contract.total_amount ?? contract.amount ?? 0;
   const paid = contract.total_paid ?? 0;
-  const balance = Number(contract.balance ?? total - paid);
-  const hasCredit = balance < 0;
+  // The API exposes balance as paid - total: negative means an outstanding
+  // debt, positive means the client overpaid (credit in their favor).
+  const balance = Number(contract.balance ?? paid - total);
+  const hasCredit = balance > 0;
 
   return (
     <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">

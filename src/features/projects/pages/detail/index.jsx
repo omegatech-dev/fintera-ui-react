@@ -251,7 +251,7 @@ function ProjectDetail() {
                   onClick={() => navigate(`/projects/${id}/lots`)}
                   className="w-full"
                 >
-                  {t("projects.viewLots")}
+                  {t("projects.viewLots", { name: project.name })}
                 </Button>
               </div>
             </Card>

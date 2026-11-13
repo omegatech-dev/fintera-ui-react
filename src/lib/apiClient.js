@@ -17,6 +17,18 @@ export const setAuthToken = (token) => {
  * @returns {Promise<any>} - Parsed JSON response
  */
 export async function request(endpoint, { body, ...customConfig } = {}) {
+    if (customConfig.params) {
+        const query = new URLSearchParams(
+            Object.entries(customConfig.params).filter(
+                ([, value]) => value !== undefined && value !== null && value !== ""
+            )
+        ).toString();
+        if (query) {
+            endpoint += `${endpoint.includes("?") ? "&" : "?"}${query}`;
+        }
+        delete customConfig.params;
+    }
+
     const token = authToken;
     const headers = { ...HEADERS_DEFAULT };
 

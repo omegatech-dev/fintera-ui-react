@@ -22,19 +22,31 @@ function NotificationsBell() {
   const [error, setError] = useState(null);
   const rootRef = useRef(null);
 
-  const load = useCallback(async () => {
-    if (!token) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await notificationsApi.list({ status: "unread" });
-      setItems(data?.notifications || []);
-    } catch {
-      setError("No pudimos cargar las notificaciones.");
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+  const retriedRef = useRef(false);
+
+  const load = useCallback(
+    async (attempt = 0) => {
+      if (!token) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await notificationsApi.list({ status: "unread" });
+        setItems(data?.notifications || []);
+      } catch (err) {
+        // A request can fire before the API client receives the token on a
+        // cold load; retry once shortly after hydration.
+        if (err?.status === 401 && attempt < 1 && !retriedRef.current) {
+          retriedRef.current = true;
+          setTimeout(() => load(attempt + 1), 700);
+          return;
+        }
+        setError("No pudimos cargar las notificaciones.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token]
+  );
 
   useEffect(() => {
     if (!authLoading && token) load();

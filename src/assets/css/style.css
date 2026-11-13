@@ -39,31 +39,31 @@ body {
   background: #8e8e8e;
 }
 
-.layout-wrapper .sidebar-wrapper {
-  left: -308px;
-  transition: left 0.5s ease-in-out;
+/* Desktop (>=1024px): sidebar docked, content shifted when active */
+@media (min-width: 1024px) {
+  .layout-wrapper .sidebar-wrapper {
+    left: 0;
+  }
+
+  .layout-wrapper.active .body-wrapper {
+    margin-left: 308px;
+  }
 }
 
-.layout-wrapper.active .sidebar-wrapper {
-  left: 0;
-}
+/* Below 1024px: off-canvas drawer; the content is never shifted */
+@media (max-width: 1023.98px) {
+  .layout-wrapper .sidebar-wrapper {
+    left: -308px;
+    transition: left 0.5s ease-in-out;
+  }
 
-.layout-wrapper .sidebar-wrapper-collapse {
-  left: 0;
-  transition: left 0.5s ease-in-out;
-}
+  .layout-wrapper.active .sidebar-wrapper {
+    left: 0;
+  }
 
-.layout-wrapper.active .sidebar-wrapper-collapse {
-  left: -120px;
-}
-
-.layout-wrapper .body-wrapper {
-  /*margin-left: 96px;*/
-  transition: margin-left 0.5s ease-in-out;
-}
-
-.layout-wrapper.active .body-wrapper {
-  margin-left: 308px;
+  .layout-wrapper .body-wrapper {
+    margin-left: 0;
+  }
 }
 
 .upgrade-wrapper .upgrade-banner {

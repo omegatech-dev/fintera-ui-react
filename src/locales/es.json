@@ -241,7 +241,9 @@
     "recentActivityDesc": "Últimos eventos y actualizaciones del sistema",
     "noActivity": "No se encontró actividad reciente",
     "activityUserNumber": "Usuario #{id}",
-    "overview": "Resumen General"
+    "overview": "Resumen General",
+    "users": "Usuarios",
+    "commissions": "Comisiones"
   },
   "sidebar": {},
   "security": {

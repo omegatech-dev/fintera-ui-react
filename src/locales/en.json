@@ -258,7 +258,9 @@
     "recentActivityDesc": "Latest system events and updates",
     "noActivity": "No recent activity found",
     "activityUserNumber": "User #{id}",
-    "overview": "General Overview"
+    "overview": "General Overview",
+    "users": "Users",
+    "commissions": "Commissions"
   },
   "sidebar": {},
   "projectsPage": {

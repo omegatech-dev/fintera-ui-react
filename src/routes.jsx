@@ -16,6 +16,7 @@ const Payments = lazy(() => import("./features/payments/pages"));
 const Commissions = lazy(() => import("./features/commissions/pages"));
 const SellerWorkspace = lazy(() => import("./features/seller/pages"));
 const Projects = lazy(() => import("./features/projects/pages"));
+const ProjectDetail = lazy(() => import("./features/projects/pages/detail"));
 const Users = lazy(() => import("./features/users/pages"));
 const Audits = lazy(() => import("./features/audits/pages"));
 const Settings = lazy(() => import("./features/settings/pages"));
@@ -148,6 +149,14 @@ export const appRoutes = [
           element: (
             <AdminOrOwnerRoute>
               <LotsList />
+            </AdminOrOwnerRoute>
+          ),
+        },
+        {
+          path: "/projects/:id",
+          element: (
+            <AdminOrOwnerRoute>
+              <ProjectDetail />
             </AdminOrOwnerRoute>
           ),
         },

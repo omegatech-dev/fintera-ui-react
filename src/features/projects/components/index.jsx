@@ -177,7 +177,12 @@ const Project = memo(function Project({ project, user, onDeleted, onVisibilityCh
 
           <div className="pr-16">
             <h3 className="text-2xl font-black leading-tight text-white drop-shadow-sm">
-              {name}
+              <Link
+                to={`/projects/${id}`}
+                className="transition-colors hover:underline"
+              >
+                {name}
+              </Link>
             </h3>
             <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-white/85">
               <FontAwesomeIcon icon={faMapMarkerAlt} className="text-[10px]" />

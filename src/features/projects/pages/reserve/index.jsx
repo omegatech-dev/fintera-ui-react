@@ -11,7 +11,7 @@ import { useGeneralSettings } from "@/contexts/generalSettings";
 import { getDefaultCurrency } from "@/shared/utils/formatSettings";
 import { motion, AnimatePresence } from "framer-motion";
 import CreditScoreCard from "../../../contracts/components/CreditScoreCard";
-import { validateReserveAmount } from "./reserveRules";
+import { validateClient, validateReserveAmount } from "./reserveRules";
 
 function Reserve() {
   const { t } = useLocale();
@@ -237,6 +237,15 @@ function Reserve() {
 
     // Basic client-side validation per financing type
     const errors = [];
+
+    const clientError = validateClient(
+      { selectedUser, fullName, phone, identity },
+      t
+    );
+    if (clientError) {
+      errors.push(clientError);
+    }
+
     const reserveAmountError = validateReserveAmount(
       reserveAmount,
       minReserveAmount,

@@ -714,6 +714,7 @@
     "footerNote": "Estos Términos y Condiciones constituyen el acuerdo completo entre usted y Fintera con respecto al uso de nuestra plataforma y servicios."
   },
   "reservations": {
+    "clientRequired": "Selecciona un cliente o completa nombre, teléfono e identidad.",
     "title": "Solicitud de Reserva",
     "createReservation": "Crear una nueva reserva de lote",
     "financingType": "Tipo de Financiamiento",

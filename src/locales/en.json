@@ -701,6 +701,7 @@
     "footerNote": "These Terms and Conditions constitute the entire agreement between you and Fintera regarding your use of our platform and services."
   },
   "reservations": {
+    "clientRequired": "Select a client or complete the name, phone and identity.",
     "title": "Reservation Request",
     "createReservation": "Create a new lot reservation",
     "financingType": "Financing Type",

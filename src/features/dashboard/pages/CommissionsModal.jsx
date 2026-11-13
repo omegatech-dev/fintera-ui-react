@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { formatCurrency } from "../../../shared/utils/formatters";
+import Dialog from "../../../shared/ui/Dialog";
 
 import { dashboardApi } from "../api";
 
@@ -93,16 +93,15 @@ const CommissionsModal = ({ isActive, handleClose, initialDate }) => {
     if (!isActive) return null;
 
     return (
-        <AnimatePresence>
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="bg-white dark:bg-darkblack-600 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden"
-                >
+        <Dialog
+            open={Boolean(isActive)}
+            onClose={handleClose}
+            size="lg"
+            className="max-w-4xl max-h-[90vh] overflow-y-auto p-0"
+        >
+                <div className="bg-white dark:bg-darkblack-600 rounded-3xl w-full flex flex-col overflow-hidden">
                     {/* Header */}
-                    <div className="p-6 border-b border-gray-100 dark:border-darkblack-500 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50 dark:bg-darkblack-600">
+                    <div className="relative p-6 border-b border-gray-100 dark:border-darkblack-500 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50 dark:bg-darkblack-600">
                         <div>
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <span className="bg-indigo-100 text-indigo-600 p-2 rounded-lg">
@@ -213,9 +212,8 @@ const CommissionsModal = ({ isActive, handleClose, initialDate }) => {
                             {t("commissions.downloadCSV") || "Download CSV"}
                         </button>
                     </div>
-                </motion.div>
-            </div>
-        </AnimatePresence>
+                </div>
+        </Dialog>
     );
 };
 

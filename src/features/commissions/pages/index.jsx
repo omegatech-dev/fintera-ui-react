@@ -4,6 +4,8 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useToast } from "@/contexts/ToastContext";
 import { commissionsApi } from "../api";
 import CommissionRulesSheet from "../components/CommissionRulesSheet";
+import ScoreBadge from "@/features/seller/components/ScoreBadge";
+import { readSellerScore } from "@/features/seller/utils/scoreMetrics";
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import {
   Button,
@@ -219,10 +221,15 @@ function Commissions() {
         header: t("commissions.contract"),
         render: (row) => (
           <div className="min-w-0">
-            <p className="font-semibold text-ink">#{row.contract_id}</p>
-            <p className="truncate text-micro text-ink-3">
-              {row.seller || "—"}
+            <p className="font-semibold text-ink">
+              {row.is_historical ? t("historical.chip") : `#${row.contract_id}`}
             </p>
+            <div className="flex items-center gap-1.5">
+              <p className="min-w-0 truncate text-micro text-ink-3">
+                {row.seller || "—"}
+              </p>
+              <ScoreBadge value={readSellerScore(row)} />
+            </div>
           </div>
         ),
       },
@@ -285,7 +292,9 @@ function Commissions() {
               header: "",
               align: "right",
               render: (row) =>
-                row.commission_paid_at ? (
+                row.is_historical ? (
+                  <span className="text-micro text-ink-3">—</span>
+                ) : row.commission_paid_at ? (
                   <Button
                     size="sm"
                     variant="ghost"
@@ -420,7 +429,7 @@ function Commissions() {
                 <Table
                   columns={columns}
                   rows={filtered}
-                  getRowKey={(row) => `${row.contract_id}-${row.seller}`}
+                  getRowKey={(row) => `${row.historical_sale_id || row.contract_id}-${row.seller}`}
                   empty={
                     <div className="p-5">
                       <EmptyState
@@ -436,11 +445,14 @@ function Commissions() {
                           <p className="text-body font-semibold text-ink">
                             #{row.contract_id} · {row.client_name || "—"}
                           </p>
-                          <p className="text-micro text-ink-3">
-                            {[row.seller, row.project, formatDate(row.date)]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="min-w-0 truncate text-micro text-ink-3">
+                              {[row.seller, row.project, formatDate(row.date)]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                            <ScoreBadge value={readSellerScore(row)} />
+                          </div>
                           <p className="text-micro text-ink-3">
                             {money(row.amount)} · {formatRate(rateFor(row))}
                           </p>

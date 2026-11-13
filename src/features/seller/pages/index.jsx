@@ -1,7 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEllipsisVertical,
+  faMagnifyingGlass,
+} from "@fortawesome/free-solid-svg-icons";
+import AuthContext from "@/contexts/AuthContext";
 import { sellerApi } from "../api";
 import { commissionsApi } from "@/features/commissions/api";
 import { contractsApi } from "@/features/contracts/api";
@@ -16,6 +20,7 @@ import {
   EmptyState,
   ErrorState,
   Input,
+  Menu,
   Tabs,
 } from "@/shared/ui";
 import {
@@ -35,10 +40,17 @@ import {
   nextPaymentOf,
   paymentTypeLabel,
 } from "../utils/format";
+import {
+  readSellerScore,
+  readSellerScoreMetrics,
+} from "../utils/scoreMetrics";
+import { buildCommissionKpis, summarizeCommissions } from "./commissions/utils";
 import SellerKpis from "../components/SellerKpis";
 import WorkspaceTableCard from "../components/WorkspaceTableCard";
 import RegisterCollectionDialog from "../components/RegisterCollectionDialog";
 import MobileCard from "../components/MobileCard";
+import OriginChip from "../components/OriginChip";
+import HistoricalImportSheet from "../components/HistoricalImportSheet";
 
 const monthStart = () => {
   const now = new Date();
@@ -68,6 +80,8 @@ function SellerWorkspace() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLocale();
+  const { user } = useContext(AuthContext);
+  const isAdmin = user?.role === "admin";
   const tab = tabFromPath(location.pathname);
   const { showToast } = useToast();
   const [contracts, setContracts] = useState([]);
@@ -86,6 +100,9 @@ function SellerWorkspace() {
   const [commissions, setCommissions] = useState([]);
   const [commissionsLoading, setCommissionsLoading] = useState(true);
   const [commissionsError, setCommissionsError] = useState(false);
+  const [historicalSales, setHistoricalSales] = useState([]);
+  const [importOpen, setImportOpen] = useState(false);
+  const [validating, setValidating] = useState(null);
 
   const loadContracts = async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
@@ -129,11 +146,29 @@ function SellerWorkspace() {
     }
   };
 
+  const loadHistoricalSales = async () => {
+    if (typeof sellerApi.listHistoricalSales !== "function") return;
+    try {
+      const data = await sellerApi.listHistoricalSales();
+      const list = Array.isArray(data)
+        ? data
+        : data?.historical_sales || data?.sales || data?.data || [];
+      setHistoricalSales(Array.isArray(list) ? list : []);
+    } catch {
+      setHistoricalSales([]);
+    }
+  };
+
   useEffect(() => {
     loadContracts();
     loadStats();
     loadCommissions();
+    loadHistoricalSales();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.openHistoricalImport) setImportOpen(true);
+  }, [location.state]);
 
   useEffect(() => {
     setSearch("");
@@ -203,6 +238,38 @@ function SellerWorkspace() {
     }
   };
 
+  const historicalClients = useMemo(
+    () =>
+      historicalSales.map((sale) => {
+        const saleDate = sale.sale_date || sale.created_at || null;
+        const parsed = saleDate ? new Date(saleDate) : null;
+        const year =
+          parsed && !Number.isNaN(parsed.getTime())
+            ? parsed.getFullYear()
+            : null;
+        return {
+          key: `historical-${sale.id ?? sale.guid ?? sale.full_name}`,
+          id: sale.id,
+          isHistorical: true,
+          name:
+            sale.full_name || sale.client_name || t("seller.unnamedClient"),
+          phone: sale.phone || "—",
+          identity: sale.identity || "—",
+          contracts: 0,
+          active: 0,
+          pending: false,
+          amount: Number(sale.sale_price ?? 0),
+          last: saleDate,
+          nextPayment: null,
+          project: sale.project_name,
+          lot: sale.lot_label,
+          saleYear: year,
+          validationStatus: sale.validation_status || "pending",
+        };
+      }),
+    [historicalSales, t]
+  );
+
   const clients = useMemo(() => {
     const unnamed = t("seller.unnamedClient");
     const map = new Map();
@@ -219,6 +286,7 @@ function SellerWorkspace() {
         pending: false,
         amount: 0,
         last: contract.created_at,
+        nextPayment: null,
       };
       current.contracts += 1;
       current.amount += Number(contract.amount || 0);
@@ -229,13 +297,24 @@ function SellerWorkspace() {
       ) {
         current.pending = true;
       }
+      const nextPayment =
+        contract.next_payment_date || contract.next_payment || null;
+      if (
+        nextPayment &&
+        (!current.nextPayment ||
+          new Date(nextPayment) < new Date(current.nextPayment))
+      ) {
+        current.nextPayment = nextPayment;
+      }
       if (new Date(contract.created_at) > new Date(current.last)) {
         current.last = contract.created_at;
       }
       map.set(key, current);
     }
-    return [...map.values()].sort((a, b) => b.amount - a.amount);
-  }, [contracts, t]);
+    return [...map.values(), ...historicalClients].sort(
+      (a, b) => b.amount - a.amount
+    );
+  }, [contracts, historicalClients, t]);
 
   const searchTerm = search.trim().toLowerCase();
 
@@ -246,6 +325,8 @@ function SellerWorkspace() {
           client.name,
           client.phone,
           client.identity,
+          client.project,
+          client.lot,
         ])
       ),
     [clients, searchTerm]
@@ -322,22 +403,7 @@ function SellerWorkspace() {
   );
 
   const commissionTotals = useMemo(
-    () =>
-      commissions.reduce(
-        (acc, item) => {
-          const commission = Number(item.commission || 0);
-          acc.total += commission;
-          acc.amount += Number(item.amount || 0);
-          if (item.commission_paid_at) {
-            acc.paid += commission;
-            acc.paidCount += 1;
-          } else {
-            acc.pending += commission;
-          }
-          return acc;
-        },
-        { total: 0, paid: 0, pending: 0, amount: 0, paidCount: 0 }
-      ),
+    () => summarizeCommissions(commissions),
     [commissions]
   );
 
@@ -351,7 +417,11 @@ function SellerWorkspace() {
   );
   const portfolio = useMemo(
     () =>
-      clients.reduce((sum, client) => sum + Number(client.amount || 0), 0),
+      clients.reduce(
+        (sum, client) =>
+          client.isHistorical ? sum : sum + Number(client.amount || 0),
+        0
+      ),
     [clients]
   );
   const collectionsTotal = useMemo(
@@ -418,25 +488,12 @@ function SellerWorkspace() {
         tone: "success",
       },
     ],
-    comisiones: [
-      {
-        label: t("seller.kpiMonthCommission"),
-        value: money(commissionTotals.total),
-        caption: t("seller.kpiMonthCommissionCaption"),
-      },
-      {
-        label: t("seller.kpiPendingCommission"),
-        value: money(commissionTotals.pending),
-        caption: t("seller.kpiPendingCommissionCaption"),
-        tone: "warning",
-      },
-      {
-        label: t("seller.kpiPaidCommission"),
-        value: money(commissionTotals.paid),
-        caption: t("seller.kpiPaidCommissionCaption"),
-        tone: "success",
-      },
-    ],
+    comisiones: buildCommissionKpis({
+      t,
+      totals: commissionTotals,
+      score: readSellerScore(commissions[0] || user),
+      metrics: readSellerScoreMetrics(commissions[0] || user),
+    }),
     documentos: [
       {
         label: t("seller.kpiDocumentContracts"),
@@ -508,13 +565,58 @@ function SellerWorkspace() {
     );
   };
 
+  const validationChip = (row) => {
+    const status = row.validationStatus || "pending";
+    if (status === "validated") {
+      return (
+        <Chip tone="success">{t("historical.validation.validated")}</Chip>
+      );
+    }
+    if (status === "rejected") {
+      return <Chip tone="danger">{t("historical.validation.rejected")}</Chip>;
+    }
+    return (
+      <Chip tone="warning">{t("historical.pendingValidation")}</Chip>
+    );
+  };
+
+  const handleValidation = async (row, action) => {
+    if (!row.id) return;
+    setValidating(`${action}-${row.id}`);
+    try {
+      if (action === "validate") {
+        await sellerApi.validateHistoricalSale(row.id);
+      } else {
+        await sellerApi.rejectHistoricalSale(row.id);
+      }
+      showToast(
+        t(
+          action === "validate"
+            ? "historical.validatedToast"
+            : "historical.rejectedToast"
+        ),
+        "success"
+      );
+      await loadHistoricalSales();
+    } catch {
+      showToast(t("historical.validationError"), "error");
+    } finally {
+      setValidating(null);
+    }
+  };
+
   const clientColumns = [
     {
       key: "name",
       header: t("seller.client"),
       render: (row) => (
         <div>
-          <p className="font-semibold text-ink">{row.name}</p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="font-semibold text-ink">{row.name}</p>
+            {row.isHistorical && (
+              <Chip className="uppercase">{t("historical.chip")}</Chip>
+            )}
+          </div>
           <p className="text-micro text-ink-3">{row.identity}</p>
         </div>
       ),
@@ -527,13 +629,28 @@ function SellerWorkspace() {
     {
       key: "contracts",
       header: t("seller.contracts"),
-      align: "right",
+      render: (row) =>
+        row.isHistorical ? (
+          <span className="text-ink-2">
+            {row.saleYear
+              ? t("historical.rowSale", { year: row.saleYear })
+              : t("historical.noContract")}
+          </span>
+        ) : (
+          <span className="tabular-nums text-ink-2">
+            {t("seller.contractsActiveOf", {
+              active: row.active,
+              total: row.contracts,
+            })}
+          </span>
+        ),
+    },
+    {
+      key: "nextPayment",
+      header: t("historical.nextPayment"),
       render: (row) => (
-        <span className="tabular-nums text-ink-2">
-          {t("seller.contractsActiveOf", {
-            active: row.active,
-            total: row.contracts,
-          })}
+        <span className={row.nextPayment ? "text-ink-2" : "text-ink-3"}>
+          {row.nextPayment ? formatDate(row.nextPayment) : "—"}
         </span>
       ),
     },
@@ -548,6 +665,18 @@ function SellerWorkspace() {
       ),
     },
     {
+      key: "status",
+      header: t("common.status"),
+      render: (row) =>
+        row.isHistorical ? (
+          validationChip(row)
+        ) : row.pending ? (
+          <Chip tone="warning">{t("seller.pendingPayment")}</Chip>
+        ) : (
+          <Chip tone="success">{t("seller.upToDate")}</Chip>
+        ),
+    },
+    {
       key: "last",
       header: t("seller.last"),
       render: (row) => (
@@ -555,6 +684,44 @@ function SellerWorkspace() {
       ),
     },
   ];
+
+  if (isAdmin) {
+    clientColumns.push({
+      key: "actions",
+      header: t("common.actions"),
+      align: "right",
+      render: (row) => {
+        if (!row.isHistorical || row.validationStatus !== "pending") {
+          return null;
+        }
+        if (validating === `validate-${row.id}` || validating === `reject-${row.id}`) {
+          return (
+            <span className="text-micro font-semibold text-ink-3">
+              {t("common.processing")}
+            </span>
+          );
+        }
+        return (
+          <Menu
+            label={t("common.actions")}
+            align="right"
+            icon={<FontAwesomeIcon icon={faEllipsisVertical} aria-hidden="true" />}
+            items={[
+              {
+                label: t("historical.validate"),
+                onSelect: () => handleValidation(row, "validate"),
+              },
+              {
+                label: t("historical.reject"),
+                tone: "danger",
+                onSelect: () => handleValidation(row, "reject"),
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }
 
   const collectionColumns = [
     {
@@ -723,7 +890,11 @@ function SellerWorkspace() {
       key: "contract_id",
       header: t("seller.contract"),
       render: (row) =>
-        row.contract_guid ? (
+        row.is_historical ? (
+          <span className="font-semibold text-ink">
+            {t("historical.chip")}
+          </span>
+        ) : row.contract_guid ? (
           <Link
             to={`/contracts/${row.contract_guid}`}
             className="font-semibold text-brand hover:underline"
@@ -772,6 +943,11 @@ function SellerWorkspace() {
       ),
     },
     {
+      key: "origin",
+      header: t("commissions.origin"),
+      render: (row) => <OriginChip origin={row.origin} />,
+    },
+    {
       key: "status",
       header: t("common.status"),
       render: (row) =>
@@ -800,20 +976,61 @@ function SellerWorkspace() {
   const mobileCards = {
     clientes: (row) => (
       <MobileCard
-        title={row.name}
-        meta={`${row.phone} · ${row.identity}`}
+        title={
+          <span className="inline-flex flex-wrap items-center gap-1.5">
+            {row.name}
+            {row.isHistorical && (
+              <Chip className="uppercase">{t("historical.chip")}</Chip>
+            )}
+          </span>
+        }
+        meta={
+          row.isHistorical
+            ? row.saleYear
+              ? t("historical.rowSale", { year: row.saleYear })
+              : t("historical.noContract")
+            : `${row.phone} · ${row.identity}`
+        }
         value={money(row.amount)}
         chip={
-          row.pending ? (
+          row.isHistorical ? (
+            validationChip(row)
+          ) : row.pending ? (
             <Chip tone="warning">{t("seller.pendingPayment")}</Chip>
           ) : (
             <Chip tone="success">{t("seller.upToDate")}</Chip>
           )
         }
-        caption={t("seller.contractsActiveOf", {
-          active: row.active,
-          total: row.contracts,
-        })}
+        caption={
+          row.isHistorical
+            ? `${t("historical.nextPayment")}: —`
+            : t("seller.contractsActiveOf", {
+                active: row.active,
+                total: row.contracts,
+              })
+        }
+        action={
+          isAdmin &&
+          row.isHistorical &&
+          row.validationStatus === "pending" ? (
+            <div className="flex gap-1.5">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => handleValidation(row, "validate")}
+              >
+                {t("historical.validate")}
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
+                onClick={() => handleValidation(row, "reject")}
+              >
+                {t("historical.reject")}
+              </Button>
+            </div>
+          ) : undefined
+        }
       />
     ),
     cobros: (row) => {
@@ -869,11 +1086,14 @@ function SellerWorkspace() {
         detail={formatDate(row.date)}
         value={money(row.commission)}
         chip={
-          row.commission_paid_at ? (
-            <Chip tone="success">{t("seller.paid")}</Chip>
-          ) : (
-            <Chip tone="warning">{t("seller.pending")}</Chip>
-          )
+          <span className="flex items-center gap-1.5">
+            <OriginChip origin={row.origin} />
+            {row.commission_paid_at ? (
+              <Chip tone="success">{t("seller.paid")}</Chip>
+            ) : (
+              <Chip tone="warning">{t("seller.pending")}</Chip>
+            )}
+          </span>
         }
         caption={formatRate(row.commission, row.amount)}
       />
@@ -1008,23 +1228,43 @@ function SellerWorkspace() {
           }
         />
 
-        <div className="relative w-full sm:max-w-xs">
-          <FontAwesomeIcon
-            icon={faMagnifyingGlass}
-            aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-ink-3"
-          />
-          <Input
-            type="search"
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPage(1);
-            }}
-            placeholder={searchPlaceholder}
-            aria-label={searchPlaceholder}
-            className="pl-9"
-          />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:max-w-xs">
+            <FontAwesomeIcon
+              icon={faMagnifyingGlass}
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-ink-3"
+            />
+            <Input
+              type="search"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+              placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder}
+              className="pl-9"
+            />
+          </div>
+
+          {tab === "clientes" && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setImportOpen(true)}
+              >
+                {t("historical.importCsv")}
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => navigate("/vendedor/clientes/historicos")}
+              >
+                {t("historical.addClient")}
+              </Button>
+            </div>
+          )}
         </div>
 
         {activeError ? (
@@ -1073,6 +1313,12 @@ function SellerWorkspace() {
           }
         }}
         onSubmit={submitCollection}
+      />
+
+      <HistoricalImportSheet
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={loadHistoricalSales}
       />
     </main>
   );

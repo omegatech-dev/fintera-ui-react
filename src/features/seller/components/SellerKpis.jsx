@@ -23,6 +23,11 @@ const KPI_CAPTION_TONES = {
   info: "text-info",
 };
 
+const GRID_COLUMNS = {
+  3: "sm:grid-cols-3",
+  4: "sm:grid-cols-2 xl:grid-cols-4",
+};
+
 function StatCard({ label, value, caption, tone = "default" }) {
   return (
     <div className={`rounded-card border p-5 ${KPI_TONES[tone]}`}>
@@ -47,11 +52,14 @@ function StatCard({ label, value, caption, tone = "default" }) {
   );
 }
 
-function SellerKpis({ items, loading }) {
+function SellerKpis({ items = [], loading }) {
+  const count = items.length || 3;
+  const columns = GRID_COLUMNS[count] || GRID_COLUMNS[3];
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className={`grid grid-cols-1 gap-4 ${columns}`}>
       {loading
-        ? Array.from({ length: 3 }).map((_, index) => (
+        ? Array.from({ length: count }).map((_, index) => (
             <div
               key={index}
               className="rounded-card border border-line bg-surface p-5"

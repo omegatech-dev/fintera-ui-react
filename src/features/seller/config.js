@@ -31,5 +31,5 @@ export const SEARCH_KEYS = {
 
 export const GET_ROW_KEY = (row, tab) =>
   tab === "comisiones"
-    ? `commission-${row.contract_id}-${row.seller || row.date || ""}`
+    ? `commission-${row.historical_sale_id || row.contract_id}-${row.seller || row.date || ""}`
     : row.key || row.guid || row.id;

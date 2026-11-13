@@ -24,6 +24,9 @@ import {
 } from "../../../shared/utils/formatSettings";
 import { formatStatus } from "../../../shared/utils/formatStatus";
 import { Button, Chip, ErrorState, Skeleton } from "@/shared/ui";
+import { sellerApi } from "@/features/seller/api";
+import SellerReferralCard from "@/features/seller/components/SellerReferralCard";
+import { normalizeReferral } from "@/features/seller/utils/referral";
 import { dashboardApi } from "../api";
 import CommissionsModal from "./CommissionsModal";
 
@@ -186,6 +189,22 @@ const SellerDashboard = ({ user }) => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [referral, setReferral] = useState(null);
+  const [referralLoading, setReferralLoading] = useState(true);
+  const [referralError, setReferralError] = useState(false);
+
+  const loadReferral = useCallback(async () => {
+    setReferralLoading(true);
+    setReferralError(false);
+    try {
+      const data = await sellerApi.getReferral();
+      setReferral(normalizeReferral(data));
+    } catch {
+      setReferralError(true);
+    } finally {
+      setReferralLoading(false);
+    }
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -207,7 +226,8 @@ const SellerDashboard = ({ user }) => {
 
   useEffect(() => {
     load();
-  }, [load]);
+    loadReferral();
+  }, [load, loadReferral]);
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -589,6 +609,13 @@ const SellerDashboard = ({ user }) => {
               </div>
             </section>
           </div>
+
+          <SellerReferralCard
+            referral={referral}
+            loading={referralLoading}
+            error={referralError}
+            onRetry={loadReferral}
+          />
 
           <section
             aria-labelledby="seller-chart-title"

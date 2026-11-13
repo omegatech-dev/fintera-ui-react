@@ -25,11 +25,12 @@ const navLinks = () =>
   );
 
 describe("BottomNav seller", () => {
-  it("shows the five workspace items in the design order", () => {
+  it("shows the six workspace items in the design order", () => {
     renderNav("seller");
 
     expect(navLinks().map((link) => link.textContent.trim())).toEqual([
       "seller.myDay",
+      "nav.myLink",
       "seller.myClients",
       "seller.collections",
       "seller.tabCommissions",
@@ -37,6 +38,7 @@ describe("BottomNav seller", () => {
     ]);
     expect(navLinks().map((link) => link.getAttribute("href"))).toEqual([
       "/",
+      "/vendedor/enlace",
       "/vendedor/clientes",
       "/vendedor/cobros",
       "/vendedor/comisiones",

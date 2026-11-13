@@ -6,6 +6,7 @@ import {
   faFileAlt,
   faHandHoldingDollar,
   faHome,
+  faLink,
   faPercent,
   faSliders,
   faSun,
@@ -114,6 +115,12 @@ export const SELLER_NAV_ITEMS = [
     roles: ["seller"],
     exact: true,
     shortcut: "d",
+  },
+  {
+    to: "/vendedor/enlace",
+    labelKey: "nav.myLink",
+    icon: faLink,
+    roles: ["seller"],
   },
   {
     to: "/vendedor/clientes",

@@ -272,11 +272,12 @@ describe("PaymentInstructionsPage", () => {
         account_number: "220-330-4455",
         account_type: "checking",
         currency: "USD",
+        is_default: false,
       });
     });
   });
 
-  it("marks an edited account as the only default by moving it first", async () => {
+  it("marks an edited account as default through the API", async () => {
     projectsApi.updatePaymentInstruction.mockResolvedValue({});
     renderPage();
 
@@ -293,14 +294,9 @@ describe("PaymentInstructionsPage", () => {
           account_number: "110-020-9876",
           currency: "HNL",
           account_type: "savings",
+          is_default: true,
         })
       );
-      expect(projectsApi.updatePaymentInstruction).toHaveBeenCalledWith("1", 11, {
-        position: 0,
-      });
-      expect(projectsApi.updatePaymentInstruction).toHaveBeenCalledWith("1", 10, {
-        position: 1,
-      });
     });
   });
 
@@ -375,9 +371,6 @@ describe("PaymentInstructionsPage", () => {
     fireEvent.click((await screen.findAllByLabelText("Mover abajo"))[0]);
 
     await waitFor(() => {
-      expect(projectsApi.updatePaymentInstruction).toHaveBeenCalledWith("1", 10, {
-        position: 1,
-      });
       expect(projectsApi.updatePaymentInstruction).toHaveBeenCalledWith("1", 11, {
         position: 0,
       });

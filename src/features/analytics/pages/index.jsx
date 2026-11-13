@@ -397,37 +397,45 @@ const Analytics = () => {
         );
         // The API reports 100% when the previous period is empty; suppress it
         // instead of presenting a fabricated comparison.
-        const hasPreviousData = previousEntry
+        const hasTrendData = previousEntry
             ? Number(previousEntry.real) > 0
             : false;
-        const formatChange = (value) =>
-            hasPreviousData && value != null
+        const formatChange = (value, previous) => {
+            const hasPrevious =
+                ov?.previous_revenue != null ||
+                ov?.previous_contracts != null ||
+                ov?.previous_average_payment != null ||
+                ov?.previous_occupancy_rate != null
+                    ? Number(previous) > 0
+                    : hasTrendData;
+            return hasPrevious && value != null
                 ? `${value > 0 ? "+" : ""}${value}%`
                 : null;
+        };
 
         return [
             {
                 label: t("analytics.totalRevenue"),
                 value: formatCurrency(ov?.total_revenue),
-                change: formatChange(ov?.revenue_change_percentage),
+                change: formatChange(ov?.revenue_change_percentage, ov?.previous_revenue),
                 color: "text-blue-600 dark:text-blue-400",
             },
             {
                 label: t("analytics.activeContracts"),
                 value: ov?.active_contracts ?? "0",
-                change: formatChange(ov?.contracts_change_percentage),
+                change: formatChange(ov?.contracts_change_percentage, ov?.previous_contracts),
                 color: "text-teal-600 dark:text-teal-400",
             },
             {
                 label: t("analytics.averagePayment"),
                 value: formatCurrency(ov?.average_payment),
-                change: formatChange(ov?.payment_change_percentage),
+                change: formatChange(ov?.payment_change_percentage, ov?.previous_average_payment),
                 color: "text-orange-600 dark:text-orange-400",
             },
             {
                 label: t("analytics.occupancyRate"),
                 value: formatPercent(ov?.occupancy_rate),
-                change: formatChange(ov?.occupancy_change_percentage),
+                change: formatChange(ov?.occupancy_change_percentage, ov?.previous_occupancy_rate),
                 color: "text-green-600 dark:text-green-400",
             },
         ];

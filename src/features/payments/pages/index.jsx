@@ -108,6 +108,36 @@ function Payments() {
             paidThisMonth: data.collected_this_month || 0,
             overdue: data.total_overdue || 0,
           });
+          if (data.total_count != null) {
+            setStatusCounts({
+              all: Number(data.total_count) || 0,
+              submitted: Number(data.pending_count) || 0,
+              overdue: Number(data.overdue_count) || 0,
+              paid: Number(data.paid_count) || 0,
+            });
+          } else {
+            const statuses = ["", "submitted", "overdue", "paid"];
+            const results = await Promise.allSettled(
+              statuses.map((value) =>
+                paymentsApi.list({
+                  page: 1,
+                  per_page: 1,
+                  ...(value ? { status: value } : {}),
+                })
+              )
+            );
+            const next = { all: 0, submitted: 0, overdue: 0, paid: 0 };
+            statuses.forEach((value, index) => {
+              const result = results[index];
+              if (result.status === "fulfilled") {
+                const pagination = result.value.pagination || {};
+                next[value || "all"] = Number(
+                  pagination.count || pagination.total || 0
+                );
+              }
+            });
+            setStatusCounts(next);
+          }
         }
       } catch (err) {
         console.error("Error fetching payment stats:", err);
@@ -116,30 +146,7 @@ function Payments() {
       }
     };
 
-    const fetchStatusCounts = async () => {
-      const statuses = ["", "submitted", "overdue", "paid"];
-      const results = await Promise.allSettled(
-        statuses.map((value) =>
-          paymentsApi.list({
-            page: 1,
-            per_page: 1,
-            ...(value ? { status: value } : {}),
-          })
-        )
-      );
-      const next = { all: 0, submitted: 0, overdue: 0, paid: 0 };
-      statuses.forEach((value, index) => {
-        const result = results[index];
-        if (result.status === "fulfilled") {
-          const pagination = result.value.pagination || {};
-          next[value || "all"] = Number(pagination.count || pagination.total || 0);
-        }
-      });
-      setStatusCounts(next);
-    };
-
     fetchStats();
-    fetchStatusCounts();
   }, [refreshTrigger]);
 
   useEffect(() => {

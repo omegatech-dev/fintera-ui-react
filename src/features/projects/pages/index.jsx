@@ -9,7 +9,14 @@ import GenericFilter from "../../../shared/forms/GenericFilter";
 import { useLocale } from "../../../contexts/LocaleContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { Button, EmptyState, ErrorState, Pagination, Skeleton } from "@/shared/ui";
+import {
+  Button,
+  EmptyState,
+  ErrorState,
+  Pagination,
+  SegmentedControl,
+  Skeleton,
+} from "@/shared/ui";
 
 function Projects() {
   const [projects, setProjects] = useState([]);
@@ -23,6 +30,7 @@ function Projects() {
   const [sortParam, setSortParam] = useState("");
   const [page, setPage] = useState(1);
   const [perPage] = useState(20);
+  const [visibility, setVisibility] = useState("");
   const [importOpen, setImportOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -44,6 +52,7 @@ function Projects() {
         }
       }
       if (sortParam) params.set("sort", sortParam);
+      if (visibility) params.set("is_published", visibility);
       params.set("page", page);
       params.set("per_page", perPage);
 
@@ -55,7 +64,7 @@ function Projects() {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, sortParam, page, perPage]);
+  }, [searchTerm, sortParam, visibility, page, perPage]);
 
   useEffect(() => {
     fetchProjects();
@@ -79,7 +88,19 @@ function Projects() {
       <div className="relative z-20 mb-10 flex flex-col gap-6" data-aos="zoom-in" data-aos-duration="400" data-aos-delay="100">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
           {/* Search and Filters - Takes up remaining space */}
-          <div className="flex-1">
+          <div className="flex-1 space-y-3">
+            <SegmentedControl
+              value={visibility}
+              onChange={(value) => {
+                setVisibility(value);
+                setPage(1);
+              }}
+              options={[
+                { value: "", label: t("common.all") },
+                { value: "1", label: t("projects.publishedPlural") },
+                { value: "0", label: t("projects.draftPlural") },
+              ]}
+            />
             <GenericFilter
               id="projects-filter-section"
               searchTerm={searchTerm}

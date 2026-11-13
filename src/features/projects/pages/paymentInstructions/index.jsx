@@ -131,18 +131,6 @@ export default function PaymentInstructionsPage() {
     setSheetAccount(null);
   };
 
-  const setDefaultAccount = async (accountId) => {
-    const others = instructions.filter((account) => account.id !== accountId);
-    await Promise.all([
-      projectsApi.updatePaymentInstruction(id, accountId, { position: 0 }),
-      ...others.map((account, index) =>
-        projectsApi.updatePaymentInstruction(id, account.id, {
-          position: index + 1,
-        })
-      ),
-    ]);
-  };
-
   const handleSaveAccount = async (values) => {
     const payload = {
       bank_name: values.bank_name,
@@ -150,6 +138,7 @@ export default function PaymentInstructionsPage() {
       account_number: values.account_number,
       account_type: values.account_type,
       currency: values.currency,
+      is_default: Boolean(values.is_default),
     };
 
     try {
@@ -159,17 +148,9 @@ export default function PaymentInstructionsPage() {
           sheetAccount.id,
           payload
         );
-        if (values.is_default && !isDefaultAccount(sheetAccount)) {
-          await setDefaultAccount(sheetAccount.id);
-        }
         showToast(t("paymentInstructions.updateSuccess"), "success");
       } else {
-        const response = await projectsApi.createPaymentInstruction(id, payload);
-        const created =
-          response?.payment_instruction || response?.data || response;
-        if (values.is_default && created?.id) {
-          await setDefaultAccount(created.id);
-        }
+        await projectsApi.createPaymentInstruction(id, payload);
         showToast(t("paymentInstructions.createSuccess"), "success");
       }
       closeSheet();

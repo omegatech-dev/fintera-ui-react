@@ -167,30 +167,46 @@ function Users() {
 
   useEffect(() => {
     let active = true;
-    const base = {
-      status: showAll ? "all" : "active",
-      ...(myClients ? { my_clients: "1" } : {}),
-    };
-    const loadTotal = (extra) =>
-      usersApi
-        .list({ ...base, ...extra, page: 1, per_page: 1 })
-        .then(readTotal)
-        .catch(() => null);
-
-    Promise.all([
-      loadTotal({}),
-      loadTotal({ role: "admin" }),
-      loadTotal({ role: "seller" }),
-      loadTotal({ role: "user" }),
-    ]).then(([totalCount, adminCount, sellerCount, userCount]) => {
-      if (!active) return;
-      setCounts({
-        total: totalCount,
-        admin: adminCount,
-        seller: sellerCount,
-        user: userCount,
+    const statsRequest = usersApi.getStats
+      ? usersApi.getStats()
+      : Promise.reject(new Error("stats unavailable"));
+    statsRequest
+      .then((data) => {
+        if (!active) return;
+        setCounts({
+          total: Number(data?.total ?? 0),
+          admin: Number(data?.admin ?? 0),
+          seller: Number(data?.seller ?? 0),
+          user: Number(data?.user ?? 0),
+        });
+      })
+      .catch(() => {
+        // Fall back to counting the filtered lists if the stats endpoint is
+        // unavailable in an older deployment.
+        const base = {
+          status: showAll ? "all" : "active",
+          ...(myClients ? { my_clients: "1" } : {}),
+        };
+        const loadTotal = (extra) =>
+          usersApi
+            .list({ ...base, ...extra, page: 1, per_page: 1 })
+            .then(readTotal)
+            .catch(() => null);
+        Promise.all([
+          loadTotal({}),
+          loadTotal({ role: "admin" }),
+          loadTotal({ role: "seller" }),
+          loadTotal({ role: "user" }),
+        ]).then(([totalCount, adminCount, sellerCount, userCount]) => {
+          if (!active) return;
+          setCounts({
+            total: totalCount,
+            admin: adminCount,
+            seller: sellerCount,
+            user: userCount,
+          });
+        });
       });
-    });
 
     return () => {
       active = false;

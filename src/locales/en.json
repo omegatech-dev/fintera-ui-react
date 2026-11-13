@@ -413,7 +413,9 @@
     "draftHint": "Drafts do not appear in the customer portal.",
     "coverHint": "Add photos from the project Media tab after saving.",
     "unsavedChanges": "Unsaved changes",
-    "documents": "Documents"
+    "documents": "Documents",
+    "publishedPlural": "Published",
+    "draftPlural": "Drafts"
   },
   "lotsTable": {
     "project": "Project",
@@ -1204,7 +1206,9 @@
     "cancelSuccess": "Contract cancelled.",
     "cancelError": "Could not cancel the contract.",
     "notesPlaceholder": "Add a note...",
-    "cancelNote": "Cancelled from the contract detail."
+    "cancelNote": "Cancelled from the contract detail.",
+    "downloadPdf": "Download PDF",
+    "sendReminder": "Send reminder"
   },
   "contractNotes": {
     "generalNotes": "General Notes",

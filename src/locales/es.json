@@ -413,7 +413,9 @@
     "draftHint": "Los borradores no aparecen en el portal del cliente.",
     "coverHint": "Agrega fotos desde la pestaña Medios del proyecto después de guardar.",
     "unsavedChanges": "Cambios sin guardar",
-    "documents": "Documentos"
+    "documents": "Documentos",
+    "publishedPlural": "Publicados",
+    "draftPlural": "Borradores"
   },
   "lotsTable": {
     "project": "Proyecto",
@@ -1215,7 +1217,9 @@
     "cancelSuccess": "Contrato cancelado.",
     "cancelError": "No se pudo cancelar el contrato.",
     "notesPlaceholder": "Agrega una nota...",
-    "cancelNote": "Cancelado desde el detalle del contrato."
+    "cancelNote": "Cancelado desde el detalle del contrato.",
+    "downloadPdf": "Descargar PDF",
+    "sendReminder": "Enviar recordatorio"
   },
   "contractNotes": {
     "generalNotes": "Notas Generales",

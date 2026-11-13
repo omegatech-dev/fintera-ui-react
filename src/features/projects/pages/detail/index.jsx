@@ -146,13 +146,13 @@ function ProjectDetail() {
   const loadActivity = useCallback(async () => {
     setActivityLoading(true);
     try {
-      const data = await auditsApi.list({ model: "Project", page: 1, per_page: 20 });
-      const rows = data.audits || data.data || [];
-      setActivity(
-        rows.filter(
-          (row) => String(row.entity_id ?? row.auditable_id ?? "") === String(id)
-        )
-      );
+      const data = await auditsApi.list({
+        model: "Project",
+        entity_id: id,
+        page: 1,
+        per_page: 20,
+      });
+      setActivity(data.audits || data.data || []);
     } catch {
       setActivity([]);
     } finally {

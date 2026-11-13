@@ -47,7 +47,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [paymentsStats, setPaymentsStats] = useState(null);
   const [contractsStats, setContractsStats] = useState(null);
-  const [pendingPayments, setPendingPayments] = useState(0);
   const [recentPayments, setRecentPayments] = useState([]);
   const [occupancy, setOccupancy] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -57,29 +56,19 @@ const AdminDashboard = () => {
     setLoading(true);
     setError(null);
 
-    const [
-      paymentsResult,
-      contractsResult,
-      pendingPaymentsResult,
-      recentPaymentsResult,
-      projectsResult,
-    ] = await Promise.allSettled([
-      paymentsApi.getStats(),
-      contractsApi.getStats(),
-      paymentsApi.list({ page: 1, per_page: 1, status: "submitted" }),
-      paymentsApi.list({ page: 1, per_page: 4, sort: "due_date-asc" }),
-      projectsApi.list({ page: 1, per_page: 100 }),
-    ]);
+    const [paymentsResult, contractsResult, recentPaymentsResult, projectsResult] =
+      await Promise.allSettled([
+        paymentsApi.getStats(),
+        contractsApi.getStats(),
+        paymentsApi.list({ page: 1, per_page: 4, sort: "due_date-asc" }),
+        projectsApi.list({ page: 1, per_page: 100 }),
+      ]);
 
     if (paymentsResult.status === "fulfilled") {
       setPaymentsStats(paymentsResult.value);
     }
     if (contractsResult.status === "fulfilled") {
       setContractsStats(contractsResult.value);
-    }
-    if (pendingPaymentsResult.status === "fulfilled") {
-      const pagination = pendingPaymentsResult.value.pagination || {};
-      setPendingPayments(Number(pagination.count || pagination.total || 0));
     }
     if (recentPaymentsResult.status === "fulfilled") {
       setRecentPayments(
@@ -121,7 +110,6 @@ const AdminDashboard = () => {
   const overdue = paymentsStats?.total_overdue;
   const collected = paymentsStats?.collected_this_month;
   const pendingContracts = contractsStats?.pending;
-  const activeContracts = contractsStats?.approved;
 
   return (
     <div className="space-y-6">
@@ -163,7 +151,7 @@ const AdminDashboard = () => {
               },
               {
                 label: "Pagos por aprobar",
-                value: pendingPayments,
+                value: paymentsStats?.pending_count ?? "—",
                 caption: "Esperan una decisión",
                 to: "/payments?status=submitted",
                 tone: "warning",
@@ -176,10 +164,10 @@ const AdminDashboard = () => {
                 tone: "info",
               },
               {
-                label: "Contratos activos",
-                value: activeContracts ?? "—",
-                caption: "Con financiamiento vigente",
-                to: "/contracts",
+                label: "Reservas sin contrato",
+                value: contractsStats?.reservations_without_contract ?? "—",
+                caption: "Lotes reservados sin contrato",
+                to: "/projects",
                 tone: "default",
               },
             ].map((card) => (

@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBan,
+  faBell,
+  faDownload,
   faEllipsisVertical,
   faLocationDot,
   faRotateLeft,
@@ -217,6 +219,32 @@ function ContractDetail() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    try {
+      const blob = await contractsApi.downloadPdf(contract.id);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `contrato-${contract.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      showToast(err?.message || "No pudimos descargar el PDF", "error");
+    }
+  };
+
+  const handleSendReminder = async () => {
+    if (!contract.guid) return;
+    try {
+      await contractsApi.sendReminder(contract.guid);
+      showToast("Recordatorio enviado al cliente", "success");
+    } catch (err) {
+      showToast(err?.message || "No pudimos enviar el recordatorio", "error");
+    }
+  };
+
   const handleCancelContract = async () => {
     if (actionLoading) return;
     if (!contract?.id || !contract?.project_id || !contract?.lot_id) return;
@@ -330,6 +358,20 @@ function ContractDetail() {
             selectedLotAddress: contract.lot_address,
           },
         }),
+    });
+  }
+
+  actionItems.push({
+    label: t("contracts.downloadPdf") || "Descargar PDF",
+    icon: <FontAwesomeIcon icon={faDownload} className="w-3.5" />,
+    onSelect: handleDownloadPdf,
+  });
+
+  if (isAdmin && !isCancelled && !isClosed) {
+    actionItems.push({
+      label: t("contracts.sendReminder") || "Enviar recordatorio",
+      icon: <FontAwesomeIcon icon={faBell} className="w-3.5" />,
+      onSelect: handleSendReminder,
     });
   }
 

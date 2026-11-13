@@ -5,7 +5,7 @@ import AuthContext from "../../../../contexts/AuthContext";
 import SearchFilterBar from "../../../../shared/ui/SearchFilterBar";
 import LotItem from "../../components/lots/LotItem";
 import LotDetailsModal from "../../components/lots/LotDetailsModal";
-import { lotsApi } from "../../api";
+import { projectsApi } from "../../api";
 import { getStatusLabel } from "../../../../shared/utils/statusUtils";
 import {
   Button,
@@ -87,7 +87,7 @@ function LotsList() {
     setLoading(true);
     setError(null);
     try {
-      const data = await lotsApi.listLots(projectId, {
+      const data = await projectsApi.listLots(projectId, {
         ...filters,
         page,
         per_page: PER_PAGE,

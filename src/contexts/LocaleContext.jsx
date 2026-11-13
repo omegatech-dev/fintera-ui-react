@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
+/* eslint-disable react-refresh/only-export-components -- this context file intentionally exports the LocaleProvider and useLocale hook together. */
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import enTranslations from '../locales/en.json';
 import esTranslations from '../locales/es.json';
 import AuthContext from './AuthContext';

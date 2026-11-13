@@ -1,6 +1,5 @@
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
 import Layout from './Layout';
 import AuthContext from '../../contexts/AuthContext';
 import { BrowserRouter } from 'react-router-dom';

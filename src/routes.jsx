@@ -12,6 +12,7 @@ const Home = lazy(() => import("./features/dashboard/pages"));
 const Contracts = lazy(() => import("./features/contracts/pages"));
 const ContractDetail = lazy(() => import("./features/contracts/pages/detail"));
 const Payments = lazy(() => import("./features/payments/pages"));
+const Commissions = lazy(() => import("./features/commissions/pages"));
 const Projects = lazy(() => import("./features/projects/pages"));
 const Users = lazy(() => import("./features/users/pages"));
 const Audits = lazy(() => import("./features/audits/pages"));
@@ -58,6 +59,14 @@ export const appRoutes = [
             <AdminOrOwnerRoute>
               <Home />
             </AdminOrOwnerRoute>
+          ),
+        },
+        {
+          path: "/commissions",
+          element: (
+            <AdminRoute>
+              <Commissions />
+            </AdminRoute>
           ),
         },
         {

@@ -26,8 +26,10 @@ Tailwind 4, React Router 7, with `AdminRoute`/`AdminOrOwnerRoute` guards,
 
 ### 1. Contract detail as a route, not a modal
 **Why**: deep-linkable, and it eliminates the modal class of bugs (no
-`role="dialog"`, no Escape, no focus trap, stacked overlays). A `ContractDrawer`
-is allowed only as an optional in-list preview.
+`role="dialog"`, no Escape, no focus trap, stacked overlays). The route is
+`/contracts/:guid` and reuses the **existing** `GET /api/v1/contracts/:guid`
+endpoint (admin/seller/owner), so no backend change was required. The modal
+remains only for quick in-list previews.
 **Alternative**: keep the modal and add focus management — rejected because it
 keeps two sources of truth for one detail screen.
 
@@ -41,10 +43,15 @@ once would be a risky big-bang. `Table` adds semantic `<th>`, `aria-sort`,
 **Why**: the app already ships both. Mapping the Lucide names used in the mocks
 is cheaper than a library change and keeps the bundle stable.
 
-### 4. Commission computed and frozen at approval
-**Why**: rule changes must never rewrite history. Store `commission_rate` on the
-contract at approval; backfill from audit/default on migration.
-**Alternative**: compute on read — rejected because it would change past amounts.
+### 4. Commission data already exists on the backend
+**Why**: the API already stores `commission_rate_direct/_bank/_cash` on the
+project (editable in the project form) and `commission_amount` on the contract,
+computed at approval. The admin panel therefore reads
+`GET /api/v1/reports/commissions` (admin sees all, seller is filtered by creator)
+plus the CSV export; no new endpoint or migration is needed for the report.
+**Scope**: payout tracking ("Pagar" with a paid status) is **not** implemented —
+there is no backend state for it. It is tracked as a remaining task, not faked in
+the UI.
 
 ### 5. Collection ends in "En revisión"
 **Why**: sellers register proofs but never approve. Balance only moves on admin
@@ -56,6 +63,18 @@ need no second stylesheet. Dark pass is deferred to PR 11.
 
 ### 7. Dashboard data = client composition first
 **Why**: ships without backend work; `GET /dashboard/summary` is a fast-follow.
+Implemented with `Promise.allSettled` over `payments/stats` and
+`contracts/stats`.
+
+### 8. Notifications: the 401 was a client race, not a missing endpoint
+**Why**: the token reaches `apiClient` from `AuthContext`; child header effects
+run before the provider's hydration effect, so the bell could fire an
+unauthenticated request. The fix waits for the auth token and retries once on
+401. No backend change required.
+
+### 9. Self-hosted Urbanist
+**Why**: removes the blocking Google Fonts request and the duplicate import; one
+27 KB variable woff2 (latin) covers 300–700.
 
 ## Risks / Trade-offs
 
@@ -63,10 +82,10 @@ need no second stylesheet. Dark pass is deferred to PR 11.
   existing routes and keeps `npm run verify` green.
 - **Two detail sources during migration** (modal and route) → keep the modal
   until PR 6 lands, then delete it.
-- **Commission migration** → backfill is best-effort from audit; flag contracts
-  without a rate for admin review.
-- **Notifications API 401** → the bell cannot ship before the backend fix; gate
-  the dropdown on the endpoint, never on an empty list.
+- **Commission payout** → no backend status exists; the report is read-only
+  until a payout endpoint lands. Do not fake a paid state.
+- **Notifications API 401** → resolved in the client (token guard + retry); the
+  bell never renders an empty list as if there were nothing to show.
 - **Deleting `SidebarV2` and filters** → update `Router.test` and list tests.
 
 ## Migration Plan
@@ -80,6 +99,14 @@ need no second stylesheet. Dark pass is deferred to PR 11.
 
 ## Open Questions
 
-- Whether `/dashboard/summary` should become an endpoint now or later.
-- Whether `/signup` is removed or kept admin-gated.
-- Exact backend field names for commissions and payment accounts.
+Resolved during implementation:
+
+- Dashboard uses client composition; `/dashboard/summary` remains a fast-follow.
+- `/signup` is admin-gated; public creation lives in the customer portal.
+- Commission and payment-account field names were verified against the Go backend.
+
+Remaining (needs product/backend decisions):
+
+- Commission payout: paid status, payout date and audit event.
+- Seller collections: register-collection endpoint (proof → "En revisión").
+- Seller client listing endpoint for `/vendedor/clientes`.

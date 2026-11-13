@@ -226,12 +226,12 @@ to stop clashing with `04 Contratos`.
 | 01b | *(states of 01)* | A | same | `EmptyState`, `ErrorState`, `Skeleton`, `NotificationsPopover`, focus/hover states |
 | 02 | `/projects/:id/lots/:lot_id/contracts/create` | AO | `features/projects/pages/reserve/index.jsx` | `ReserveWizard`, `StepLotClient`, `StepPlan`, `StepDocuments`, `SummaryRail`, `reserveRules.js` |
 | 02b | *(steps 1 & 3 of 02)* | AO | same | `StepLotClient`, `StepDocuments`, `SubmitStates` (loading/success/error) |
-| 03 | `/contracts/:id` *(new)* | A | `features/contracts/pages/ContractDetail.jsx` *(new)* | `ContractHeader`, `ContractKpis`, `ContractTabs`, `StatusBanner` |
+| 03 | `/contracts/:guid` *(new)* | A | `features/contracts/pages/ContractDetail.jsx` *(new)* | `ContractHeader`, `ContractKpis`, `ContractTabs`, `StatusBanner` |
 | 03b | *(tab states of 03)* | A | same | `CronogramaTab`, `ApproveDialog`, `RationaleCard` |
 | M1 | *(mobile of 01)* | A | same | 1-col attention cards, bottom nav, `CobrosList` |
 | M2 | *(mobile of 02)* | A | same | sticky summary sheet + step form |
-| 03c | `/contracts/:id?tab=pagos` | A | same | `LedgerTable`, `AccountSummary`, `ContractNotes` |
-| 03d | `/contracts/:id?tab=documentos` | A | same | `DocumentChecklist`, `FileUpload`, `DocumentPreview` |
+| 03c | `/contracts/:guid?tab=pagos` | A | same | `LedgerTable`, `AccountSummary`, `ContractNotes` |
+| 03d | `/contracts/:guid?tab=documentos` | A | same | `DocumentChecklist`, `FileUpload`, `DocumentPreview` |
 | 03e | *(action sheet)* | A | `components/ContractActionsSheet.jsx` *(new)* | `Menu` items + `ConfirmDialog` |
 | 04 | `/contracts` | A | `features/contracts/pages/index.jsx` | `ContractKpis`, `ContractFilters`, `ContractTable`, `ContractRow` |
 | 05 | `/projects` | AO | `features/projects/pages/index.jsx` | `ProjectFilters`, `ProjectCard` (`components/index.jsx`), `Pagination`, `EmptyState` |
@@ -247,7 +247,7 @@ to stop clashing with `04 Contratos`.
 | 10 | `/projects/:id/lots` | AO | `features/projects/pages/lots/index.jsx` | `LotFilters`, `LotCard`, `LotStatusChip`, `EmptyState` |
 | 11 | *(drawer on 10)* | AO | `features/projects/components/lots/LotDetailsSheet.jsx` *(new)* | stats grid, owner block, actions, documents |
 | 12 | *(drawer on 08)* | A | `features/payments/components/PaymentDetailSheet.jsx` *(new)* | breakdown, receipt preview, `ApprovePaymentDialog` |
-| 13 | `/contracts/:id` tabs | A | `features/contracts/components/tabs/PagosTab.jsx`, `DocumentosTab.jsx` | ledger table, document checklist, `FileUpload` |
+| 13 | `/contracts/:guid` tabs | A | `features/contracts/components/tabs/PagosTab.jsx`, `DocumentosTab.jsx` | ledger table, document checklist, `FileUpload` |
 | 14 | `/signin` | P | `features/auth/pages/signin/index.jsx` | `BrandPanel`, `LoginForm` |
 | 15 | `/projects/create`, `/projects/:id/edit` | AO | `features/projects/pages/create|edit` | `ProjectForm`, `PublishPanel`, `SaveBar` |
 | 16 | *(system)* | — | `shared/ui/EmptyState`, `ErrorState`, `ForbiddenPage`, `shared/error/NotFound` | states used by every page |
@@ -294,7 +294,7 @@ to stop clashing with `04 Contratos`.
 - Success navigates to the lot list with a toast that links to the contract.
 
 ### 03 — Contract detail
-- Convert the modal into a **route** `/contracts/:id` (deep-linkable, kills the
+- Convert the modal into a **route** `/contracts/:guid` (deep-linkable, kills the
   modal-stacking and focus-trap class of bugs). Keep a `ContractDrawer` only if
   product insists on in-list preview.
 - Tabs are nested routes or local state; `Cronograma` replaces
@@ -319,7 +319,7 @@ to stop clashing with `04 Contratos`.
   where the **contract number is the identifier** (`#16`) with the lot as context.
 - Removes the old `SYS-AUTH // uuid` line, the duplicated "Todos los Estados"
   label, the US date inputs and the per-card eye/schedule icons.
-- Rows link to `/contracts/:id`; the row menu holds cancel/reopen, and paying
+- Rows link to `/contracts/:guid`; the row menu holds cancel/reopen, and paying
   stays in the detail screen.
 
 ### 05 / 10 — Projects and lots
@@ -493,7 +493,7 @@ to stop clashing with `04 Contratos`.
 
 | Change | Reason |
 | --- | --- |
-| Add `/contracts/:id` (+ optional `/contracts/:id/:tab`) | Contract detail is a page, not a modal |
+| Add `/contracts/:guid` (+ optional `/contracts/:guid/:tab`) | Contract detail is a page, not a modal |
 | Add `/commissions` (admin) and `/vendedor/...` (seller) | Commissions become a first-class area, split by role |
 | Keep `/payments`, add `?status=overdue` deep links | Action center must link to filtered lists |
 | Keep `/projects/:id/lots` and add `/projects/:id/lots?status=available` | Attention links |
@@ -535,7 +535,7 @@ Delete `PaginationV2`, `GenericFilter`, `SearchFilterBar`.
 Admin action center + seller home. New dashboard data composition or endpoint.
 
 **PR 6 — contract + project**
-`/contracts/:id` route + tabs + payment sheet/approve dialog. Project detail
+`/contracts/:guid` route + tabs + payment sheet/approve dialog. Project detail
 (05b), payment instructions + bank accounts (05c/05d), media (05e) and CSV
 import (05f).
 
@@ -626,7 +626,7 @@ Copy rules:
 
 ## 10. Decisions (resolved)
 
-1. **Contract detail = route** `/contracts/:id` (deep-linkable; no modal stacking).
+1. **Contract detail = route** `/contracts/:guid` (deep-linkable; no modal stacking).
 2. **Users detail = drawer** (full-screen sheet on mobile).
 3. **`GenericList` stays** for simple lists (docs, audits); `Table` for money
    lists (payments, contracts, users).

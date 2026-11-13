@@ -50,12 +50,15 @@ The design work for this plan is complete: `documentation/design/fintera-redesig
 - **Audits**: one model filter + one action filter, past-tense translated copy.
 - **Settings**: one settings nav (General, Identidad de marca, Perfil,
   Seguridad, Términos) sharing the `SaveBar`.
-- **Commissions (new)**: admin area with KPIs, filters, pay action and a rules
-  sheet (default rate, payment trigger, per-seller exceptions); commission is
-  computed and frozen at approval and only payable by admin. Seller sees
-  read-only commissions.
-- **Notifications (new)**: bell dropdown with unread badge, typed items,
-  mark-read, mobile bell.
+- **Commissions (new UI over existing data)**: admin report at `/commissions`
+  (period, seller filter, KPIs, table, CSV) backed by the existing
+  `GET /reports/commissions`; seller read-only view. Rates are per project
+  (`commission_rate_direct/_bank/_cash`, editable in the project form) and
+  `commission_amount` is frozen at approval. Payout tracking is still a backend
+  gap and is not faked.
+- **Notifications (new UI)**: bell dropdown with unread badge, typed items,
+  mark-read and a mobile bell, using the existing endpoints. The former 401 was
+  a client hydration race, fixed in the client.
 - **Seller collections (new)**: `/vendedor/*` routes behind a new `SellerRoute`
   (mis clientes, cobros, comisiones, documentos) and a `RegisterCollectionSheet`
   that records a proof → `En revisión` (never approves, never moves the balance).
@@ -89,8 +92,9 @@ The design work for this plan is complete: `documentation/design/fintera-redesig
 
 - **Routing**: `/contracts/:id`, `/vendedor/*` (with `SellerRoute`), `/commissions`.
 - **Shared code**: `src/shared/layout/`, `src/shared/ui/`, `src/shared/format` utilities.
-- **API**: dashboard summary (or client composition), commission endpoints,
-  project payment accounts, notifications (fix 401), collection registration.
+- **API**: most endpoints already exist and were verified (commissions report,
+  payment accounts, notifications, media, CSV import). Missing backend work:
+  commission payout, seller collections, seller client listing.
 - **Contexts**: `LocaleContext`, `OnboardingContext`, `ThemeContext`.
 - **Dependencies**: none new (Font Awesome stays; no `lucide-react`).
 - **Design artifacts**: `documentation/design/fintera-redesign.pen` and

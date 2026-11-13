@@ -137,6 +137,7 @@ function PaymentScheduleModal({ contract, open, onClose, onPaymentSuccess }) {
                 loadContractData,
               }}
               onPaymentComplete={onPaymentSuccess}
+              framed={false}
             />
           ) : activeTab === "ledger" ? (
             <LedgerEntriesTab

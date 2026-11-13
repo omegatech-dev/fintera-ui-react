@@ -38,6 +38,9 @@ function PaymentSchedulePanelView({
   onChanged,
   onPaymentComplete,
   className = "",
+  title,
+  subtitle,
+  framed = true,
 }) {
   const { user } = useContext(AuthContext);
   const { t } = useLocale();
@@ -209,6 +212,9 @@ function PaymentSchedulePanelView({
         onUndoPayment={handleRequestUndoPayment}
         undoLoadingPaymentId={undoLoadingPaymentId}
         footerAction={footerAction}
+        title={title}
+        subtitle={subtitle}
+        framed={framed}
       />
 
       <ApplyPaymentModal
@@ -278,6 +284,9 @@ PaymentSchedulePanel.propTypes = {
   onChanged: PropTypes.func,
   onPaymentComplete: PropTypes.func,
   className: PropTypes.string,
+  title: PropTypes.node,
+  subtitle: PropTypes.node,
+  framed: PropTypes.bool,
 };
 
 PaymentSchedulePanelView.propTypes = {
@@ -299,6 +308,9 @@ PaymentSchedulePanelView.propTypes = {
   onChanged: PropTypes.func,
   onPaymentComplete: PropTypes.func,
   className: PropTypes.string,
+  title: PropTypes.node,
+  subtitle: PropTypes.node,
+  framed: PropTypes.bool,
 };
 
 export default PaymentSchedulePanel;

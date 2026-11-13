@@ -1,11 +1,9 @@
 import PropTypes from "prop-types";
-import { Card } from "@/shared/ui";
-
 const PaymentScheduleHeader = ({ paidSteps, totalSteps, overdueSteps, progressPercent, t }) => {
   const remaining = totalSteps - paidSteps;
 
   return (
-    <Card bodyClassName="p-4">
+    <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-micro font-bold uppercase tracking-wide text-ink-3">
@@ -39,7 +37,7 @@ const PaymentScheduleHeader = ({ paidSteps, totalSteps, overdueSteps, progressPe
           style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
         />
       </div>
-    </Card>
+    </div>
   );
 };
 

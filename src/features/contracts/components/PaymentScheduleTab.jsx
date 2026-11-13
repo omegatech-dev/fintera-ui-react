@@ -23,6 +23,9 @@ const PaymentScheduleTab = memo(function PaymentScheduleTab({
   onUndoPayment,
   undoLoadingPaymentId,
   footerAction,
+  title,
+  subtitle,
+  framed = true,
 }) {
   const { t } = useLocale();
 
@@ -45,48 +48,73 @@ const PaymentScheduleTab = memo(function PaymentScheduleTab({
   }).length;
   const progressPercent = (paidSteps / totalSteps) * 100;
 
-  return (
-    <div className="space-y-4 py-4">
-      <PaymentScheduleHeader
-        paidSteps={paidSteps}
-        totalSteps={totalSteps}
-        overdueSteps={overdueSteps}
-        progressPercent={progressPercent}
-        t={t}
-      />
+  const header = (
+    <PaymentScheduleHeader
+      paidSteps={paidSteps}
+      totalSteps={totalSteps}
+      overdueSteps={overdueSteps}
+      progressPercent={progressPercent}
+      t={t}
+    />
+  );
 
-      {safeSchedule.length === 0 ? (
-        <EmptyState
-          title={t("paymentSchedule.noScheduleAvailable")}
-          description={t("contracts.noScheduleDescription")}
-        />
-      ) : (
-        <div className="space-y-2">
-          {safeSchedule.map((row, idx) => (
-            <PaymentRow
-              key={row.id || idx}
-              row={row}
-              idx={idx}
-              paidSteps={paidSteps}
-              fmt={fmt}
-              t={t}
-              translatePaymentType={translatePaymentType}
-              calculateMoratoryDays={calculateMoratoryDays}
-              setSelectedPayment={setSelectedPayment}
-              setApplyPaymentModal={setApplyPaymentModal}
-              setEditingMora={setEditingMora}
-              setMoratoryAmount={setMoratoryAmount}
-              onEditMoratory={onEditMoratory}
-              onUndoPayment={onUndoPayment}
-              undoLoadingPaymentId={undoLoadingPaymentId}
-              isReadOnly={isReadOnly}
-            />
-          ))}
+  const rows =
+    safeSchedule.length === 0 ? (
+      <EmptyState
+        title={t("paymentSchedule.noScheduleAvailable")}
+        description={t("contracts.noScheduleDescription")}
+      />
+    ) : (
+      <div className="space-y-2">
+        {safeSchedule.map((row, idx) => (
+          <PaymentRow
+            key={row.id || idx}
+            row={row}
+            idx={idx}
+            paidSteps={paidSteps}
+            fmt={fmt}
+            t={t}
+            translatePaymentType={translatePaymentType}
+            calculateMoratoryDays={calculateMoratoryDays}
+            setSelectedPayment={setSelectedPayment}
+            setApplyPaymentModal={setApplyPaymentModal}
+            setEditingMora={setEditingMora}
+            setMoratoryAmount={setMoratoryAmount}
+            onEditMoratory={onEditMoratory}
+            onUndoPayment={onUndoPayment}
+            undoLoadingPaymentId={undoLoadingPaymentId}
+            isReadOnly={isReadOnly}
+          />
+        ))}
+      </div>
+    );
+
+  const footer = (
+    <PaymentScheduleFooter totals={totals} fmt={fmt} t={t} action={footerAction} />
+  );
+
+  if (!framed) {
+    return (
+      <div className="space-y-4 py-4">
+        {header}
+        {rows}
+        {footer}
+      </div>
+    );
+  }
+
+  return (
+    <Card bodyClassName="p-0">
+      {(title || subtitle) && (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-4">
+          {title && <h2 className="text-section font-bold text-ink">{title}</h2>}
+          {subtitle && <span className="text-label text-ink-3">{subtitle}</span>}
         </div>
       )}
-
-      <PaymentScheduleFooter totals={totals} fmt={fmt} t={t} action={footerAction} />
-    </div>
+      <div className="border-b border-line p-4">{header}</div>
+      <div className="p-4">{rows}</div>
+      <div className="border-t border-line p-4">{footer}</div>
+    </Card>
   );
 });
 
@@ -106,6 +134,9 @@ PaymentScheduleTab.propTypes = {
   onUndoPayment: PropTypes.func,
   undoLoadingPaymentId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   footerAction: PropTypes.node,
+  title: PropTypes.node,
+  subtitle: PropTypes.node,
+  framed: PropTypes.bool,
 };
 
 export default PaymentScheduleTab;

@@ -965,20 +965,16 @@ function ContractDetail() {
         {tab === "cronograma" && (
           <section
             id="contract-payment-schedule"
-            className="motion-fade-up space-y-3.5 [animation-delay:60ms]"
+            className="motion-fade-up [animation-delay:60ms]"
           >
-            <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-              <h2 className="text-section font-bold text-ink">
-                {t("contracts.paymentSchedule")}
-              </h2>
-              <span className="text-label text-ink-3">
-                {t("contracts.installmentsRemaining", { count: pendingInstallments })}
-              </span>
-            </div>
             <PaymentSchedulePanel
               contract={contract}
               openNextPaymentToken={paymentRequestToken}
               onChanged={refreshContract}
+              title={t("contracts.paymentSchedule")}
+              subtitle={t("contracts.installmentsRemaining", {
+                count: pendingInstallments,
+              })}
             />
           </section>
         )}

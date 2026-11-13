@@ -1,9 +1,7 @@
 import PropTypes from "prop-types";
-import { Card } from "@/shared/ui";
-
 const PaymentScheduleFooter = ({ totals, fmt, t, action }) => {
   return (
-    <Card bodyClassName="p-4">
+    <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-8">
           <div>
@@ -29,7 +27,7 @@ const PaymentScheduleFooter = ({ totals, fmt, t, action }) => {
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 

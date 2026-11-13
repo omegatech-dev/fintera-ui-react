@@ -783,7 +783,10 @@
     "estimatedInstallment": "Estimated Monthly Installment",
     "searchExistingClient": "Search Existing Client",
     "uploadDocuments": "Upload Documents",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "stepClient": "Client",
+    "stepFinancing": "Financing",
+    "stepConfirm": "Confirmation"
   },
   "header": {
     "administrator": "Administrator",

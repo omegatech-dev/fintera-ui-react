@@ -796,7 +796,10 @@
     "estimatedInstallment": "Cuota Mensual Estimada",
     "searchExistingClient": "Buscar Cliente Existente",
     "uploadDocuments": "Subir documentos",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "stepClient": "Cliente",
+    "stepFinancing": "Financiamiento",
+    "stepConfirm": "Confirmación"
   },
   "header": {
     "administrator": "Administrador",

@@ -23,7 +23,7 @@ function Tabs({ items, value, onChange, className = "" }) {
   return (
     <div
       role="tablist"
-      className={`flex gap-6 border-b border-line ${className}`}
+      className={`flex gap-6 overflow-x-auto border-b border-line ${className}`}
     >
       {items.map((item, index) => {
         const selected = item.value === value;
@@ -39,7 +39,7 @@ function Tabs({ items, value, onChange, className = "" }) {
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange?.(item.value)}
             onKeyDown={(event) => handleKeyDown(event, index)}
-            className={`-mb-px border-b-2 pb-2.5 pt-1 text-body ${
+            className={`-mb-px shrink-0 whitespace-nowrap border-b-2 pb-2.5 pt-1 text-body ${
               selected
                 ? "border-brand font-bold text-ink"
                 : "border-transparent font-semibold text-ink-3 hover:text-ink-2"

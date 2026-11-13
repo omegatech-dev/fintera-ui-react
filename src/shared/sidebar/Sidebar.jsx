@@ -43,7 +43,7 @@ function Sidebar({ handleActive, user, handleLogout }) {
           aria-label="Toggle sidebar"
           type="button"
           onClick={handleActive}
-          className="group drawer-btn absolute right-0 top-auto transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-success-300 focus:ring-offset-2 dark:focus:ring-offset-darkblack-600"
+          className="group drawer-btn absolute right-0 top-auto flex h-11 w-11 items-center justify-center transition-all duration-300 ease-in-out hover:scale-110 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-success-300 focus:ring-offset-2 dark:focus:ring-offset-darkblack-600"
           title="Toggle sidebar (Ctrl+b)"
         >
           <span className="block transition-all duration-300 group-hover:drop-shadow-lg">

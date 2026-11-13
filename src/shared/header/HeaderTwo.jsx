@@ -23,7 +23,7 @@ function HeaderTwo({ handleSidebar }) {
             <button
               aria-label="Toggle sidebar"
               type="button"
-              className="drawer-btn rotate-180 transform shrink-0"
+              className="drawer-btn flex h-11 w-11 shrink-0 rotate-180 transform items-center justify-center"
               onClick={handleSidebar}
             >
               <span>

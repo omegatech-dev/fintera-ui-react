@@ -10,6 +10,7 @@ import RouteErrorElement from "./shared/error/RouteErrorElement";
 // Lazy-load all feature and auth pages for smaller initial bundle
 const Home = lazy(() => import("./features/dashboard/pages"));
 const Contracts = lazy(() => import("./features/contracts/pages"));
+const ContractDetail = lazy(() => import("./features/contracts/pages/detail"));
 const Payments = lazy(() => import("./features/payments/pages"));
 const Projects = lazy(() => import("./features/projects/pages"));
 const Users = lazy(() => import("./features/users/pages"));
@@ -64,6 +65,14 @@ export const appRoutes = [
           element: (
             <AdminOrOwnerRoute>
               <Contracts />
+            </AdminOrOwnerRoute>
+          ),
+        },
+        {
+          path: "/contracts/:guid",
+          element: (
+            <AdminOrOwnerRoute>
+              <ContractDetail />
             </AdminOrOwnerRoute>
           ),
         },

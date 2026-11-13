@@ -2,6 +2,7 @@ import { apiClient } from "../../lib/apiClient";
 
 export const contractsApi = {
     list: (params) => apiClient.get('/api/v1/contracts', { params }),
+    getByGuid: (guid) => apiClient.get(`/api/v1/contracts/${guid}`),
     getStats: () => apiClient.get('/api/v1/contracts/stats'),
     getDetails: (projectId, lotId, contractId) => apiClient.get(`/api/v1/projects/${projectId}/lots/${lotId}/contracts/${contractId}`),
 

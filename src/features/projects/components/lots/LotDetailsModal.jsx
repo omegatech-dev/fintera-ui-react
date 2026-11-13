@@ -109,8 +109,8 @@ function LotDetailsModal({ lot, onClose, onReserve, onEdit, isAdmin = false }) {
       open={!!lot}
       onClose={onClose}
       size="md"
+      side="right"
       flush
-      className="ml-auto h-[calc(100vh-2rem)] !max-w-[560px] overflow-y-auto rounded-sheet"
     >
       <div className="flex h-12 items-center justify-between rounded-t-sheet border-b border-line px-4">
         <h2 className="text-label font-bold text-ink">

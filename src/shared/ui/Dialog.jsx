@@ -18,6 +18,7 @@ function Dialog({
   title,
   description,
   size = "md",
+  side = "center",
   flush = false,
   footer,
   children,
@@ -76,9 +77,15 @@ function Dialog({
 
   if (!open) return null;
 
+  const isSide = side === "right";
+
   return createPortal(
     <div
-      className="motion-fade-in fixed inset-0 z-[60] flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+      className={
+        isSide
+          ? "motion-fade-in fixed inset-0 z-[60] flex justify-end bg-black/40 p-0"
+          : "motion-fade-in fixed inset-0 z-[60] flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+      }
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose?.();
       }}
@@ -90,7 +97,11 @@ function Dialog({
         aria-labelledby={title ? titleId : undefined}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={`motion-dialog flex max-h-[calc(100dvh-1rem)] w-full ${SIZES[size]} flex-col overflow-hidden rounded-t-sheet bg-surface shadow-pop sm:rounded-sheet ${flush ? "" : "p-5"} ${className}`}
+        className={
+          isSide
+            ? `motion-dialog flex h-[100dvh] max-h-[100dvh] w-full max-w-[560px] flex-col overflow-hidden border-l border-line bg-surface shadow-pop ${flush ? "" : "p-5"} ${className}`
+            : `motion-dialog flex max-h-[calc(100dvh-1rem)] w-full ${SIZES[size]} flex-col overflow-hidden rounded-t-sheet bg-surface shadow-pop sm:rounded-sheet ${flush ? "" : "p-5"} ${className}`
+        }
       >
         {title && (
           <h2 id={titleId} className="shrink-0 text-section font-bold text-ink">
@@ -120,6 +131,7 @@ Dialog.propTypes = {
   title: PropTypes.node,
   description: PropTypes.node,
   size: PropTypes.oneOf(["sm", "md", "lg", "xl"]),
+  side: PropTypes.oneOf(["center", "right"]),
   flush: PropTypes.bool,
   footer: PropTypes.node,
   children: PropTypes.node,

@@ -647,20 +647,34 @@ Copy rules:
 
 ---
 
-## 11. API and data
+## 11. API and data (verified)
 
-New/changed endpoints and schema. Names are contracts to confirm against the
-backend; behavior changes still need OpenSpec proposals.
+Verified against the Go backend while shipping PR 6–11. Most of what the
+redesign needs already exists; only the last rows are genuinely missing.
 
-| Area | Need | Notes |
+| Area | Status | Contract |
 | --- | --- | --- |
-| Dashboard | `GET /dashboard/summary` | attention counts + month KPIs; else compose `payments`/`contracts`/`projects`/`audits` with `Promise.allSettled` |
-| Commissions | compute + store at approval | `POST /contracts/:id/approve` returns the commission; `GET /commissions`, `PATCH /commissions/:id/pay`, `GET/PUT /commission-rules` |
-| Commission migration | snapshot `commission_rate` on contract | backfill existing approved contracts from audit/default; rule **changes** apply to new contracts, the snapshot never changes |
-| Bank accounts | `GET/POST/PUT/DELETE /projects/:id/payment-accounts` | one `default` per project (unique constraint); masked in responses |
-| Notifications | fix `GET /notifications` (401) | add `read` + `mark_all`; derive events from payment/contract actions |
-| Users | invitation email on create | temp password as fallback; `PATCH /users/:id` |
-| Audits | new verbs | `commission_paid`, `commission_rule_changed`, `bank_account_*`, `collection_registered` |
+| Dashboard | Implemented | no `/dashboard/summary`; client composition of `payments/stats` + `contracts/stats` |
+| Commissions | Existing | `GET /reports/commissions`, `GET /reports/commissions_csv` (admin sees all; seller filtered by creator) |
+| Commission rates | Existing | `commission_rate_direct` / `_bank` / `_cash` on Project, editable in project create/edit |
+| Commission amount | Existing | `commission_amount` on Contract, computed and stored at approval |
+| Commission payout | **Missing** | no paid/status endpoint; the report is read-only |
+| Bank accounts | Existing | `/projects/:id/payment-instructions` CRUD + reorder |
+| Notifications | Existing | `/notifications`, `mark_all_as_read`, `:id/mark_as_read`; the 401 was a frontend hydration race, fixed |
+| Media | Existing | project photos/drawings endpoints |
+| CSV import | Existing | `POST /projects/import` |
+| Users | Existing | CRUD + invitation/resend; no seller client-listing endpoint |
+| Seller collections | **Missing** | no register-collection endpoint; would reuse payment upload |
+| Commission payout history | **Missing** | — |
+
+Notes:
+
+- No schema migration is needed for v1: commission rates and amounts already
+  exist on project and contract.
+- Remaining backend work: commission payout, seller collections, notification
+  preferences.
+- The dashboard's ideal fourth card (reservas sin contrato) still needs a count
+  field or query; the shipped screen uses the four metrics the API exposes.
 
 ## 12. Out of scope / pending
 
@@ -674,7 +688,7 @@ Status per item (some were designed this pass, others remain open):
 | Financing / resumen del cliente | **Out of scope** — external customer portal (`CUSTOMER_PORTAL_URL`) |
 | Coming soon | **Drop the route** or leave as-is; not redesigned |
 | Tour (onboarding) | **Pending decision** — rewrite once-per-user or remove (PR 10) |
-| Notificaciones (backend) | **Blocked on API** — the 401 must be fixed first |
+| Notificaciones (backend) | **Fixed** — the 401 was a client hydration race, not a missing endpoint (PR 10) |
 | Dark pass | **Pending work** — PR 11 |
 | PWA / manifest | **Pending work** — correct name, `lang`, theme-color (PR 10) |
 | Print / "Descargar PDF" | **Not designed** — needs a print stylesheet decision |

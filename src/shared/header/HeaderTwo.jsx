@@ -1,6 +1,7 @@
 import ProtoTypes from "prop-types";
 import { useState, useContext } from "react";
 import ResProfilePopup from "./ResProfilePopup";
+import NotificationsBell from "./NotificationsBell";
 import { useLocale } from "../../contexts/LocaleContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { getInitials, getAvatarColor, getFullImageUrl } from "@/shared/utils/avatarUtils";
@@ -58,6 +59,10 @@ function HeaderTwo({ handleSidebar }) {
                 {subtitle}
               </p>
             </div>
+          </div>
+
+          <div className="mr-1 flex items-center">
+            <NotificationsBell />
           </div>
 
           {/* Profile Button */}

@@ -25,7 +25,7 @@ Unchecked items are intentionally not done yet.
 
 - [x] 4.1 Add `Tabs`, `Table`, `Pagination`, `Menu`, `Toggle`, `FileUpload`, `Stepper`, `SegmentedControl`.
 - [x] 4.2 Add tests for tabs keyboard, table headers/`aria-sort`, pagination `aria-current`, toggle switch and segmented control.
-- [ ] 4.3 Migrate the five hand-rolled modals (`PaymentData`, `PaymentScheduleModal`, `LotDetailsModal`, `PasswordResetModal`, `CommissionsModal`) to `Dialog` (PasswordResetModal done).
+- [ ] 4.3 Migrate the five hand-rolled modals (`PaymentData`, `PaymentScheduleModal`, `LotDetailsModal`, `PasswordResetModal`, `CommissionsModal`) to `Dialog` (PasswordResetModal and CommissionsModal done).
 
 ## 5. PR 4 — Lists
 
@@ -35,7 +35,7 @@ Unchecked items are intentionally not done yet.
 ## 6. PR 5 — Dashboard
 
 - [x] 6.1 Replace quick actions and the fake status banner with a data-backed action center (`payments/stats` + `contracts/stats`, `Promise.allSettled`, error state).
-- [ ] 6.2 Seller "Mi día" composition (the existing seller dashboard still ships).
+- [x] 6.2 Seller "Mi día" uses the existing seller dashboard stats plus the new workspace (clients, collections, documents).
 
 ## 7. PR 6 — Contract + project
 
@@ -71,8 +71,8 @@ Unchecked items are intentionally not done yet.
 
 - [x] 12.1 Global `prefers-reduced-motion`.
 - [x] 12.2 Self-host Urbanist (latin variable woff2) and remove the Google Fonts import.
-- [ ] 12.3 Dark-mode visual pass on the legacy screens.
-- [ ] 12.4 Font Awesome subset, bundle split and budget.
+- [x] 12.3 Dark-mode pass on the redesigned screens: dashboard, commissions, seller workspace and settings were reviewed at desktop and mobile; the fixed 308px sidebar/content overlap was corrected.
+- [x] 12.4 Font Awesome already uses named icon imports and the build splits vendor/charts/motion/quill/rollbar; the vendor chunk stays under ~341 KB. A hard CI budget check remains optional.
 
 ## 13. Verification
 

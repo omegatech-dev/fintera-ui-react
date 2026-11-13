@@ -140,13 +140,13 @@ describe("PaymentRow receipts", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("keeps the responsive card layout with the receipt strip for mobile", () => {
+  it("keeps a responsive table row with the receipt action", () => {
     const { container } = renderRow();
-    const card = container.firstChild;
+    const row = container.firstChild;
 
-    expect(card).toHaveClass("rounded-card");
-    expect(card.innerHTML).toContain("flex-col");
-    expect(card.innerHTML).toContain("flex-wrap");
+    expect(row).toHaveClass("grid");
+    expect(row).toHaveClass("border-b");
+    expect(row.className).toContain("md:grid-cols-");
     expect(
       screen.getByRole("button", { name: "paymentSchedule.viewReceipt" })
     ).toBeInTheDocument();

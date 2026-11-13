@@ -1661,7 +1661,8 @@
     "dueDate": "Due date",
     "description": "Description",
     "downloadReceipt": "Download receipt",
-    "receiptDetails": "Payment receipt and details"
+    "receiptDetails": "Payment receipt and details",
+    "concept": "Concept"
   },
   "contractDetailsModal": {
     "title": "Contract Details",

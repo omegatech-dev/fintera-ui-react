@@ -58,6 +58,16 @@ const PaymentScheduleTab = memo(function PaymentScheduleTab({
     />
   );
 
+  const tableHeader = (
+    <div className="hidden grid-cols-[minmax(0,1.8fr)_110px_110px_110px_auto] gap-3 border-b border-line px-1 pb-2 text-[10px] font-bold uppercase tracking-wide text-ink-3 md:grid">
+      <span>{t("paymentSchedule.concept")}</span>
+      <span>{t("paymentSchedule.dueDate")}</span>
+      <span>{t("paymentSchedule.amount")}</span>
+      <span>{t("paymentSchedule.status")}</span>
+      <span className="text-right">{t("common.actions")}</span>
+    </div>
+  );
+
   const rows =
     safeSchedule.length === 0 ? (
       <EmptyState
@@ -65,7 +75,8 @@ const PaymentScheduleTab = memo(function PaymentScheduleTab({
         description={t("contracts.noScheduleDescription")}
       />
     ) : (
-      <div className="space-y-2">
+      <div>
+        {tableHeader}
         {safeSchedule.map((row, idx) => (
           <PaymentRow
             key={row.id || idx}

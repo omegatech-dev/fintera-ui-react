@@ -1663,7 +1663,8 @@
     "dueDate": "Vencimiento",
     "description": "Descripción",
     "downloadReceipt": "Descargar comprobante",
-    "receiptDetails": "Comprobante y datos del pago"
+    "receiptDetails": "Comprobante y datos del pago",
+    "concept": "Concepto"
   },
   "contractDetailsModal": {
     "title": "Detalles del Contrato",

@@ -215,13 +215,13 @@ function Sidebar({ handleActive, user, handleLogout }) {
                 </li>
               )}
 
-              {/* Commissions: Only Admin */}
-              {isAdmin && (
+              {/* Commissions: Admin and Seller (read-only for sellers) */}
+              {(isAdmin || isSeller) && (
                 <li
-                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${isRouteActive(location, "/commissions") ? "nav-active" : ""
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${isRouteActive(location, "/commissions") || isRouteActive(location, "/vendedor/comisiones") ? "nav-active" : ""
                     }`}
                 >
-                  <Link to="/commissions">
+                  <Link to={isAdmin ? "/commissions" : "/vendedor/comisiones"}>
                     <div className="flex items-center space-x-2 sm:space-x-2.5">
                       <span className="item-ico flex h-4 w-4 shrink-0 items-center justify-center text-sm font-black text-success-300 sm:h-5 sm:w-5">
                         %

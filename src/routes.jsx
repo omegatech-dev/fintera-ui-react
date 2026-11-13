@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import AdminRoute from "./shared/auth/AdminRoute";
 import AdminOrOwnerRoute from "./shared/auth/AdminOrOwnerRoute";
+import SellerRoute from "./shared/auth/SellerRoute";
 import Forbidden from "./features/common/ForbiddenPage";
 import Layout from "./shared/layout/Layout";
 import RouteErrorElement from "./shared/error/RouteErrorElement";
@@ -67,6 +68,14 @@ export const appRoutes = [
             <AdminRoute>
               <Commissions />
             </AdminRoute>
+          ),
+        },
+        {
+          path: "/vendedor/comisiones",
+          element: (
+            <SellerRoute>
+              <Commissions />
+            </SellerRoute>
           ),
         },
         {

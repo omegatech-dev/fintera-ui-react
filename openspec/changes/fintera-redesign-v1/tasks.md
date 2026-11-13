@@ -25,7 +25,7 @@ Unchecked items are intentionally not done yet.
 
 - [x] 4.1 Add `Tabs`, `Table`, `Pagination`, `Menu`, `Toggle`, `FileUpload`, `Stepper`, `SegmentedControl`.
 - [x] 4.2 Add tests for tabs keyboard, table headers/`aria-sort`, pagination `aria-current`, toggle switch and segmented control.
-- [ ] 4.3 Migrate the five hand-rolled modals (`PaymentData`, `PaymentScheduleModal`, `LotDetailsModal`, `PasswordResetModal`, `CommissionsModal`) to `Dialog`.
+- [ ] 4.3 Migrate the five hand-rolled modals (`PaymentData`, `PaymentScheduleModal`, `LotDetailsModal`, `PasswordResetModal`, `CommissionsModal`) to `Dialog` (PasswordResetModal done).
 
 ## 5. PR 4 — Lists
 
@@ -51,7 +51,7 @@ Unchecked items are intentionally not done yet.
 
 - [x] 9.1 Restrict `/signup` to admins.
 - [ ] 9.2 Rebuild sign-in with the new primitives and migrate the reset/terms modals to `Dialog`.
-- [ ] 9.3 Consolidated `SettingsNav` (General, Marca, Perfil, Seguridad, Términos) with per-section `SaveBar`.
+- [x] 9.3 Settings navigation cross-links admin (General, Marca) and account (Perfil, Seguridad, Términos) sections; every section already uses `SettingsSaveBar`.
 
 ## 10. PR 9 — Responsive
 

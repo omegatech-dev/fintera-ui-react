@@ -5,6 +5,7 @@ import { useLocale } from "../../contexts/LocaleContext";
 import logoColor from "../../assets/images/logo/logo-color.svg";
 import logoWhite from "../../assets/images/logo/logo-white.svg";
 import { usersApi } from "../../features/users/api";
+import Dialog from "../ui/Dialog";
 
 // Cross button component remains the same
 export const CrossBtn = ({ close }) => (
@@ -393,10 +394,19 @@ function PasswordResetModal({ isActive, handleActive }) {
     }
   };
 
+  const close = () => {
+    handleActive(false);
+    resetState();
+  };
+
   return (
-    <div className={`modal fixed inset-0 z-50 overflow-y-auto flex items-center justify-center ${isActive ? '' : 'hidden'}`}>
-      <div className="modal-overlay absolute inset-0 bg-gray-500 opacity-75 dark:bg-bgray-900 dark:opacity-50"></div>
-      <div className="modal-content w-full max-w-lg mx-auto px-4">
+    <Dialog
+      open={Boolean(isActive)}
+      onClose={close}
+      size="lg"
+      className="max-w-lg p-0"
+    >
+      <div className="modal-content w-full">
         {step === 'reset' && (
           <ResetPass
             email={email}
@@ -404,10 +414,7 @@ function PasswordResetModal({ isActive, handleActive }) {
             error={error}
             loading={loading}
             onSubmit={handleSendCode}
-            onClose={() => {
-              handleActive(false);
-              resetState();
-            }}
+            onClose={close}
           />
         )}
 
@@ -421,10 +428,7 @@ function PasswordResetModal({ isActive, handleActive }) {
             resending={resending}
             onSubmit={handleVerifyCode}
             onResend={handleResendCode}
-            onClose={() => {
-              handleActive(false);
-              resetState();
-            }}
+            onClose={close}
           />
         )}
 
@@ -437,21 +441,13 @@ function PasswordResetModal({ isActive, handleActive }) {
             error={error}
             loading={loading}
             onSubmit={handleUpdatePassword}
-            onClose={() => {
-              handleActive(false);
-              resetState();
-            }}
+            onClose={close}
           />
         )}
 
-        {step === 'success' && (
-          <SuccessFull onClose={() => {
-            handleActive(false);
-            resetState();
-          }} />
-        )}
+        {step === 'success' && <SuccessFull onClose={close} />}
       </div>
-    </div>
+    </Dialog>
   );
 }
 

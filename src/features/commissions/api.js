@@ -10,4 +10,6 @@ export const commissionsApi = {
     apiClient.get(`/api/v1/reports/commissions_csv${periodQuery(startDate, endDate)}`, {
       responseType: "blob",
     }),
+  markPaid: (contractGuid) =>
+    apiClient.patch(`/api/v1/contracts/${contractGuid}/commission/pay`),
 };

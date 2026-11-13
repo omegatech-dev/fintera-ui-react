@@ -1,9 +1,21 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { useLocale } from "./LocaleContext";
+import AuthContext from "./AuthContext";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 
 const OnboardingContext = createContext();
+
+const storageKey = (userId) => `fintera_onboarding_status:${userId}`;
+
+const readCompletedTours = (userId) => {
+    if (!userId) return {};
+    try {
+        return JSON.parse(localStorage.getItem(storageKey(userId)) || "{}");
+    } catch {
+        return {};
+    }
+};
 
 export const useOnboarding = () => {
     const context = useContext(OnboardingContext);
@@ -15,15 +27,15 @@ export const useOnboarding = () => {
 
 export const OnboardingProvider = ({ children }) => {
     const { t } = useLocale();
+    const { user } = useContext(AuthContext);
+    const userId = user?.id ?? null;
 
-    // Cache completed tours in state using lazy initialization
-    const [completedTours, setCompletedTours] = useState(() => {
-        try {
-            return JSON.parse(localStorage.getItem("fintera_onboarding_status") || "{}");
-        } catch {
-            return {};
-        }
-    });
+    // Tours are scoped per user so a new account still gets the onboarding.
+    const [completedTours, setCompletedTours] = useState(() => readCompletedTours(userId));
+
+    useEffect(() => {
+        setCompletedTours(readCompletedTours(userId));
+    }, [userId]);
 
     // Helper to check if a specific tour is completed
     const isTourCompleted = useCallback((tourKey) => {
@@ -34,10 +46,12 @@ export const OnboardingProvider = ({ children }) => {
     const markTourCompleted = useCallback((tourKey) => {
         setCompletedTours((prev) => {
             const next = { ...prev, [tourKey]: true };
-            localStorage.setItem("fintera_onboarding_status", JSON.stringify(next));
+            if (userId) {
+                localStorage.setItem(storageKey(userId), JSON.stringify(next));
+            }
             return next;
         });
-    }, []);
+    }, [userId]);
 
     const startTour = useCallback((tourKey = "home") => {
         // Define steps for each tour

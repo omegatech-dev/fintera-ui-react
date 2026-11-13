@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import AuthContext from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
 import { commissionsApi } from "../api";
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import {
   Button,
   Card,
+  Chip,
   EmptyState,
   ErrorState,
   Select,
@@ -28,6 +32,10 @@ const monthEnd = () => {
 };
 
 function Commissions() {
+  const { user } = useContext(AuthContext);
+  const { showToast } = useToast();
+  const isAdmin = user?.role === "admin";
+  const [paying, setPaying] = useState(null);
   const [startDate, setStartDate] = useState(monthStart);
   const [endDate, setEndDate] = useState(monthEnd);
   const [items, setItems] = useState([]);
@@ -69,10 +77,46 @@ function Commissions() {
         (acc, item) => ({
           commission: acc.commission + Number(item.commission || 0),
           amount: acc.amount + Number(item.amount || 0),
+          paid: acc.paid + (item.commission_paid_at ? Number(item.commission || 0) : 0),
+          pending:
+            acc.pending + (item.commission_paid_at ? 0 : Number(item.commission || 0)),
         }),
-        { commission: 0, amount: 0 }
+        { commission: 0, amount: 0, paid: 0, pending: 0 }
       ),
     [filtered]
+  );
+
+  const handlePay = useCallback(
+    async (row) => {
+      if (!row?.contract_guid) return;
+      const confirmed = await confirmDialog({
+        title: "Marcar comisión como pagada",
+        description: `Se registrará el pago de ${money(row.commission)} a ${
+          row.seller || "el vendedor"
+        }. Esta acción no modifica el monto de la comisión.`,
+        confirmLabel: "Marcar pagada",
+      });
+      if (!confirmed) return;
+
+      setPaying(row.contract_guid);
+      try {
+        const result = await commissionsApi.markPaid(row.contract_guid);
+        const paidAt = result?.contract?.commission_paid_at || new Date().toISOString();
+        setItems((prev) =>
+          prev.map((item) =>
+            item.contract_guid === row.contract_guid
+              ? { ...item, commission_paid_at: paidAt }
+              : item
+          )
+        );
+        showToast("Comisión marcada como pagada.");
+      } catch (err) {
+        showToast(err?.message || "No pudimos marcar la comisión.", "error");
+      } finally {
+        setPaying(null);
+      }
+    },
+    [showToast]
   );
 
   const averageRate = totals.amount
@@ -139,8 +183,43 @@ function Commissions() {
         header: "Fecha",
         render: (row) => row.date || "—",
       },
+      {
+        key: "commission_paid_at",
+        header: "Estado",
+        render: (row) =>
+          row.commission_paid_at ? (
+            <Chip tone="success">Pagada</Chip>
+          ) : (
+            <Chip tone="warning">Pendiente</Chip>
+          ),
+      },
+      ...(isAdmin
+        ? [
+            {
+              key: "actions",
+              header: "",
+              align: "right",
+              render: (row) =>
+                row.commission_paid_at ? (
+                  <span className="text-micro text-ink-3">
+                    {new Date(row.commission_paid_at).toLocaleDateString("es-HN")}
+                  </span>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    loading={paying === row.contract_guid}
+                    disabled={!row.contract_guid}
+                    onClick={() => handlePay(row)}
+                  >
+                    Marcar pagada
+                  </Button>
+                ),
+            },
+          ]
+        : []),
     ],
-    []
+    [handlePay, isAdmin, paying]
   );
 
   return (
@@ -207,9 +286,9 @@ function Commissions() {
               ))
             : [
                 { label: "Comisiones del periodo", value: money(totals.commission) },
-                { label: "Contratos", value: String(filtered.length) },
+                { label: "Pagadas", value: money(totals.paid) },
+                { label: "Pendientes", value: money(totals.pending) },
                 { label: "Tasa promedio", value: `${averageRate}%` },
-                { label: "Vendedores", value: String(sellers.length) },
               ].map((kpi) => (
                 <Card key={kpi.label} title={kpi.label}>
                   <p className="text-page font-bold text-ink">{kpi.value}</p>
@@ -244,6 +323,24 @@ function Commissions() {
                   <p className="text-body font-bold text-brand-strong">
                     {money(row.commission)}
                   </p>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  {row.commission_paid_at ? (
+                    <Chip tone="success">Pagada</Chip>
+                  ) : (
+                    <Chip tone="warning">Pendiente</Chip>
+                  )}
+                  {isAdmin && !row.commission_paid_at && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      loading={paying === row.contract_guid}
+                      disabled={!row.contract_guid}
+                      onClick={() => handlePay(row)}
+                    >
+                      Marcar pagada
+                    </Button>
+                  )}
                 </div>
               </div>
             )}

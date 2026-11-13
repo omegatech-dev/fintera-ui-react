@@ -40,7 +40,6 @@ const pwaConfig = {
     scope: "/",
     start_url: "/",
     display: "standalone",
-    orientation: "portrait",
     background_color: "#F6F7F9",
     theme_color: "#15803D",
     categories: ["business", "finance", "productivity"],

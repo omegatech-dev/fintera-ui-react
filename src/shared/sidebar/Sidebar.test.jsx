@@ -27,6 +27,24 @@ const renderSidebar = (Component, role, path = "/") =>
     </MemoryRouter>
   );
 
+describe("payments navigation", () => {
+  it("links the Payments entry to /payments instead of the dashboard", () => {
+    renderSidebar(Sidebar, "admin");
+    expect(screen.getByText("dashboard.payments").closest("a")).toHaveAttribute(
+      "href",
+      "/payments"
+    );
+  });
+
+  it("marks Payments as active only on the payments route", () => {
+    renderSidebar(Sidebar, "admin", "/payments");
+    const paymentsItem = screen.getByText("dashboard.payments").closest("li");
+    const dashboardItem = screen.getByText("dashboard.dashboard").closest("li");
+    expect(paymentsItem).toHaveClass("nav-active");
+    expect(dashboardItem).not.toHaveClass("nav-active");
+  });
+});
+
 describe("admin Settings navigation", () => {
   it("shows the Settings entry to admins", () => {
     renderSidebar(Sidebar, "admin");

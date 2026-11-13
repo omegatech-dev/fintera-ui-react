@@ -18,7 +18,7 @@ import {
 // active prefixes beyond `to`; `exclude` removes prefixes from the match.
 export const NAV_ITEMS = [
   { to: "/", labelKey: "dashboard.dashboard", icon: faHome, roles: ["admin", "seller"], exact: true },
-  { to: "/", labelKey: "dashboard.payments", icon: faWallet, roles: ["admin"] },
+  { to: "/payments", labelKey: "dashboard.payments", icon: faWallet, roles: ["admin"] },
   {
     to: "/commissions",
     labelKey: "dashboard.commissions",

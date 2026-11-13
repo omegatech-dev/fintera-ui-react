@@ -35,18 +35,6 @@ function ProjectDetail() {
   const { user } = useContext(AuthContext);
   const { settings: generalSettings } = useGeneralSettings();
   const currency = generalSettings.default_currency || getDefaultCurrency();
-  const projectTypeLabel = project?.project_type
-    ? (() => {
-        const key = `projects.${project.project_type}`;
-        const translated = t(key);
-        return translated === key ? project.project_type : translated;
-      })()
-    : "—";
-  const accountTypeLabel = (type) => {
-    if (type === "checking") return t("paymentInstructions.typeChecking") || type;
-    if (type === "savings") return t("paymentInstructions.typeSavings") || type;
-    return type || "—";
-  };
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -68,6 +56,18 @@ function ProjectDetail() {
   const [activityLoading, setActivityLoading] = useState(false);
 
   const isAdmin = user?.role === "admin";
+  const projectTypeLabel = project?.project_type
+    ? (() => {
+        const key = `projects.${project.project_type}`;
+        const translated = t(key);
+        return translated === key ? project.project_type : translated;
+      })()
+    : "—";
+  const accountTypeLabel = (type) => {
+    if (type === "checking") return t("paymentInstructions.typeChecking") || type;
+    if (type === "savings") return t("paymentInstructions.typeSavings") || type;
+    return type || "—";
+  };
 
   useEffect(() => {
     let cancelled = false;

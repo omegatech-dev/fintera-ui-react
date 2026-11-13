@@ -54,14 +54,16 @@ The design work for this plan is complete: `documentation/design/fintera-redesig
   (period, seller filter, KPIs, table, CSV) backed by the existing
   `GET /reports/commissions`; seller read-only view. Rates are per project
   (`commission_rate_direct/_bank/_cash`, editable in the project form) and
-  `commission_amount` is frozen at approval. Payout tracking is still a backend
-  gap and is not faked.
+  `commission_amount` is frozen when paid. Payout tracking is implemented with
+  `commission_paid_at` / `commission_paid_by`, an admin pay endpoint and an
+  audit event.
 - **Notifications (new UI)**: bell dropdown with unread badge, typed items,
   mark-read and a mobile bell, using the existing endpoints. The former 401 was
   a client hydration race, fixed in the client.
-- **Seller collections (new)**: `/vendedor/*` routes behind a new `SellerRoute`
-  (mis clientes, cobros, comisiones, documentos) and a `RegisterCollectionSheet`
-  that records a proof → `En revisión` (never approves, never moves the balance).
+- **Seller collections (new)**: `/vendedor/*` routes behind `SellerRoute`
+  (mis clientes, cobros, comisiones, documentos) and a "Registrar cobro" dialog
+  that uploads a receipt → `En revisión` (never approves, never moves the
+  balance, writes an audit event).
 - **Signup** restricted to admin (public account creation stays in the customer
   portal); **onboarding tour** runs once per user; **dark mode** in scope.
 - **Removals**: `SidebarV2`, 17 `aria-label="none"`, 9 `window.confirm`,
@@ -92,9 +94,11 @@ The design work for this plan is complete: `documentation/design/fintera-redesig
 
 - **Routing**: `/contracts/:id`, `/vendedor/*` (with `SellerRoute`), `/commissions`.
 - **Shared code**: `src/shared/layout/`, `src/shared/ui/`, `src/shared/format` utilities.
-- **API**: most endpoints already exist and were verified (commissions report,
-  payment accounts, notifications, media, CSV import). Missing backend work:
-  commission payout, seller collections, seller client listing.
+- **API**: most endpoints already existed and were verified (commissions report,
+  payment accounts, notifications, media, CSV import). Added for this change:
+  commission payout (`PATCH /contracts/:guid/commission/pay`, migration 000029)
+  and the `UPLOAD_RECEIPT` audit event. Seller clients reuse seller-scoped
+  contracts; notification preferences remain future work.
 - **Contexts**: `LocaleContext`, `OnboardingContext`, `ThemeContext`.
 - **Dependencies**: none new (Font Awesome stays; no `lucide-react`).
 - **Design artifacts**: `documentation/design/fintera-redesign.pen` and

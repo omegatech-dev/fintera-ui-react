@@ -1,4 +1,6 @@
+import { useContext } from "react";
 import { NavLink } from "react-router-dom";
+import AuthContext from "../../../contexts/AuthContext";
 import { useLocale } from "../../../contexts/LocaleContext";
 
 const ITEMS = [
@@ -40,6 +42,7 @@ const ITEMS = [
 
 function AdminSettingsSidebar() {
   const { t } = useLocale();
+  const { user } = useContext(AuthContext);
 
   return (
     <aside className="border-b border-bgray-200 dark:border-darkblack-400 xl:col-span-3 xl:border-b-0 xl:border-r">
@@ -74,6 +77,45 @@ function AdminSettingsSidebar() {
           ))}
         </nav>
       </div>
+
+      {user?.id && (
+        <div className="px-4 pb-4">
+          <p className="px-3 text-xs font-semibold uppercase tracking-wide text-bgray-500 dark:text-bgray-400">
+            {t("settings.personal")}
+          </p>
+          <nav aria-label={t("settings.personal")} className="mt-2 space-y-1">
+            {[
+              {
+                to: `/settings/user/${user.id}`,
+                label: t("settings.personal"),
+              },
+              {
+                to: `/settings/user/${user.id}/security`,
+                label: t("settings.security"),
+              },
+              {
+                to: `/settings/user/${user.id}/terms&conditions`,
+                label: t("settings.terms"),
+              },
+            ].map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end
+                className={({ isActive }) =>
+                  `block rounded-control px-3 py-2 text-sm font-semibold transition-colors ${
+                    isActive
+                      ? "bg-brand-soft text-brand-strong"
+                      : "text-bgray-600 hover:bg-surface-2 dark:text-bgray-300"
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+      )}
 
       <div className="px-4 pb-6">
         <div className="flex items-start gap-2 rounded-xl bg-bgray-100 p-3 text-xs text-bgray-600 dark:bg-darkblack-500 dark:text-bgray-300">

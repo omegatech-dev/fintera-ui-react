@@ -650,29 +650,30 @@ Copy rules:
 ## 11. API and data (verified)
 
 Verified against the Go backend while shipping PR 6–11. Most of what the
-redesign needs already exists; only the last rows are genuinely missing.
+redesign needs already existed; the commission payout and the collection audit
+were added to the API in the `redesign/api-commission-payout` branch.
 
 | Area | Status | Contract |
 | --- | --- | --- |
 | Dashboard | Implemented | no `/dashboard/summary`; client composition of `payments/stats` + `contracts/stats` |
 | Commissions | Existing | `GET /reports/commissions`, `GET /reports/commissions_csv` (admin sees all; seller filtered by creator) |
 | Commission rates | Existing | `commission_rate_direct` / `_bank` / `_cash` on Project, editable in project create/edit |
-| Commission amount | Existing | `commission_amount` on Contract, computed and stored at approval |
-| Commission payout | **Missing** | no paid/status endpoint; the report is read-only |
+| Commission amount | Existing | `commission_amount` on Contract, computed at creation and frozen when paid |
+| Commission payout | **Added** | `PATCH /contracts/:guid/commission/pay`; `commission_paid_at` + `commission_paid_by`; migration `000029`; `COMMISSION_PAID` audit |
 | Bank accounts | Existing | `/projects/:id/payment-instructions` CRUD + reorder |
 | Notifications | Existing | `/notifications`, `mark_all_as_read`, `:id/mark_as_read`; the 401 was a frontend hydration race, fixed |
 | Media | Existing | project photos/drawings endpoints |
 | CSV import | Existing | `POST /projects/import` |
-| Users | Existing | CRUD + invitation/resend; no seller client-listing endpoint |
-| Seller collections | **Missing** | no register-collection endpoint; would reuse payment upload |
-| Commission payout history | **Missing** | — |
+| Users | Existing | CRUD + invitation/resend; seller clients are composed from their own contracts |
+| Seller collections | **Added (UI)** | receipt upload via the existing payment endpoint, status `submitted` ("En revisión"), `UPLOAD_RECEIPT` audit added |
+| Commission payout history | **Added** | paid date is returned by the report and shown in the table |
 
 Notes:
 
-- No schema migration is needed for v1: commission rates and amounts already
-  exist on project and contract.
-- Remaining backend work: commission payout, seller collections, notification
-  preferences.
+- One migration is required for v1: `000029_add_commission_payout` (two nullable
+  columns on `contracts`).
+- Remaining backend work: notification preferences and a richer collection sheet
+  (partial amount, method, reference).
 - The dashboard's ideal fourth card (reservas sin contrato) still needs a count
   field or query; the shipped screen uses the four metrics the API exposes.
 

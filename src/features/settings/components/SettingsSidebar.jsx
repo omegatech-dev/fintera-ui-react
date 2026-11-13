@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { useContext } from "react";
+import { Link } from "react-router-dom";
 import AuthContext from "@/contexts/AuthContext";
 import Progressbar from "@/shared/ui/Progressbar";
 import TabBtn from "@/shared/buttons/TabBtn";
@@ -86,6 +87,28 @@ function SettingsSidebar() {
           </svg>
         </TabBtn>
       </div>
+      {loggedUser?.role === "admin" && (
+        <div className="px-8 pb-6">
+          <p className="text-micro font-bold uppercase tracking-wide text-bgray-500 dark:text-bgray-400">
+            {t("settings.admin.organization")}
+          </p>
+          <div className="mt-2 space-y-1">
+            <Link
+              to="/settings/general"
+              className="block rounded-control px-3 py-2 text-sm font-semibold text-bgray-600 hover:bg-surface-2 dark:text-bgray-300"
+            >
+              {t("settings.admin.general")}
+            </Link>
+            <Link
+              to="/settings/branding"
+              className="block rounded-control px-3 py-2 text-sm font-semibold text-bgray-600 hover:bg-surface-2 dark:text-bgray-300"
+            >
+              {t("settings.admin.brandIdentity")}
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Progressbar  */}
       <div className="px-8">
         <Progressbar

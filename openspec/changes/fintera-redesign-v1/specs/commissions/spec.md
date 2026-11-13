@@ -1,54 +1,61 @@
 ## Purpose
 
-Gives admins a single place to see, pay and configure seller commissions, and
-gives sellers a read-only view of their own commissions.
+Gives admins a single place to see and pay seller commissions, and gives sellers
+a read-only view of their own commissions. Rates live on each project.
 
 ## ADDED Requirements
 
 ### Requirement: Admin can review commissions
-The system SHALL provide an admin-only `/commissions` area with KPIs (month,
-pending, paid year-to-date, average rate) and a filterable table of commissions
-by seller, status and period.
+The system SHALL provide an admin-only `/commissions` area with KPIs (commissions
+for the period, paid, pending, average rate) and a table filterable by period and
+seller, backed by `GET /api/v1/reports/commissions`.
 
-#### Scenario: Admin filters pending commissions
-- **WHEN** an admin selects the "Pendientes" filter
-- **THEN** only commissions with status pending are shown, with their counts
+#### Scenario: Admin filters by seller
+- **WHEN** an admin selects a seller in the commissions area
+- **THEN** only that seller's commissions are shown in the table and KPIs
 
 #### Scenario: Average rate is shown
 - **WHEN** an admin opens the commissions area
 - **THEN** the average commission rate is displayed as a KPI
 
 ### Requirement: Admin can pay a commission
-The system SHALL allow an admin to mark a commission as paid from its row action,
-recording the payment date and an audit event, without altering the contract's
-balance.
+The system SHALL allow an admin to mark a commission as paid from its row action
+through `PATCH /api/v1/contracts/:guid/commission/pay`, recording the payment
+date and actor, writing an audit event, and leaving the contract balance
+unchanged. Paying twice SHALL be rejected.
 
 #### Scenario: Admin pays a pending commission
-- **WHEN** an admin clicks "Pagar" on a pending commission
-- **THEN** its status becomes paid and an audit event is written
+- **WHEN** an admin clicks "Marcar pagada" on a pending commission
+- **THEN** its row shows "Pagada" with the payout date
+- **AND** an audit event names the admin and the amount
 - **AND** the contract balance is unchanged
 
-### Requirement: Commission is frozen at approval
-The system SHALL compute and store the commission rate when a contract is
-approved. Subsequent rule changes SHALL NOT modify already-approved contracts.
+#### Scenario: Already paid
+- **WHEN** an admin tries to pay a commission that is already paid
+- **THEN** the API rejects the request and the UI does not change the row
 
-#### Scenario: Rule change does not rewrite history
-- **WHEN** an admin changes the default rate after a contract was approved
-- **THEN** the previously approved contract keeps its original commission rate
+### Requirement: Commission amount is stable
+The system SHALL use the `commission_amount` stored on the contract. If an older
+contract has no stored amount, the payout operation SHALL compute it from the
+project rates and persist it at that moment.
 
-### Requirement: Admin can configure commission rules
-The system SHALL provide a rules sheet with a default rate, a payment trigger
-and per-seller exceptions, applying changes only to new contracts.
+#### Scenario: Rate change does not rewrite history
+- **WHEN** an admin changes a project commission rate after a contract exists
+- **THEN** already stored contract commissions keep their original amount
 
-#### Scenario: Admin sets an exception
-- **WHEN** an admin sets a different rate for one seller and saves
-- **THEN** new contracts for that seller use the exception rate
-- **AND** the change is audited with the previous and new rate
+### Requirement: Project rates
+The system SHALL expose the existing per-project commission rates
+(`commission_rate_direct`, `commission_rate_bank`, `commission_rate_cash`) in the
+project create/edit forms. A per-seller exception table is **not** part of v1.
+
+#### Scenario: Editing a rate
+- **WHEN** an admin edits a project's commission rates and saves
+- **THEN** new contracts for that project use the new rates
 
 ### Requirement: Seller commissions are read-only
-The system SHALL show a seller their own commissions with month total, pending
-amount and payment history, without any payout or rule-editing action.
+The system SHALL show a seller their own commissions with period total, pending
+amount and paid amount, without any payout action.
 
 #### Scenario: Seller cannot pay a commission
-- **WHEN** a seller views their commissions
-- **THEN** no "Pagar" action and no rule-editing action is available
+- **WHEN** a seller views `/vendedor/comisiones`
+- **THEN** no "Marcar pagada" action is available

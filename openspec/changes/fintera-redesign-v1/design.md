@@ -76,6 +76,20 @@ unauthenticated request. The fix waits for the auth token and retries once on
 **Why**: removes the blocking Google Fonts request and the duplicate import; one
 27 KB variable woff2 (latin) covers 300–700.
 
+### 10. Commission payout is a real backend state
+**Why**: a paid badge must survive reloads and be auditable. Added
+`commission_paid_at` / `commission_paid_by` to contracts (migration `000029`),
+`PATCH /contracts/:guid/commission/pay` (admin only) and a `COMMISSION_PAID`
+audit event. Paying twice is rejected; the amount is computed and persisted at
+payout time if an older contract has none.
+
+### 11. Seller workspace reuses seller-scoped contracts
+**Why**: `/contracts` already filters by `creator_id` for sellers, so clients,
+outstanding balances and the documents entry point can be derived without new
+list endpoints. Registering a collection uploads a receipt through the existing
+payment endpoint, which sets the payment to `submitted` ("En revisión") and now
+writes an `UPLOAD_RECEIPT` audit event.
+
 ## Risks / Trade-offs
 
 - **Scope breadth** (25 frames, 13 specs) → phase as PRs; each PR ships behind

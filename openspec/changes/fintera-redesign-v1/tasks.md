@@ -56,16 +56,16 @@ Unchecked items are intentionally not done yet.
 ## 10. PR 9 — Responsive
 
 - [x] 10.1 44px drawer targets, scrollable tabs, bottom navigation on <768px, 72px content offset; verified at 390px.
-- [ ] 10.2 Replace the fixed `pt-[100px]` page offsets with a shared utility and finish the M1/M2/18 layouts.
+- [x] 10.2 Replace the fixed `pt-[100px]` page offsets with the shared `page-shell` utility (25 screens); M1/M2/18 layouts remain as follow-up polish.
 
 ## 11. PR 10 — Commissions + notifications
 
 - [x] 11.1 Admin commissions report at `/commissions` (period, seller filter, KPIs, table, CSV) using the existing `/reports/commissions`.
 - [x] 11.2 Seller read-only route `/vendedor/comisiones` behind `SellerRoute`.
 - [x] 11.3 Mobile notifications bell with unread dot, dropdown, mark-read and a 401 retry.
-- [ ] 11.4 Commission payout tracking (needs a backend paid/status endpoint).
-- [ ] 11.5 Seller `Mis clientes`, `Cobros` (register collection) and `Documentos` (needs backend).
-- [ ] 11.6 Tour once-per-user and PWA manifest corrections.
+- [x] 11.4 Commission payout tracking: `commission_paid_at/by`, `PATCH /contracts/:guid/commission/pay`, audit event and the admin "Marcar pagada" action.
+- [x] 11.5 Seller workspace `/vendedor/*`: clients, collection queue with receipt upload ("En revisión") and documents, scoped to the seller's contracts.
+- [x] 11.6 Tour completion stored per user and the PWA manifest corrected (name, scope, colors, lang, categories).
 
 ## 12. PR 11 — Dark + performance
 

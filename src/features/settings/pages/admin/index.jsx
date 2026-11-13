@@ -9,7 +9,7 @@ function AdminSettings() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <main className="w-full px-6 pb-6 pt-[100px] sm:pt-[156px] xl:px-[48px] xl:pb-[48px]">
+    <main className="w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px]">
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-200">
           <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden="true">

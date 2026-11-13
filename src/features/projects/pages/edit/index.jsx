@@ -226,7 +226,7 @@ function EditProject() {
   }
 
   return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] sm:pt-[156px] pt-[100px] min-h-screen bg-bgray-50 dark:bg-darkblack-700">
+    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell min-h-screen bg-bgray-50 dark:bg-darkblack-700">
       <motion.div
         initial="hidden"
         animate="visible"

@@ -107,7 +107,7 @@ export default function PaymentInstructionsPage() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-bgray-50 px-6 pb-6 pt-[100px] dark:bg-darkblack-700 sm:pt-[156px] xl:px-[48px] xl:pb-[48px]">
+    <main className="min-h-screen w-full bg-bgray-50 px-6 pb-6 page-shell dark:bg-darkblack-700 xl:px-[48px] xl:pb-[48px]">
       <div className="mx-auto max-w-4xl space-y-6">
         <Link
           to="/projects"

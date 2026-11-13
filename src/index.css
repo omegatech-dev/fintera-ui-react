@@ -65,6 +65,16 @@
   --shadow-pop: 0 10px 24px #0f172a1f;
 }
 
+/* Shared page offset that clears the fixed mobile (80px) and desktop (108px)
+   headers plus breathing room. Use instead of hard-coding pt-[100px]. */
+@utility page-shell {
+  padding-top: 100px;
+
+  @media (width >= 40rem) {
+    padding-top: 156px;
+  }
+}
+
 @layer base {
   *,
   ::after,

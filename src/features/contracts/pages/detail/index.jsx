@@ -150,7 +150,7 @@ function ContractDetail() {
 
   if (loading) {
     return (
-      <main className="min-h-screen w-full px-6 pb-6 pt-[100px] sm:pt-[156px] xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
+      <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
         <div className="mx-auto max-w-6xl space-y-4">
           <Skeleton rows={2} />
           <div className="grid gap-4 sm:grid-cols-3">
@@ -165,7 +165,7 @@ function ContractDetail() {
 
   if (error === "not-found") {
     return (
-      <main className="min-h-screen w-full px-6 pb-6 pt-[100px] sm:pt-[156px] xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
+      <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
         <div className="mx-auto max-w-2xl">
           <EmptyState
             title="Contrato no encontrado"
@@ -179,7 +179,7 @@ function ContractDetail() {
 
   if (error) {
     return (
-      <main className="min-h-screen w-full px-6 pb-6 pt-[100px] sm:pt-[156px] xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
+      <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
         <div className="mx-auto max-w-2xl">
           <ErrorState
             title="No pudimos cargar el contrato"
@@ -197,7 +197,7 @@ function ContractDetail() {
   const hasCredit = balance < 0;
 
   return (
-    <main className="min-h-screen w-full px-6 pb-6 pt-[100px] sm:pt-[156px] xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
+    <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
       <div className="mx-auto max-w-6xl space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

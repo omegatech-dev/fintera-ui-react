@@ -374,7 +374,7 @@ const Analytics = () => {
     );
 
     return (
-        <main className="w-full px-3 sm:px-6 pb-6 pt-[80px] xs:pt-[90px] sm:pt-[100px] md:pt-[120px] lg:pt-[156px] xl:px-12 xl:pb-12 2xl:px-16">
+        <main className="w-full px-3 sm:px-6 pb-6 pt-[80px] xs:pt-[90px] sm:md:pt-[120px] lg:pt-[156px] page-shell xl:px-12 xl:pb-12 2xl:px-16">
             <motion.div
                 initial="hidden"
                 animate="visible"

@@ -185,7 +185,7 @@ function Home() {
   const { user } = useContext(AuthContext);
 
   return (
-    <main className="min-h-screen w-full px-6 pb-6 pt-[100px] sm:pt-[156px] xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
+    <main className="min-h-screen w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
       <div className="mx-auto max-w-7xl">
         {user?.role === "seller" ? <SellerDashboard user={user} /> : <AdminDashboard />}
       </div>

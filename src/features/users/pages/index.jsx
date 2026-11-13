@@ -94,7 +94,7 @@ function Users() {
       variants={pageVariants}
       initial="initial"
       animate="animate"
-      className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] sm:pt-[156px] pt-[100px] dark:bg-darkblack-700 min-h-screen"
+      className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell dark:bg-darkblack-700 min-h-screen"
     >
       <div className="flex 2xl:flex-row 2xl:space-x-11 flex-col space-y-10">
         <div className="2xl:flex-1 w-full">

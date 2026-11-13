@@ -115,7 +115,7 @@ function Payments() {
   };
 
   return (
-    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] sm:pt-[156px] pt-[100px] bg-bgray-50 dark:bg-darkblack-700 min-h-screen">
+    <main className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell bg-bgray-50 dark:bg-darkblack-700 min-h-screen">
       <div className="max-w-[1600px] mx-auto">
 
         <motion.div

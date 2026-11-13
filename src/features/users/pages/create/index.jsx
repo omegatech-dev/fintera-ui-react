@@ -211,7 +211,7 @@ function CreateUser() {
       variants={pageVariants}
       initial="initial"
       animate="animate"
-      className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] sm:pt-[156px] pt-[100px] dark:bg-darkblack-700 min-h-screen"
+      className="w-full xl:px-[48px] px-6 pb-6 xl:pb-[48px] page-shell dark:bg-darkblack-700 min-h-screen"
     >
       <div className="max-w-4xl mx-auto">
         {/* Header */}

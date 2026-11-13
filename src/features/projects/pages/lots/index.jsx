@@ -136,7 +136,7 @@ function LotsList() {
   }, [user?.role, navigate, projectId, t]);
 
   return (
-    <main className="w-full px-6 pb-6 pt-[100px] sm:pt-[156px] xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
+    <main className="w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px] dark:bg-darkblack-700">
       <div className="2xl:flex 2xl:space-x-[48px]">
         <section className="mb-6 2xl:mb-0 2xl:flex-1">
           {/* Search and Filter Bar */}

@@ -283,9 +283,11 @@ export const appRoutes = [
     {
       path: "/signup",
       element: (
-        <Suspense fallback={<PageLoader />}>
-          <SignUp />
-        </Suspense>
+        <AdminRoute>
+          <Suspense fallback={<PageLoader />}>
+            <SignUp />
+          </Suspense>
+        </AdminRoute>
       ),
     },
     {

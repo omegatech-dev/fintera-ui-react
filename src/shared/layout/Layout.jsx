@@ -3,6 +3,7 @@ import { Suspense, useContext, useState } from "react";
 import { Sidebar } from "../sidebar";
 import { Overlay, OnboardingTour } from "../overlays";
 import { HeaderOne, HeaderTwo } from "../header";
+import BottomNav from "./BottomNav";
 
 import { Outlet, useNavigate } from "react-router-dom";
 import AuthContext from "../../contexts/AuthContext";
@@ -39,7 +40,7 @@ function Layout({ bg, overlay, children }) {
           {/* Only show overlay on mobile when sidebar is active */}
           {overlay ? overlay : (sidebar && <Overlay handleClick={() => setSidebar(false)} />)}
           <div
-            className={`body-wrapper flex-1 overflow-x-hidden ${bg ? bg : "dark:bg-darkblack-500"
+            className={`body-wrapper flex-1 overflow-x-hidden pb-[72px] md:pb-0 ${bg ? bg : "dark:bg-darkblack-500"
               } `}
           >
             <HeaderOne handleSidebar={() => setSidebar(!sidebar)} />
@@ -50,6 +51,9 @@ function Layout({ bg, overlay, children }) {
             <OnboardingTour />
             {children}
           </div>
+          {user && (
+            <BottomNav role={user.role} onOpenMenu={() => setSidebar(true)} />
+          )}
         </div>
       </div>
     </ThemeContext.Provider>

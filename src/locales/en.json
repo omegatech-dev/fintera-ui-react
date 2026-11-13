@@ -218,6 +218,7 @@
   },
   "dashboard": {
     "welcome": "Welcome",
+    "workspace": "My workspace",
     "user": "User",
     "balance": "Balance",
     "financing": "Financing",

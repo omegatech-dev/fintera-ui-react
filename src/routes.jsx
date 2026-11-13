@@ -14,6 +14,7 @@ const Contracts = lazy(() => import("./features/contracts/pages"));
 const ContractDetail = lazy(() => import("./features/contracts/pages/detail"));
 const Payments = lazy(() => import("./features/payments/pages"));
 const Commissions = lazy(() => import("./features/commissions/pages"));
+const SellerWorkspace = lazy(() => import("./features/seller/pages"));
 const Projects = lazy(() => import("./features/projects/pages"));
 const Users = lazy(() => import("./features/users/pages"));
 const Audits = lazy(() => import("./features/audits/pages"));
@@ -75,6 +76,14 @@ export const appRoutes = [
           element: (
             <SellerRoute>
               <Commissions />
+            </SellerRoute>
+          ),
+        },
+        {
+          path: "/vendedor/*",
+          element: (
+            <SellerRoute>
+              <SellerWorkspace />
             </SellerRoute>
           ),
         },

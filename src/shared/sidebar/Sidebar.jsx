@@ -234,6 +234,25 @@ function Sidebar({ handleActive, user, handleLogout }) {
                 </li>
               )}
 
+              {/* Seller workspace: clients, collections and documents */}
+              {isSeller && (
+                <li
+                  className={`item py-[9px] sm:py-[11px] text-bgray-900 dark:text-white ${isRouteActive(location, "/vendedor") && !location.pathname.includes("/comisiones") ? "nav-active" : ""
+                    }`}
+                >
+                  <Link to="/vendedor/clientes">
+                    <div className="flex items-center space-x-2 sm:space-x-2.5">
+                      <span className="item-ico flex h-4 w-4 shrink-0 items-center justify-center text-sm font-black text-success-300 sm:h-5 sm:w-5">
+                        ★
+                      </span>
+                      <span className="item-text text-sm sm:text-base lg:text-lg font-medium leading-none min-w-0 truncate">
+                        {t("dashboard.workspace")}
+                      </span>
+                    </div>
+                  </Link>
+                </li>
+              )}
+
               {/* Contracts: Admin or Seller */}
               {(isAdmin || isSeller) && (
                 <li

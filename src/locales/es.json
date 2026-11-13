@@ -201,6 +201,7 @@
   },
   "dashboard": {
     "welcome": "Bienvenido",
+    "workspace": "Mi espacio",
     "user": "Usuario",
     "balance": "Balance",
     "financing": "Financiamientos",

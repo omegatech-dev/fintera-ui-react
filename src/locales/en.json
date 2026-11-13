@@ -500,7 +500,8 @@
     "newProjectDraftHint": "New projects are created as drafts. Publish them from the project page.",
     "publicPortal": "Public portal",
     "location": "Location",
-    "projectTypeHint": "This category appears on the project card and detail view."
+    "projectTypeHint": "This category appears on the project card and detail view.",
+    "coverCurrentHint": "This is the cover image currently shown on the project card and portal."
   },
   "lotsTable": {
     "project": "Project",

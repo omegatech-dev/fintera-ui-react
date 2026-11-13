@@ -12,6 +12,7 @@ import { useGeneralSettings } from "@/contexts/generalSettings";
 import { getDefaultCurrency } from "@/shared/utils/formatSettings";
 import ProjectDrawingsPanel from "../../components/media/ProjectDrawingsPanel";
 import ProjectPhotosPanel from "../../components/media/ProjectPhotosPanel";
+import { getFullImageUrl } from "@/shared/utils/avatarUtils";
 import { Banner, Button, Card, Chip, SaveBar, Toggle } from "@/shared/ui";
 
 const INITIAL_VALUES = {
@@ -55,6 +56,7 @@ function EditProject() {
   const [error, setError] = useState(null);
   const [isPublished, setIsPublished] = useState(false);
   const [changingVisibility, setChangingVisibility] = useState(false);
+  const [coverPhotoURL, setCoverPhotoURL] = useState("");
 
   useEffect(() => {
     if (!id) {
@@ -97,6 +99,9 @@ function EditProject() {
         setIsPublished(Boolean(pdata.is_published));
         setReservedLots(pdata.reserved_lots || 0);
         setSoldLots(pdata.sold_lots || 0);
+        setCoverPhotoURL(
+          pdata.cover_photo_url || pdata.photos?.[0]?.url || ""
+        );
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
@@ -291,11 +296,21 @@ function EditProject() {
             </Card>
 
             <Card title={t("projects.coverPhoto")}>
-              <div className="flex aspect-[4/3] items-center justify-center rounded-control border border-dashed border-line-strong bg-surface-2 text-ink-3">
-                <FontAwesomeIcon icon={faImage} size="2x" aria-hidden="true" />
+              <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-control border border-line-strong bg-surface-2 text-ink-3">
+                {coverPhotoURL ? (
+                  <img
+                    src={getFullImageUrl(coverPhotoURL)}
+                    alt={t("projects.coverPhoto")}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <FontAwesomeIcon icon={faImage} size="2x" aria-hidden="true" />
+                )}
               </div>
               <p className="mt-3 text-micro text-ink-3">
-                {t("projects.coverHint")}
+                {coverPhotoURL
+                  ? t("projects.coverCurrentHint")
+                  : t("projects.coverHint")}
               </p>
               <Button
                 variant="secondary"
@@ -323,7 +338,13 @@ function EditProject() {
               projectId={id}
               canManage={canManageMedia}
             />
-            <ProjectPhotosPanel projectId={id} canManage={canManageMedia} />
+            <ProjectPhotosPanel
+              projectId={id}
+              canManage={canManageMedia}
+              onPhotosChanged={(photos) =>
+                setCoverPhotoURL(photos?.[0]?.url || "")
+              }
+            />
           </section>
         )}
 

@@ -500,7 +500,8 @@
     "newProjectDraftHint": "Los proyectos nuevos se crean como borrador. Publícalos desde el detalle del proyecto.",
     "publicPortal": "Portal público",
     "location": "Ubicación",
-    "projectTypeHint": "Esta categoría aparece en la tarjeta y en la ficha del proyecto."
+    "projectTypeHint": "Esta categoría aparece en la tarjeta y en la ficha del proyecto.",
+    "coverCurrentHint": "Esta es la portada que se muestra en la tarjeta y en el portal del proyecto."
   },
   "lotsTable": {
     "project": "Proyecto",

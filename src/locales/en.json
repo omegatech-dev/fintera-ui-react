@@ -1702,7 +1702,9 @@
     "noAlt": "No alternative text",
     "errorDrawingType": "unsupported type (DWG, DXF, PDF or SVG only)",
     "errorPhotoType": "unsupported type (JPEG, PNG or WebP only)",
-    "errorSize": "exceeds {size}"
+    "errorSize": "exceeds {size}",
+    "moveUp": "Move up",
+    "moveDown": "Move down"
   },
   "branding": {
     "nav": "Settings",

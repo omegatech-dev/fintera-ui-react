@@ -1720,7 +1720,9 @@
     "noAlt": "Sin texto alternativo",
     "errorDrawingType": "tipo no permitido (solo DWG, DXF, PDF o SVG)",
     "errorPhotoType": "tipo no permitido (solo JPEG, PNG o WebP)",
-    "errorSize": "supera {size}"
+    "errorSize": "supera {size}",
+    "moveUp": "Mover arriba",
+    "moveDown": "Mover abajo"
   },
   "branding": {
     "nav": "Configuración",

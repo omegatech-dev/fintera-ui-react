@@ -1,4 +1,5 @@
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
+import { Banner, Button, Input } from "@/shared/ui";
 import { useEffect, useRef, useState } from "react";
 import { projectsApi } from "../../api";
 import { useLocale } from "../../../../contexts/LocaleContext";
@@ -111,14 +112,12 @@ export default function ProjectDrawingsPanel({ projectId, canManage }) {
       hint={t("media.drawingsHint")}
       actions={
         canManage ? (
-          <button
-            type="button"
+          <Button
             onClick={() => inputRef.current?.click()}
-            disabled={uploading}
-            className="rounded-xl bg-indigo-600 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white disabled:opacity-50"
+            loading={uploading}
           >
             {uploading ? t("media.uploading") : t("media.uploadDrawings")}
-          </button>
+          </Button>
         ) : null
       }
     >
@@ -132,65 +131,60 @@ export default function ProjectDrawingsPanel({ projectId, canManage }) {
       />
 
       {rejected.length > 0 && (
-        <ul className="mb-4 space-y-1 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-600">
-          {rejected.map((item) => (
-            <li key={item.name}>
-              {item.name}:{" "}
-              {item.reason === "size"
-                ? t("media.errorSize", { size: "50 MB" })
-                : t("media.errorDrawingType")}
-            </li>
-          ))}
-        </ul>
+        <Banner tone="danger">
+          <ul className="space-y-1">
+            {rejected.map((item) => (
+              <li key={item.name}>
+                {item.name}:{" "}
+                {item.reason === "size"
+                  ? t("media.errorSize", { size: "50 MB" })
+                  : t("media.errorDrawingType")}
+              </li>
+            ))}
+          </ul>
+        </Banner>
       )}
 
       {editing && (
-        <div className="mb-5 grid gap-3 rounded-2xl border border-indigo-200 bg-indigo-50/40 p-4 sm:grid-cols-3">
-          <input
+        <div className="grid gap-3 rounded-card border border-line bg-surface-2 p-4 sm:grid-cols-3">
+          <Input
             value={editing.name}
             onChange={(event) => setEditing({ ...editing, name: event.target.value })}
             placeholder={t("media.name")}
-            className="rounded-xl border border-bgray-200 bg-white px-3 py-2 text-sm font-semibold dark:border-darkblack-400 dark:bg-darkblack-500"
           />
-          <input
+          <Input
             value={editing.version}
             onChange={(event) => setEditing({ ...editing, version: event.target.value })}
             placeholder={t("media.version")}
-            className="rounded-xl border border-bgray-200 bg-white px-3 py-2 text-sm font-semibold dark:border-darkblack-400 dark:bg-darkblack-500"
           />
-          <input
+          <Input
             value={editing.note}
             onChange={(event) => setEditing({ ...editing, note: event.target.value })}
             placeholder={t("media.note")}
-            className="rounded-xl border border-bgray-200 bg-white px-3 py-2 text-sm font-semibold dark:border-darkblack-400 dark:bg-darkblack-500"
           />
           <div className="flex gap-2 sm:col-span-3">
-            <button
-              type="button"
-              onClick={handleSaveEdit}
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white"
-            >
+            <Button onClick={handleSaveEdit}>
               {t("common.save")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditing(null)}
-              className="rounded-xl border border-bgray-200 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-bgray-600"
-            >
+            </Button>
+            <Button variant="secondary" onClick={() => setEditing(null)}>
               {t("common.cancel")}
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
-      {loading && <p className="text-sm font-semibold text-bgray-500">{t("common.loading")}</p>}
+      {loading && <p className="text-body font-semibold text-ink-3">{t("common.loading")}</p>}
       {error && !loading && (
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-red-500">{error}</p>
-          <button type="button" onClick={load} className="text-xs font-bold text-indigo-600">
-            {t("common.retry")}
-          </button>
-        </div>
+        <Banner
+          tone="danger"
+          action={
+            <Button variant="ghost" size="sm" onClick={load}>
+              {t("common.retry")}
+            </Button>
+          }
+        >
+          {error}
+        </Banner>
       )}
       {!loading && !error && (
         <DrawingList

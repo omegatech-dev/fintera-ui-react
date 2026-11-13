@@ -49,6 +49,7 @@ function SellerWorkspace() {
   const [collectTarget, setCollectTarget] = useState(null);
   const [receipt, setReceipt] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [submitted, setSubmitted] = useState(() => new Set());
 
   const load = async () => {
     setLoading(true);
@@ -97,6 +98,7 @@ function SellerWorkspace() {
       const formData = new FormData();
       formData.append("receipt", receipt);
       await paymentsApi.uploadReceipt(collectTarget.payment.id, formData);
+      setSubmitted((prev) => new Set(prev).add(collectTarget.contract.guid));
       showToast("Comprobante enviado. El cobro queda en revisión.");
       setCollectTarget(null);
       setReceipt(null);
@@ -249,22 +251,32 @@ function SellerWorkspace() {
     {
       key: "status",
       header: "Estado",
-      render: (row) => <Chip tone="warning">{row.status}</Chip>,
+      render: (row) =>
+        submitted.has(row.guid) ? (
+          <Chip tone="info">En revisión</Chip>
+        ) : (
+          <Chip tone="warning">{row.status}</Chip>
+        ),
     },
     {
       key: "actions",
       header: "",
       align: "right",
-      render: (row) => (
-        <Button
-          size="sm"
-          variant="secondary"
-          loading={collecting === row.guid}
-          onClick={() => openCollect(row)}
-        >
-          Registrar cobro
-        </Button>
-      ),
+      render: (row) =>
+        submitted.has(row.guid) ? (
+          <span className="text-micro font-semibold text-ink-3">
+            Comprobante enviado
+          </span>
+        ) : (
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={collecting === row.guid}
+            onClick={() => openCollect(row)}
+          >
+            Registrar cobro
+          </Button>
+        ),
     },
   ];
 

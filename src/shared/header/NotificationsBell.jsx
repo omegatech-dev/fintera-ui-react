@@ -1,19 +1,10 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import PropTypes from "prop-types";
 import AuthContext from "@/contexts/AuthContext";
 import { useLocale } from "@/contexts/LocaleContext";
 import { notificationsApi } from "@/shared/api/notifications";
 import { sellerApi } from "@/features/seller/api";
-import { Button } from "@/shared/ui";
-import { money } from "@/features/seller/utils/format";
-import { useAssignmentCountdown } from "@/features/seller/hooks/useAssignmentCountdown";
+import AssignmentCard from "@/features/seller/components/AssignmentCard";
 import {
-  assignmentAmount,
-  assignmentClientName,
-  assignmentDeadline,
-  assignmentLotName,
-  assignmentProjectName,
-  formatCountdown,
   normalizeAssignmentList,
   normalizeAssignmentStatus,
 } from "@/features/seller/utils/assignment";
@@ -51,129 +42,6 @@ const isAssignmentCreated = (type) =>
 const isAssignmentExpired = (type) =>
   type === "assignment_expired" || type === "assignment_rejected";
 
-function AssignmentBellItem({ assignment, acting, error, onAccept, onReject }) {
-  const { t } = useLocale();
-  const remaining = useAssignmentCountdown(assignmentDeadline(assignment));
-  const [clockExpired, setClockExpired] = useState(false);
-  const acceptBusy = acting === `accept-${assignment.id}`;
-  const rejectBusy = acting === `reject-${assignment.id}`;
-
-  useEffect(() => {
-    if (remaining === 0) setClockExpired(true);
-  }, [remaining]);
-
-  const project = assignmentProjectName(assignment);
-  const lot = assignmentLotName(assignment) || t("sellerAssignments.unknownLot");
-  const client = assignmentClientName(assignment);
-  const amount = assignmentAmount(assignment);
-  const line = client
-    ? t("notifications.assignmentLine", {
-        lot,
-        amount: amount !== null && amount !== undefined ? money(amount) : "—",
-        client,
-      })
-    : [lot, amount !== null && amount !== undefined ? money(amount) : null]
-        .filter(Boolean)
-        .join(" · ");
-  const createdAt = assignment.assigned_at || assignment.created_at;
-
-  if (clockExpired || normalizeAssignmentStatus(assignment.status) === "expired") {
-    return (
-      <div className="border-b border-line/60 px-3 py-2.5">
-        <div className="flex gap-2">
-          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-danger" />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-body font-semibold text-ink">
-              {t("sellerAssignments.expiredTitle")}
-            </p>
-            <p className="truncate text-micro font-medium text-ink-3">
-              {createdAt ? timeAgo(createdAt, t) : ""}
-              {project ? ` · ${project}` : ""}
-            </p>
-            <p className="mt-1 text-micro font-bold uppercase tracking-wide text-danger">
-              {t("sellerAssignments.expiredBadge")}
-            </p>
-            <p className="text-micro text-ink-3">
-              {t("sellerAssignments.expiredNote")}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="border-b border-line/60 px-3 py-2.5">
-      <div className="flex gap-2">
-        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-body font-semibold text-ink">
-            {t("sellerAssignments.pendingTitle")}
-          </p>
-          <p className="truncate text-micro font-medium text-warning">
-            {createdAt ? timeAgo(createdAt, t) : ""}
-            {project ? ` · ${project}` : ""}
-          </p>
-          <p className="truncate text-micro text-ink-2">{line}</p>
-
-          <div className="mt-2 flex items-center justify-between gap-2 rounded-control bg-warning-soft px-2 py-1">
-            <span className="text-[8px] font-bold uppercase tracking-[0.5px] text-warning">
-              {t("notifications.assignmentTimeToAccept")}
-            </span>
-            <span className="font-mono text-label font-bold tabular-nums text-warning">
-              {formatCountdown(remaining)}
-            </span>
-          </div>
-
-          <div className="mt-2 flex justify-end gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              loading={rejectBusy}
-              disabled={acceptBusy}
-              onClick={() => onReject(assignment)}
-            >
-              {t("sellerAssignments.reject")}
-            </Button>
-            <Button
-              size="sm"
-              loading={acceptBusy}
-              disabled={rejectBusy}
-              onClick={() => onAccept(assignment)}
-            >
-              {t("sellerAssignments.accept")}
-            </Button>
-          </div>
-
-          {error && (
-            <p role="alert" className="mt-1 text-micro font-medium text-danger">
-              {error}
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-AssignmentBellItem.propTypes = {
-  assignment: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-    status: PropTypes.string,
-    accept_deadline_at: PropTypes.string,
-    assigned_at: PropTypes.string,
-    created_at: PropTypes.string,
-    lot_name: PropTypes.string,
-    project_name: PropTypes.string,
-    amount: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-    contract: PropTypes.object,
-  }).isRequired,
-  acting: PropTypes.string,
-  error: PropTypes.node,
-  onAccept: PropTypes.func,
-  onReject: PropTypes.func,
-};
-
 function NotificationsBell() {
   const { token, user, loading: authLoading } = useContext(AuthContext);
   const { t } = useLocale();
@@ -183,11 +51,7 @@ function NotificationsBell() {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [acting, setActing] = useState(null);
-  const [actionError, setActionError] = useState(null);
-  const [resolvedAssignments, setResolvedAssignments] = useState(
-    () => new Set()
-  );  const rootRef = useRef(null);
+  const rootRef = useRef(null);
   const retriedRef = useRef(false);
 
   const canSeeAssignments = user?.role === "seller";
@@ -271,45 +135,24 @@ function NotificationsBell() {
     }
   };
 
-  const actOnAssignment = async (assignment, action) => {
-    setActing(`${action}-${assignment.id}`);
-    setActionError(null);
-    try {
-      if (action === "accept") {
-        await sellerApi.acceptAssignment(assignment.id);
-      } else {
-        await sellerApi.rejectAssignment(assignment.id);
-      }
-      setPendingAssignments((current) =>
-        current.filter((item) => String(item.id) !== String(assignment.id))
-      );
-      setResolvedAssignments((current) => {
-        const next = new Set(current);
-        next.add(String(assignment.id));
-        return next;
-      });
-      await load(0, true);
-    } catch {
-      setActionError({
-        id: assignment.id,
-        message: t("notifications.assignmentActionError"),
-      });
-    } finally {
-      setActing(null);
-    }
+  const resolveAssignment = (id, status) => {
+    setPendingAssignments((current) =>
+      current.map((item) =>
+        String(item.id) === String(id) ? { ...item, status } : item
+      )
+    );
   };
 
   const assignmentEntries = useMemo(() => {
     const map = new Map();
     pendingAssignments.forEach((assignment) => {
-      if (resolvedAssignments.has(String(assignment.id))) return;
       map.set(String(assignment.id), assignment);
     });
 
     items.forEach((item) => {
       if (!isAssignmentCreated(notificationType(item))) return;
       const id = assignmentNotificationId(item);
-      if (!id || map.has(String(id)) || resolvedAssignments.has(String(id))) {
+      if (!id || map.has(String(id))) {
         return;
       }
       const data = item.assignment || item.data || {};
@@ -325,10 +168,12 @@ function NotificationsBell() {
       });
     });
 
-    return [...map.values()].filter(
-      (assignment) => normalizeAssignmentStatus(assignment.status) === "pending"
+    return [...map.values()].filter((assignment) =>
+      ["pending", "accepted", "expired"].includes(
+        normalizeAssignmentStatus(assignment.status)
+      )
     );
-  }, [pendingAssignments, items, resolvedAssignments]);
+  }, [pendingAssignments, items]);
 
   const assignmentIds = useMemo(
     () => new Set(assignmentEntries.map((assignment) => String(assignment.id))),
@@ -465,17 +310,12 @@ function NotificationsBell() {
             {!loading &&
               !error &&
               assignmentEntries.map((assignment) => (
-                <AssignmentBellItem
+                <AssignmentCard
                   key={`assignment-${assignment.id}`}
                   assignment={assignment}
-                  acting={acting}
-                  error={
-                    String(actionError?.id) === String(assignment.id)
-                      ? actionError.message
-                      : null
-                  }
-                  onAccept={(item) => actOnAssignment(item, "accept")}
-                  onReject={(item) => actOnAssignment(item, "reject")}
+                  compact
+                  onAccepted={() => resolveAssignment(assignment.id, "accepted")}
+                  onRejected={() => resolveAssignment(assignment.id, "expired")}
                 />
               ))}
             {!loading &&

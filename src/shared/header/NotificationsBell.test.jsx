@@ -101,16 +101,12 @@ describe("NotificationsBell assignments", () => {
       screen.getByText("Lote 5 · L 300,000 · Client: Karla Mejía")
     ).toBeInTheDocument();
     expect(screen.getByText(/^\d{2}:\d{2}:\d{2}$/)).toBeInTheDocument();
-    expect(screen.getByText("TO ACCEPT")).toBeInTheDocument();
+    expect(screen.getByText("TIME TO ACCEPT")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Accept" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Reject" })).toBeInTheDocument();
   });
 
-  it("accepts an assignment and refreshes the list and badge", async () => {
-    sellerApi.listPendingAssignments
-      .mockResolvedValueOnce({ assignments: [pendingAssignment] })
-      .mockResolvedValue({ assignments: [] });
-
+  it("accepts an assignment and shows the accepted state", async () => {
     render(<NotificationsBell />);
     await waitFor(() => expect(sellerApi.listPendingAssignments).toHaveBeenCalled());
     await openBell();
@@ -120,8 +116,9 @@ describe("NotificationsBell assignments", () => {
     await waitFor(() =>
       expect(sellerApi.acceptAssignment).toHaveBeenCalledWith(4)
     );
+    expect(await screen.findByText("ACCEPTED")).toBeInTheDocument();
     expect(
-      await screen.findByText("No notifications")
+      screen.getByText("You can now follow up with the client from My clients.")
     ).toBeInTheDocument();
   });
 
@@ -147,7 +144,7 @@ describe("NotificationsBell assignments", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Accept" }));
 
     expect(
-      await screen.findByText("We couldn't update the assignment.")
+      await screen.findByText("We couldn't accept the assignment.")
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Accept" })).toBeInTheDocument();
   });

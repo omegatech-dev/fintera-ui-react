@@ -8,6 +8,7 @@ import { useAssignmentCountdown } from "../hooks/useAssignmentCountdown";
 import {
   assignmentAcceptedAt,
   assignmentAmount,
+  assignmentClientName,
   assignmentCommission,
   assignmentDeadline,
   assignmentLotName,
@@ -36,6 +37,7 @@ function AssignmentCard({
   onAccepted,
   onRejected,
   className = "",
+  compact = false,
 }) {
   const { t } = useLocale();
   const [status, setStatus] = useState(() =>
@@ -87,13 +89,16 @@ function AssignmentCard({
   const lot = assignmentLotName(assignment) || t("sellerAssignments.unknownLot");
   const project = assignmentProjectName(assignment);
   const amount = assignmentAmount(assignment);
-  const line = [
-    lot,
-    project,
-    amount !== null && amount !== undefined ? money(amount) : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const client = assignmentClientName(assignment);
+  const line = client
+    ? t("notifications.assignmentLine", {
+        lot,
+        amount: amount !== null && amount !== undefined ? money(amount) : "—",
+        client,
+      })
+    : [lot, project, amount !== null && amount !== undefined ? money(amount) : null]
+        .filter(Boolean)
+        .join(" · ");
 
   const acceptedAt = assignmentAcceptedAt(assignment);
   const acceptedTime = elapsedLabel(acceptedAt, t);
@@ -121,9 +126,13 @@ function AssignmentCard({
 
   return (
     <article
-      className={`rounded-card border border-line bg-surface p-4 ${className}`}
+      className={
+        compact
+          ? `border-b border-line/60 bg-surface p-3 last:border-0 ${className}`
+          : `rounded-card border border-line bg-surface p-4 ${className}`
+      }
     >
-      <p className="text-[10px] font-bold uppercase tracking-[0.6px] text-ink-3">
+      <p className="text-micro font-bold uppercase tracking-[0.6px] text-ink-3">
         {state.label}
       </p>
       <p className="mt-3 text-title font-bold text-ink">{state.title}</p>
@@ -131,7 +140,7 @@ function AssignmentCard({
 
       {effectiveStatus === "pending" && (
         <div className="mt-3 rounded-control bg-warning-soft px-3 py-2">
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.6px] text-warning">
+          <p className="text-micro font-bold uppercase tracking-[0.6px] text-warning">
             {t("sellerAssignments.timeToAccept")}
           </p>
           <p
@@ -145,7 +154,7 @@ function AssignmentCard({
 
       {effectiveStatus === "accepted" && (
         <div className="mt-3 rounded-control bg-brand-soft px-3 py-2">
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.6px] text-brand-strong">
+          <p className="text-micro font-bold uppercase tracking-[0.6px] text-brand-strong">
             {t("sellerAssignments.commissionEstimate")}
           </p>
           <p className="mt-0.5 text-[24px] font-bold leading-tight tabular-nums text-brand-strong">
@@ -158,7 +167,7 @@ function AssignmentCard({
 
       {effectiveStatus === "expired" && (
         <div className="mt-3 rounded-control bg-danger-soft px-3 py-2">
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.6px] text-danger">
+          <p className="text-micro font-bold uppercase tracking-[0.6px] text-danger">
             {t("sellerAssignments.expiredBadge")}
           </p>
           <p className="mt-0.5 font-mono text-[24px] font-bold leading-tight tabular-nums text-danger">
@@ -219,6 +228,7 @@ AssignmentCard.propTypes = {
   onAccepted: PropTypes.func,
   onRejected: PropTypes.func,
   className: PropTypes.string,
+  compact: PropTypes.bool,
 };
 
 export default AssignmentCard;

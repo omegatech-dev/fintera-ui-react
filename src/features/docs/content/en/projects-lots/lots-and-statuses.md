@@ -11,7 +11,7 @@ A **lot** is a single sellable piece of a project. Its status tells you whether 
 | **Financed** | The reservation was approved and payments are being collected. |
 | **Fully paid** | The balance reached zero and the contract was closed. |
 
-A lot moves from **available → reserved → financed → fully paid**. If a reservation is rejected or cancelled, the lot returns to **available**. Reopening a closed contract returns it to **financed**.
+A lot moves from **available → reserved → financed → fully paid**. If a reservation is rejected or cancelled, the lot returns to **available**.
 
 ## The lot list
 

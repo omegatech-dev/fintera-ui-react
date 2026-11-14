@@ -22,6 +22,7 @@ Every payment row has a **type** and a **status**. The type says what the money 
 | **Paid** | Approved and recorded in the ledger. |
 | **Rejected** | The receipt was rejected; the customer can upload a new one. |
 | **Readjustment** | The row was adjusted after a capital repayment. |
+| **Cancelled** | The installment was cancelled along with the contract; it is not collected. |
 
 The seller workspace also shows **In review** after a receipt is uploaded. It means the same as **submitted**: the admin has not approved it yet.
 

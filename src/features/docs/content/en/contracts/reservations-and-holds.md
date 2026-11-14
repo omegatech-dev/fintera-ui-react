@@ -37,11 +37,11 @@ The reservation and down-payment due dates are configured in settings:
 
 ## What sellers do
 
-Sellers create reservations for their customers, upload the reservation voucher, and follow the contract. They cannot approve, reject, cancel, or reopen a contract.
+Sellers create reservations for their customers, upload the reservation voucher, and follow the contract. They cannot approve, reject, or cancel a contract.
 
 ## What admins do
 
-Admins can change the hold and due dates, approve or reject the reservation, cancel it, and reopen it when needed. See [Approving, rejecting, and reopening contracts](/docs/approving-contracts).
+Admins can change the hold and due dates, approve or reject the reservation, or cancel it when needed. See [Approving and rejecting contracts](/docs/approving-contracts).
 
 ## Related
 

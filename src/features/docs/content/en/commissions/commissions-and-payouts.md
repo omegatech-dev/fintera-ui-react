@@ -36,6 +36,10 @@ Sellers see **Commissions** in their workspace, read-only:
 
 Sellers cannot mark a commission as paid or change rates.
 
+## Commission credit on cancellation
+
+If you cancel a contract whose commission was already paid, a **commission credit** is generated in Fintera's favor for that seller. It appears in Commissions as a pending credit. The admin can **apply it** (mark it settled) when appropriate. If the commission was not paid, no credit is created: the commission simply stops appearing.
+
 ## Related
 
 - [Financing types: direct, bank, and cash](/docs/financing-types)

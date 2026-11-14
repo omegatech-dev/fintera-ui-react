@@ -1,4 +1,4 @@
-# Aprobar, rechazar y reabrir contratos
+# Aprobar y rechazar contratos
 
 > **Solo administradores.** Estas acciones cambian dinero y disponibilidad de lotes.
 
@@ -19,11 +19,14 @@ Rechazar requiere un motivo. Se notifica al cliente y el lote vuelve a **disponi
 
 ## Cancelar
 
-Cancelar detiene la venta antes de la aprobación. Igual que el rechazo, libera el lote. Úsalo cuando el cliente desiste. La cancelación se registra en las notas del contrato.
+Cancelar detiene la venta. Puedes cancelar un contrato **aprobado** o **firmado**, además de los pendientes, enviados o rechazados. Al cancelar:
 
-## Reabrir
+- las cuotas futuras pasan a **canceladas** y dejan de enviarse recordatorios de cobro,
+- el monto pagado se registra como **reembolso** en el libro mayor,
+- el lote vuelve a **disponible**,
+- si la comisión ya se pagó, se genera un **crédito de comisión** que puedes aplicar después.
 
-Un contrato **cancelado** o **cerrado** se puede reabrir. Vuelve a **aprobado** y los pagos pueden continuar. Reabre solo cuando el cierre o la cancelación hayan sido un error o se necesite un reembolso o reversión.
+La cancelación se registra en la auditoría y en las notas del contrato.
 
 ## Eliminar un contrato rechazado
 

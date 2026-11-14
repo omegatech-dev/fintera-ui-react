@@ -48,6 +48,24 @@ keyboard behavior for tabs, dialogs, menus, selects and pagination.
 - **WHEN** the user tabs through an open dialog
 - **THEN** focus stays inside the dialog until it is closed
 
+### Requirement: Role-aware keyboard shortcuts
+
+The shell SHALL expose chord shortcuts resolved from the current role's
+navigation and actions. The `g` prefix SHALL navigate and the `n` prefix SHALL
+start a create action. Sellers SHALL have `n` then `r` for a new reservation,
+`n` then `c` to create a client, and `g` then `g` for the guide.
+
+#### Scenario: Seller uses a quick action
+
+- **WHEN** a seller presses `n` and then `c`
+- **THEN** the historical client form opens
+
+#### Scenario: Shortcut help matches the role
+
+- **WHEN** a seller presses `?`
+- **THEN** the dialog lists the seller navigation chords and the seller create actions
+- **AND** it does not list admin-only actions
+
 ### Requirement: Zoom is never disabled
 
 The system SHALL NOT set `user-scalable=no` and SHALL allow `maximum-scale` ≥ 5.

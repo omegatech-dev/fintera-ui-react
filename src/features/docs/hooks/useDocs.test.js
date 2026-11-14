@@ -14,6 +14,33 @@ describe("useDocs", () => {
     expect(slugs).not.toContain("managing-projects");
   });
 
+  it("serves the seller-specific overview to sellers and the shared one to admins", () => {
+    const seller = renderHook(() => useDocs("en", "seller"));
+    const admin = renderHook(() => useDocs("en", "admin"));
+
+    const sellerOverview = seller.result.current.articles.find(
+      (article) => article.slug === "overview-and-roles",
+    );
+    const adminOverview = admin.result.current.articles.find(
+      (article) => article.slug === "overview-and-roles",
+    );
+
+    expect(sellerOverview.body).toContain("Create a reservation");
+    expect(sellerOverview.body).not.toContain("## Admin menu");
+    expect(adminOverview.body).toContain("## Admin menu");
+    expect(adminOverview.body).toContain("## Seller workspace");
+  });
+
+  it("localizes the seller-specific overview", () => {
+    const { result } = renderHook(() => useDocs("es", "seller"));
+    const overview = result.current.articles.find(
+      (article) => article.slug === "overview-and-roles",
+    );
+
+    expect(overview.body).toContain("Crear una reserva");
+    expect(overview.body).not.toContain("## Menú del administrador");
+  });
+
   it("shows every article to admins", () => {
     const { result } = renderHook(() => useDocs("en", "admin"));
     const slugs = result.current.articles.map((article) => article.slug);

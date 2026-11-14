@@ -38,7 +38,9 @@ function BottomNav({ role, onOpenMenu }) {
   const { t } = useLocale();
 
   if (role === "seller") {
-    const sellerItems = getNavItems({ role: "seller" });
+    const sellerItems = getNavItems({ role: "seller" }).filter(
+      (item) => item.bottomNav !== false
+    );
 
     return (
       <nav

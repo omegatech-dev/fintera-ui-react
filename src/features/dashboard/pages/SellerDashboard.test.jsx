@@ -19,6 +19,7 @@ const translations = {
   "common.previous": "Anterior",
   "common.next": "Siguiente",
   "sellerDashboard.newReservation": "Nueva reserva",
+  "sellerDashboard.newClient": "Crear cliente",
   "sellerDashboard.collectionsShortcut": "Cobros",
   "sellerDashboard.summaryTitle": "Resumen",
   "sellerDashboard.monthSales": "Ventas del mes",
@@ -183,6 +184,18 @@ afterEach(() => {
 });
 
 describe("SellerDashboard", () => {
+  it("offers the seller quick actions for reservations and clients", async () => {
+    dashboardApi.getSellerStats.mockResolvedValue(sellerStats);
+    renderDashboard();
+
+    expect(
+      await screen.findByRole("button", { name: "Nueva reserva" })
+    ).toHaveAttribute("id", "seller-new-sale-btn");
+    expect(
+      screen.getByRole("button", { name: "Crear cliente" })
+    ).toHaveAttribute("id", "seller-add-lead-btn");
+  });
+
   it("renders the KPI row, recent activity and commission summary from real API data", async () => {
     dashboardApi.getSellerStats.mockResolvedValue(sellerStats);
     renderDashboard();

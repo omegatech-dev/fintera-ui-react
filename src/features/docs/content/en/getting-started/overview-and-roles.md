@@ -31,7 +31,7 @@ Sellers get a focused workspace instead of the full admin menu:
 | **Commissions** | The seller's commissions for the current month, read-only. |
 | **Documents** | Contracts with documents available. |
 
-The seller sidebar does **not** show Contracts, Projects, Guide or Settings. When the seller needs a contract, the workspace links directly to its detail in read-only mode. **New reservation** opens Projects so the seller can pick an available lot and start the reservation.
+The seller sidebar does **not** show Contracts, Projects or Settings. When the seller needs a contract, the workspace links directly to its detail in read-only mode. **New reservation** opens Projects so the seller can pick an available lot and start the reservation. The **Guide** entry is available to both admins and sellers.
 
 On phones, the bottom bar still offers **Home**, **Contracts**, **Payments**, **Projects** and **More**.
 

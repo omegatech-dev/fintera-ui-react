@@ -14,6 +14,12 @@ The workspace tabs are **My clients**, **Collections**, **Commissions**, and **D
 
 Use the search box to filter by client name, phone, or identity. The list is paginated and shows how many clients are visible.
 
+## Adding clients
+
+- **Add client** opens the historical client form for a client and sale that happened before you started using Fintera. The record appears as **Historical · pending validation** until an admin validates it.
+- **Import CSV** loads several historical clients at once from a spreadsheet.
+- For a new sale, create the customer inside the reservation wizard instead.
+
 ## Table
 
 Each row shows:

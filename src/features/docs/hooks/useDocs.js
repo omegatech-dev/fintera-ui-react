@@ -9,11 +9,12 @@ export const canReadArticle = (article, role) =>
 
 export function useDocs(locale, role) {
   return useMemo(() => {
+    const normalizedRole = normalizeRole(role);
     const articles = ARTICLES.filter((article) => canReadArticle(article, role))
       .map((article) => ({
         ...article,
         title: article.title[locale] ?? article.title.en,
-        body: getMarkdown(locale, article.section, article.slug),
+        body: getMarkdown(locale, article.section, article.slug, normalizedRole),
       }))
       .sort((a, b) => a.order - b.order);
 

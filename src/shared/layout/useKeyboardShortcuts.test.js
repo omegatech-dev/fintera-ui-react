@@ -57,13 +57,25 @@ describe("useKeyboardShortcuts", () => {
     expect(navigate).toHaveBeenCalledWith("/users/create");
   });
 
-  it("does not expose create actions to sellers", () => {
+  it("does not expose admin create actions to sellers", () => {
     const { navigate } = renderShortcuts({ user: { role: "seller" } });
 
     press("n");
     press("p");
 
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("navigates sellers to their quick actions", () => {
+    const { navigate } = renderShortcuts({ user: { role: "seller" } });
+
+    press("n");
+    press("r");
+    expect(navigate).toHaveBeenCalledWith("/projects");
+
+    press("n");
+    press("c");
+    expect(navigate).toHaveBeenCalledWith("/vendedor/clientes/historicos");
   });
 
   it("supports the seller chord map", () => {
@@ -73,6 +85,11 @@ describe("useKeyboardShortcuts", () => {
     press("b");
 
     expect(navigate).toHaveBeenCalledWith("/vendedor/cobros");
+
+    press("g");
+    press("g");
+
+    expect(navigate).toHaveBeenCalledWith("/docs");
   });
 
   it("ignores chords while typing in a field", () => {

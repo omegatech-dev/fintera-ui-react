@@ -14,6 +14,12 @@ Las pestañas del espacio de trabajo son **Mis clientes**, **Cobros**, **Comisio
 
 Usa el buscador para filtrar por nombre del cliente, teléfono o identidad. La lista está paginada y muestra cuántos clientes son visibles.
 
+## Agregar clientes
+
+- **Agregar cliente** abre el formulario de cliente histórico para un cliente y una venta anteriores a tu uso de Fintera. El registro aparece como **Histórico · por validar** hasta que un administrador lo valide.
+- **Importar CSV** carga varios clientes históricos a la vez desde una hoja de cálculo.
+- Para una venta nueva, crea el cliente dentro del asistente de reserva.
+
 ## Tabla
 
 Cada fila muestra:

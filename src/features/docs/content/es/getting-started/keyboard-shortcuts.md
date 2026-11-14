@@ -35,6 +35,14 @@ Pulsa **?** en cualquier momento para abrir la lista de atajos de tu rol. Ciérr
 | `g` y luego `b` | Cobros |
 | `g` y luego `m` | Comisiones |
 | `g` y luego `o` | Documentos |
+| `g` y luego `g` | Guía de usuario |
+
+## Acciones del vendedor
+
+| Atajo | Acción |
+| --- | --- |
+| `n` y luego `r` | Nueva reserva |
+| `n` y luego `c` | Crear cliente |
 
 ## Cuándo se pausan los atajos
 

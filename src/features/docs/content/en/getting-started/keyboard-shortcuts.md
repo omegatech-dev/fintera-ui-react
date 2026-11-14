@@ -35,6 +35,14 @@ Press **?** at any time to open the shortcut list for your role. Close it with *
 | `g` then `b` | Collections |
 | `g` then `m` | Commissions |
 | `g` then `o` | Documents |
+| `g` then `g` | User guide |
+
+## Seller actions
+
+| Shortcut | Action |
+| --- | --- |
+| `n` then `r` | New reservation |
+| `n` then `c` | Create client |
 
 ## When shortcuts are paused
 

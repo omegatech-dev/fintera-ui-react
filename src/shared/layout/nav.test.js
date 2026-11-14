@@ -35,6 +35,7 @@ describe("navigation shortcut metadata", () => {
       b: "/vendedor/cobros",
       m: "/vendedor/comisiones",
       o: "/vendedor/documentos",
+      g: "/docs",
     });
   });
 
@@ -77,8 +78,24 @@ describe("action shortcut metadata", () => {
     ]);
   });
 
-  it("does not expose create actions to sellers or regular users", () => {
-    expect(getActionShortcuts({ role: "seller" })).toEqual([]);
+  it("exposes the seller quick actions", () => {
+    const shortcuts = getActionShortcuts({ role: "seller" });
+
+    expect(shortcuts).toEqual([
+      expect.objectContaining({
+        keys: ["n", "r"],
+        to: "/projects",
+        labelKey: "shortcuts.newReservation",
+      }),
+      expect.objectContaining({
+        keys: ["n", "c"],
+        to: "/vendedor/clientes/historicos",
+        labelKey: "shortcuts.newClient",
+      }),
+    ]);
+  });
+
+  it("does not expose create actions to regular users", () => {
     expect(getActionShortcuts({ role: "user" })).toEqual([]);
   });
 });

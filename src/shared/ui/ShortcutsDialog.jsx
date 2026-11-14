@@ -34,11 +34,18 @@ KeyChord.propTypes = {
 function ShortcutsDialog({ open, onClose, shortcuts = [] }) {
   const { t } = useLocale();
 
-  const rows = shortcuts.map((shortcut) => ({
-    id: shortcut.labelKey,
-    label: t(shortcut.labelKey),
-    keys: shortcut.keys,
-  }));
+  const toRows = (items) =>
+    items.map((shortcut) => ({
+      id: shortcut.labelKey,
+      label: t(shortcut.labelKey),
+      keys: shortcut.keys,
+    }));
+
+  const navigation = shortcuts.filter((shortcut) => shortcut.keys[0] === "g");
+  const actions = shortcuts.filter((shortcut) => shortcut.keys[0] === "n");
+  const other = shortcuts.filter(
+    (shortcut) => !["g", "n"].includes(shortcut.keys[0])
+  );
 
   const columns = [
     { key: "label", header: t("shortcuts.action") },
@@ -50,6 +57,28 @@ function ShortcutsDialog({ open, onClose, shortcuts = [] }) {
     },
   ];
 
+  const renderTable = (items) => (
+    <Table
+      columns={columns}
+      rows={toRows(items)}
+      getRowKey={(row) => row.id}
+      mobileCard={(row) => (
+        <div className="flex items-center justify-between gap-3 rounded-control border border-line px-3 py-2">
+          <span className="truncate text-body font-medium text-ink">
+            {row.label}
+          </span>
+          <KeyChord keys={row.keys} />
+        </div>
+      )}
+    />
+  );
+
+  const groups = [
+    { id: "navigate", title: t("shortcuts.navigateGroup"), items: navigation },
+    { id: "create", title: t("shortcuts.createGroup"), items: actions },
+    { id: "other", title: null, items: other },
+  ].filter((group) => group.items.length > 0);
+
   return (
     <Dialog
       open={open}
@@ -59,19 +88,18 @@ function ShortcutsDialog({ open, onClose, shortcuts = [] }) {
       size="md"
       footer={<Button onClick={onClose}>{t("shortcuts.close")}</Button>}
     >
-      <Table
-        columns={columns}
-        rows={rows}
-        getRowKey={(row) => row.id}
-        mobileCard={(row) => (
-          <div className="flex items-center justify-between gap-3 rounded-control border border-line px-3 py-2">
-            <span className="truncate text-body font-medium text-ink">
-              {row.label}
-            </span>
-            <KeyChord keys={row.keys} />
-          </div>
-        )}
-      />
+      <div className="space-y-5">
+        {groups.map((group) => (
+          <section key={group.id} className="space-y-2">
+            {group.title && (
+              <h3 className="text-micro font-semibold uppercase tracking-wide text-ink-3">
+                {group.title}
+              </h3>
+            )}
+            {renderTable(group.items)}
+          </section>
+        ))}
+      </div>
       <p className="mt-4 text-label text-ink-3">{t("shortcuts.typingNote")}</p>
     </Dialog>
   );

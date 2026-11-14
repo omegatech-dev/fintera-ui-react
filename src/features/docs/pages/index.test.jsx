@@ -45,6 +45,8 @@ describe("Documentation page", () => {
       await screen.findByRole("heading", { name: "System overview and roles" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Financing types: direct, bank, and cash")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Create a reservation" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Admin menu" })).toBeNull();
     expect(screen.getAllByRole("link", { name: "My day" }).length).toBeGreaterThan(0);
     expect(
       screen.getAllByRole("link", { name: "Terms and conditions" }).length,

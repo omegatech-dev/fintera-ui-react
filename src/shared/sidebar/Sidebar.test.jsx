@@ -86,6 +86,7 @@ describe("seller navigation", () => {
       "seller.collections",
       "seller.tabCommissions",
       "seller.documents",
+      "docs.title",
     ]);
     expect(sellerLinks().map((link) => link.getAttribute("href"))).toEqual([
       "/",
@@ -94,13 +95,22 @@ describe("seller navigation", () => {
       "/vendedor/cobros",
       "/vendedor/comisiones",
       "/vendedor/documentos",
+      "/docs",
     ]);
+  });
+
+  it("opens the guide from the seller sidebar", () => {
+    renderSidebar(Sidebar, "seller");
+
+    const link = screen.getByText("docs.title").closest("a");
+    expect(link).toHaveAttribute("href", "/docs");
+    expect(link).toHaveAttribute("aria-keyshortcuts", "g g");
   });
 
   it("does not show admin-only or legacy seller items", () => {
     renderSidebar(Sidebar, "seller");
 
-    ["dashboard.projects", "dashboard.contracts", "docs.title", "settings.admin.nav", "dashboard.workspace"].forEach(
+    ["dashboard.projects", "dashboard.contracts", "settings.admin.nav", "dashboard.workspace"].forEach(
       (label) => expect(screen.queryByText(label)).not.toBeInTheDocument()
     );
   });

@@ -122,7 +122,7 @@ function AssignmentCard({
         {state.label}
       </p>
       <p className="mt-3 text-title font-bold text-ink">{state.title}</p>
-      <p className="mt-1 truncate text-micro font-medium text-ink-3">{line}</p>
+      <p className="mt-1 break-words text-micro font-medium text-ink-3">{line}</p>
 
       {effectiveStatus === "pending" && (
         <div className="mt-3 rounded-control bg-warning-soft px-3 py-2">

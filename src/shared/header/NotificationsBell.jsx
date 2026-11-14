@@ -329,10 +329,10 @@ function NotificationsBell() {
                     >
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-danger" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-body font-semibold text-ink">
+                        <p className="break-words text-body font-semibold text-ink">
                           {item.title || t("sellerAssignments.expiredTitle")}
                         </p>
-                        <p className="truncate text-micro font-medium text-ink-3">
+                        <p className="break-words text-micro font-medium text-ink-3">
                           {timeAgo(item.created_at, t)}
                         </p>
                         <p className="mt-1 text-micro font-bold uppercase tracking-wide text-danger">
@@ -359,10 +359,10 @@ function NotificationsBell() {
                       }`}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-body font-semibold text-ink">
+                      <p className="break-words text-body font-semibold text-ink">
                         {item.title}
                       </p>
-                      <p className="truncate text-micro text-ink-3">
+                      <p className="break-words text-micro text-ink-3">
                         {item.message}
                       </p>
                       <p className="text-micro text-ink-3">

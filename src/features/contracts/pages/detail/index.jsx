@@ -12,7 +12,6 @@ import {
   faExclamationTriangle,
   faLocationDot,
   faReceipt,
-  faRotateLeft,
   faUser,
   faWallet,
 } from "@fortawesome/free-solid-svg-icons";
@@ -302,28 +301,6 @@ function ContractDetail() {
     }
   };
 
-  const handleReopen = async () => {
-    if (actionLoading) return;
-    if (!contract?.id || !contract?.project_id || !contract?.lot_id) return;
-    setActionLoading(true);
-    try {
-      await contractsApi.reopen(
-        contract.project_id,
-        contract.lot_id,
-        contract.id
-      );
-      showToast(t("paymentSchedule.contractReopenedSuccess"), "success");
-      await load();
-    } catch (err) {
-      showToast(
-        `${t("paymentSchedule.errorReopeningContract")}: ${err.message}`,
-        "error"
-      );
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   const handleApprove = async () => {
     if (actionLoading) return;
     if (!contract?.id) {
@@ -507,6 +484,9 @@ function ContractDetail() {
   const canApprove =
     isAdmin && ["pending", "submitted", "rejected"].includes(status);
   const canReject = isAdmin && ["pending", "submitted"].includes(status);
+  const canCancel =
+    isAdmin &&
+    ["pending", "submitted", "rejected", "approved", "signed"].includes(status);
   const canEditNote = isAdmin && Boolean(contract.project_id && contract.lot_id);
   const canRegisterPayment =
     user?.role !== "seller" &&
@@ -580,14 +560,6 @@ function ContractDetail() {
     });
   }
 
-  if (isAdmin && (isCancelled || isClosed)) {
-    actionItems.push({
-      label: t("paymentSchedule.reopenContract"),
-      icon: <FontAwesomeIcon rotate={180} icon={faRotateLeft} className="w-3.5" />,
-      onSelect: handleReopen,
-    });
-  }
-
   if (canReject) {
     actionItems.push({ separator: true });
     actionItems.push({
@@ -598,7 +570,7 @@ function ContractDetail() {
     });
   }
 
-  if (isAdmin && !isCancelled && !isClosed) {
+  if (canCancel) {
     if (actionItems[actionItems.length - 1]?.separator !== true) {
       actionItems.push({ separator: true });
     }

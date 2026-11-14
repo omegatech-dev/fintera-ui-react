@@ -66,6 +66,29 @@ afterEach(() => {
   cleanup();
 });
 
+describe("PaymentRow cancelled status", () => {
+  it("shows the cancelled chip and no payment actions", () => {
+    renderRow(
+      { ...baseRow, status: "cancelled", due_date: "2025-01-10" },
+      { calculateMoratoryDays: () => 30 }
+    );
+
+    expect(screen.getByText("paymentSchedule.cancelled")).toBeInTheDocument();
+    expect(
+      screen.queryByTitle("paymentSchedule.applyPayment")
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTitle("paymentSchedule.editMoratory")
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "common.actions" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "paymentSchedule.viewReceipt" })
+    ).not.toBeInTheDocument();
+  });
+});
+
 describe("PaymentRow receipts", () => {
   it("shows the reference, origin account and payment dates in the receipt panel", async () => {
     renderRow();

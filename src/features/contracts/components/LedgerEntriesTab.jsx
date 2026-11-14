@@ -5,6 +5,18 @@ import { formatStatus } from "../../../shared/utils/formatStatus";
 import { formatCurrency } from "../../../shared/utils/formatters";
 import { Card, EmptyState, Skeleton, Table } from "@/shared/ui";
 
+const LEDGER_FALLBACK_KEYS = {
+  refund: "contracts.ledgerRefund",
+  adjustment: "contracts.ledgerAdjustment",
+};
+
+const ledgerDescription = (entry, t) => {
+  if (entry?.description) return entry.description;
+  const type = String(entry?.entry_type || "").toLowerCase();
+  const key = LEDGER_FALLBACK_KEYS[type];
+  return key ? t(key) : null;
+};
+
 const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerEntries }) {
   const { t } = useLocale();
   const entries = useMemo(
@@ -50,7 +62,7 @@ const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerE
         render: (entry) => (
           <div>
             <p className="text-body font-semibold text-ink">
-              {entry.description || t("contracts.noMovements")}
+              {ledgerDescription(entry, t) || t("contracts.noMovements")}
             </p>
             <p className="text-micro uppercase tracking-wide text-ink-3">
               {formatStatus(entry.entry_type, t)}
@@ -146,7 +158,7 @@ const LedgerEntriesTab = memo(function LedgerEntriesTab({ ledgerLoading, ledgerE
             <div className="flex items-center justify-between gap-3 rounded-card border border-line bg-surface p-3">
               <div className="min-w-0">
                 <p className="truncate text-body font-semibold text-ink">
-                  {entry.description || "—"}
+                  {ledgerDescription(entry, t) || "—"}
                 </p>
                 <p className="text-micro text-ink-3">
                   {entry.entry_date

@@ -3,7 +3,9 @@ import AuthContext from "@/contexts/AuthContext";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useToast } from "@/contexts/ToastContext";
 import { commissionsApi } from "../api";
+import CommissionCreditsCard from "../components/CommissionCreditsCard";
 import CommissionRulesSheet from "../components/CommissionRulesSheet";
+import { readCommissionCredits } from "../utils/credits";
 import ScoreBadge from "@/features/seller/components/ScoreBadge";
 import { readSellerScore } from "@/features/seller/utils/scoreMetrics";
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
@@ -103,6 +105,8 @@ function Commissions() {
   const [startDate, setStartDate] = useState(monthStart);
   const [endDate, setEndDate] = useState(monthEnd);
   const [items, setItems] = useState([]);
+  const [credits, setCredits] = useState([]);
+  const [applyingCredit, setApplyingCredit] = useState(null);
   const [seller, setSeller] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -116,6 +120,7 @@ function Commissions() {
     try {
       const data = await commissionsApi.list(startDate, endDate);
       setItems(data?.commissions || []);
+      setCredits(readCommissionCredits(data));
     } catch {
       setError(t("commissions.loadError"));
     } finally {
@@ -128,13 +133,28 @@ function Commissions() {
   }, [load]);
 
   const sellers = useMemo(
-    () => [...new Set(items.map((item) => item.seller).filter(Boolean))].sort(),
-    [items]
+    () =>
+      [
+        ...new Set(
+          [...items, ...credits]
+            .map((entry) => entry.seller)
+            .filter(Boolean)
+        ),
+      ].sort(),
+    [items, credits]
   );
 
   const filtered = useMemo(
     () => (seller ? items.filter((item) => item.seller === seller) : items),
     [items, seller]
+  );
+
+  const filteredCredits = useMemo(
+    () =>
+      seller
+        ? credits.filter((credit) => credit.seller === seller)
+        : credits,
+    [credits, seller]
   );
 
   const totals = useMemo(
@@ -186,6 +206,33 @@ function Commissions() {
       }
     },
     [showToast, t]
+  );
+
+  const handleApplyCredit = useCallback(
+    async (credit) => {
+      if (!credit?.id) return;
+      const confirmed = await confirmDialog({
+        title: t("commissions.creditApplyTitle"),
+        description: t("commissions.creditApplyDescription", {
+          amount: money(credit.amount),
+          seller: credit.seller || t("commissions.sellerFallback"),
+        }),
+        confirmLabel: t("commissions.creditApplyConfirm"),
+      });
+      if (!confirmed) return;
+
+      setApplyingCredit(credit.id);
+      try {
+        await commissionsApi.applyCredit(credit.id);
+        showToast(t("commissions.creditApplySuccess"));
+        await load();
+      } catch (err) {
+        showToast(err?.message || t("commissions.creditApplyError"), "error");
+      } finally {
+        setApplyingCredit(null);
+      }
+    },
+    [load, showToast, t]
   );
 
   const averageRate = totals.amount
@@ -413,6 +460,17 @@ function Commissions() {
             index={2}
           />
         </div>
+
+        <CommissionCreditsCard
+          credits={filteredCredits}
+          pendingCommissions={totals.pending}
+          showSeller
+          isAdmin={isAdmin}
+          applying={applyingCredit}
+          onApply={handleApplyCredit}
+          loading={loading}
+          className="motion-fade-up [animation-delay:190ms]"
+        />
 
         <Card
           title={t("commissions.detailTitle")}

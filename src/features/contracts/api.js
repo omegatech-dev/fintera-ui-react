@@ -23,7 +23,6 @@ export const contractsApi = {
     approve: (projectId, lotId, contractId) => apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/contracts/${contractId}/approve`),
     reject: (projectId, lotId, contractId, reason) => apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/contracts/${contractId}/reject`, { reason }),
     cancel: (projectId, lotId, contractId, note) => apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/contracts/${contractId}/cancel`, { note }),
-    reopen: (projectId, lotId, contractId) => apiClient.post(`/api/v1/projects/${projectId}/lots/${lotId}/contracts/${contractId}/reopen`),
 
     undoPayment: (paymentId) => apiClient.post(`/api/v1/payments/${paymentId}/undo`),
 

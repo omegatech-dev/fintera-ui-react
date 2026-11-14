@@ -17,6 +17,7 @@ const STATUS_TONE = {
   overdue: "danger",
   pending: "warning",
   readjustment: "neutral",
+  cancelled: "neutral",
 };
 
 const PaymentRow = ({
@@ -37,17 +38,20 @@ const PaymentRow = ({
 }) => {
   const status = (row.status || "pending").toLowerCase();
   const isReadjustment = status === "readjustment";
+  const isCancelled = status === "cancelled" || status === "canceled";
   const isPaid = status === "paid";
   const moratoryDays = calculateMoratoryDays(row.due_date);
-  const isOverdue = !isPaid && !isReadjustment && moratoryDays > 0;
+  const isOverdue = !isPaid && !isReadjustment && !isCancelled && moratoryDays > 0;
 
-  const statusLabel = isReadjustment
-    ? t("paymentSchedule.readjustment")
-    : isPaid
-      ? t("paymentSchedule.paid")
-      : isOverdue
-        ? t("paymentSchedule.overdue")
-        : t("paymentSchedule.pending");
+  const statusLabel = isCancelled
+    ? t("paymentSchedule.cancelled")
+    : isReadjustment
+      ? t("paymentSchedule.readjustment")
+      : isPaid
+        ? t("paymentSchedule.paid")
+        : isOverdue
+          ? t("paymentSchedule.overdue")
+          : t("paymentSchedule.pending");
 
   const amount = row.amount || row.value || row.payment_amount;
   const paidAmount = row.paid_amount || 0;
@@ -72,7 +76,7 @@ const PaymentRow = ({
 
   const secondaryActions = [];
 
-  if (!isReadOnly && !isReadjustment) {
+  if (!isReadOnly && !isReadjustment && !isCancelled) {
     if (!isPaid && moratoryDays > 0) {
       secondaryActions.push({
         label: t("paymentSchedule.editMoratory"),
@@ -94,7 +98,7 @@ const PaymentRow = ({
   return (
     <div
       className={`grid grid-cols-1 gap-2 border-b border-line px-1 py-3 last:border-0 md:grid-cols-[minmax(0,1.8fr)_110px_110px_110px_auto] md:items-center md:gap-3 ${
-        isReadjustment ? "opacity-60" : ""
+        isReadjustment || isCancelled ? "opacity-60" : ""
       }`}
     >
       <div className="min-w-0">
@@ -106,7 +110,7 @@ const PaymentRow = ({
           <span>{formatDate(row.due_date)}</span>
           <span aria-hidden="true">·</span>
           <span>{translatePaymentType(row.payment_type)}</span>
-          {moratoryDays > 0 && !isPaid && (
+          {moratoryDays > 0 && !isPaid && !isCancelled && (
             <span className="font-semibold text-danger">
               {t("contracts.moratory")} {moratoryDays}
               {t("paymentSchedule.days")}
@@ -115,7 +119,7 @@ const PaymentRow = ({
         </div>
         <p className="mt-0.5 hidden text-micro text-ink-3 md:block">
           {translatePaymentType(row.payment_type)}
-          {moratoryDays > 0 && !isPaid
+          {moratoryDays > 0 && !isPaid && !isCancelled
             ? ` · ${t("contracts.moratory")} ${moratoryDays}${t("paymentSchedule.days")}`
             : ""}
         </p>
@@ -145,7 +149,7 @@ const PaymentRow = ({
       </div>
 
       <div className="flex items-center justify-end gap-1.5">
-        {!isReadOnly && !isReadjustment && !isPaid && (
+        {!isReadOnly && !isReadjustment && !isPaid && !isCancelled && (
           <Button
             size="sm"
             variant="secondary"
@@ -172,7 +176,7 @@ const PaymentRow = ({
             </div>
           )
         )}
-        <PaymentReceipt row={row} t={t} />
+        {!isCancelled && <PaymentReceipt row={row} t={t} />}
       </div>
     </div>
   );

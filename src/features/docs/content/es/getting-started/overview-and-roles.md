@@ -31,7 +31,7 @@ Los vendedores tienen un espacio de trabajo enfocado en lugar del menú completo
 | **Comisiones** | Comisiones del mes del vendedor, en solo lectura. |
 | **Documentos** | Contratos con documentos disponibles. |
 
-La barra lateral del vendedor **no** muestra Contratos, Proyectos, Guía ni Configuración. Cuando el vendedor necesita un contrato, el espacio de trabajo enlaza directamente a su detalle en modo de solo lectura. **Nueva reserva** abre Proyectos para elegir un lote disponible e iniciar la reserva.
+La barra lateral del vendedor **no** muestra Contratos, Proyectos ni Configuración. Cuando el vendedor necesita un contrato, el espacio de trabajo enlaza directamente a su detalle en modo de solo lectura. **Nueva reserva** abre Proyectos para elegir un lote disponible e iniciar la reserva. La entrada **Guía** está disponible tanto para administradores como para vendedores.
 
 En teléfonos, la barra inferior mantiene **Inicio**, **Contratos**, **Pagos**, **Proyectos** y **Más**.
 

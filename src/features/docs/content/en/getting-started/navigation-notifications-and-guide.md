@@ -22,7 +22,7 @@ Each item shows a title, a short message and a relative time. Use **Read** on an
 
 ## The guide
 
-The guide lives at `/docs`. Admins reach it from the **Guide** entry in the sidebar; sellers can open the same URL. It has:
+The guide lives at `/docs`. Admins and sellers reach it from the **Guide** entry in the sidebar. It has:
 
 - a **search box** that filters articles by title and body,
 - **sections** grouped by theme,

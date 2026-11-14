@@ -55,6 +55,7 @@ describe("BottomNav seller", () => {
       "dashboard.contracts",
       "dashboard.payments",
       "dashboard.projects",
+      "docs.title",
     ].forEach((label) =>
       expect(screen.queryByText(label)).not.toBeInTheDocument()
     );

@@ -9,7 +9,7 @@
 The page greets the seller by name, shows today's date, and offers two shortcuts:
 
 - **New reservation** — opens Projects so the seller can choose an available lot.
-- **Collections** — jumps to the collection queue.
+- **Create client** — opens the historical client form.
 
 ## Summary cards
 
@@ -31,7 +31,7 @@ A line chart of sales over the last six months. If there are no approved sales y
 
 ## What the seller cannot do here
 
-The seller workspace intentionally hides Contracts, Projects, Guide and Settings from the sidebar. Actions that change money or configuration remain admin-only.
+The seller workspace intentionally hides Contracts, Projects and Settings from the sidebar. Actions that change money or configuration remain admin-only.
 
 ## Related
 

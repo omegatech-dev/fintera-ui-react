@@ -907,14 +907,18 @@
   },
   "shortcuts": {
     "title": "Keyboard shortcuts",
-    "description": "Press g and then the shortcut key to jump to a section. Press ? to open this list at any time.",
-    "action": "Section",
+    "description": "Press g to navigate or n to create, then the shortcut key. Press ? to open this list at any time.",
+    "action": "Action",
+    "navigateGroup": "Navigate",
+    "createGroup": "Create",
     "keys": "Shortcut",
     "close": "Got it",
     "sidebarHint": "Press g then {key}",
     "typingNote": "Shortcuts are paused while you type in a field, and while you hold Ctrl, Cmd or Alt.",
     "newProject": "New project",
-    "newUser": "Add user"
+    "newUser": "Add user",
+    "newReservation": "New reservation",
+    "newClient": "Create client"
   },
   "docs": {
     "title": "User Guide",
@@ -1283,6 +1287,7 @@
     },
     "monthSales": "Sales this month",
     "newReservation": "New reservation",
+    "newClient": "Create client",
     "collectionsShortcut": "Collections",
     "summaryTitle": "Summary",
     "activityTitle": "Recent activity",

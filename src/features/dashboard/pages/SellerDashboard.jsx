@@ -387,7 +387,7 @@ const SellerDashboard = ({ user }) => {
           <p className="mt-1 text-body text-ink-3">{todayLabel}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => navigate("/projects")}>
+          <Button id="seller-new-sale-btn" onClick={() => navigate("/projects")}>
             <svg
               className="h-4 w-4"
               fill="none"
@@ -405,10 +405,11 @@ const SellerDashboard = ({ user }) => {
             {t("sellerDashboard.newReservation")}
           </Button>
           <Button
+            id="seller-add-lead-btn"
             variant="secondary"
-            onClick={() => navigate("/vendedor/cobros")}
+            onClick={() => navigate("/vendedor/clientes/historicos")}
           >
-            {t("sellerDashboard.collectionsShortcut")}
+            {t("sellerDashboard.newClient")}
           </Button>
         </div>
       </header>

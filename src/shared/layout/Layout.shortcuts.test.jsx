@@ -35,9 +35,10 @@ function LocationProbe() {
   return <span data-testid="pathname">{pathname}</span>;
 }
 
-const user = { id: 1, role: "admin", full_name: "Admin" };
+const adminUser = { id: 1, role: "admin", full_name: "Admin" };
+const sellerUser = { id: 2, role: "seller", full_name: "Seller" };
 
-const renderLayout = () =>
+const renderLayout = (user = adminUser) =>
   render(
     <AuthContext.Provider value={{ user, logout: vi.fn() }}>
       <MemoryRouter initialEntries={["/"]}>
@@ -66,6 +67,17 @@ describe("Layout keyboard shortcuts", () => {
     fireEvent.keyDown(document, { key: "p" });
 
     expect(screen.getByTestId("pathname")).toHaveTextContent("/payments");
+  });
+
+  it("navigates from the shell with a seller action chord", () => {
+    renderLayout(sellerUser);
+
+    fireEvent.keyDown(document, { key: "n" });
+    fireEvent.keyDown(document, { key: "c" });
+
+    expect(screen.getByTestId("pathname")).toHaveTextContent(
+      "/vendedor/clientes/historicos"
+    );
   });
 
   it("opens and closes the shortcut help with ? and Escape", () => {

@@ -33,8 +33,10 @@ entry SHALL appear in both sidebar variants for admins and sellers.
 ### Requirement: Role-filtered content
 
 The guide SHALL filter articles by the current user's role. Seller-visible
-articles SHALL cover viewing projects and lots, creating reservations, viewing
-contracts and payments, uploading receipts, reports, and glossary terms.
+articles SHALL cover viewing projects and lots, creating reservations, adding
+clients, viewing contracts and payments, uploading receipts, reports, and
+glossary terms. Shared articles MAY provide a seller-specific body; the overview
+article SHALL use it so sellers see only their operations.
 Admin-only articles SHALL cover approving/rejecting contracts and payments,
 managing projects and lots, and settings/branding. The users article SHALL be
 visible to both roles because sellers can view and create users, and SHALL note
@@ -45,6 +47,14 @@ the admin-only actions (delete, deactivate, restore).
 - **WHEN** a seller browses the guide
 - **THEN** articles about approvals, project management, and settings are not
   listed and are not reachable from the guide navigation
+
+#### Scenario: Seller sees a seller-only overview
+
+- **WHEN** a seller opens `/docs/overview-and-roles`
+- **THEN** the article lists only the operations available to sellers, such as
+  creating reservations, adding clients, sharing the referral link, registering
+  collections, and reading commissions
+- **AND** it does not show the admin menu
 
 #### Scenario: Admin sees the full guide
 

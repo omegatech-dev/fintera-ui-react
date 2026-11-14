@@ -24,6 +24,23 @@ The application SHALL render a dashboard at `/` for authenticated users.
 - **THEN** a "Mi día" home is shown with today's collections, monthly sales,
   estimated commission and active clients
 
+### Requirement: Seller quick actions
+
+The seller's **My day** header SHALL offer **New reservation** and **Create
+client** actions. **New reservation** SHALL open the projects list so the seller
+can choose an available lot. **Create client** SHALL open the historical client
+form.
+
+#### Scenario: Seller starts a reservation
+
+- **WHEN** a seller selects **New reservation**
+- **THEN** the projects list opens to choose a lot
+
+#### Scenario: Seller adds a client
+
+- **WHEN** a seller selects **Create client**
+- **THEN** the historical client form opens
+
 ### Requirement: Data loading and error states
 
 The dashboard SHALL show a loading state while data is fetched and a message

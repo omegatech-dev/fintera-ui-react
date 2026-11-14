@@ -9,7 +9,7 @@
 La página saluda al vendedor por su nombre, muestra la fecha de hoy y ofrece dos accesos:
 
 - **Nueva reserva** — abre Proyectos para elegir un lote disponible.
-- **Cobros** — salta a la cola de cobros.
+- **Crear cliente** — abre el formulario de cliente histórico.
 
 ## Tarjetas de resumen
 
@@ -31,7 +31,7 @@ Un gráfico de líneas con las ventas de los últimos seis meses. Si aún no hay
 
 ## Lo que el vendedor no puede hacer aquí
 
-El espacio del vendedor oculta intencionalmente Contratos, Proyectos, Guía y Configuración de la barra lateral. Las acciones que mueven dinero o cambian configuración siguen siendo exclusivas del administrador.
+El espacio del vendedor oculta intencionalmente Contratos, Proyectos y Configuración de la barra lateral. Las acciones que mueven dinero o cambian configuración siguen siendo exclusivas del administrador.
 
 ## Relacionado
 

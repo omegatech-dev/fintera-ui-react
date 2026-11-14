@@ -14,22 +14,36 @@ vi.mock("../../../contexts/LocaleContext", () => ({
 const shortcuts = [
   { keys: ["g", "d"], labelKey: "dashboard.dashboard", to: "/" },
   { keys: ["g", "p"], labelKey: "dashboard.payments", to: "/payments" },
+  { keys: ["n", "r"], labelKey: "shortcuts.newReservation", to: "/projects" },
+  {
+    keys: ["n", "c"],
+    labelKey: "shortcuts.newClient",
+    to: "/vendedor/clientes/historicos",
+  },
 ];
 
 describe("ShortcutsDialog", () => {
-  it("lists the chords for the active role", () => {
+  it("groups navigation and create chords for the active role", () => {
     render(<ShortcutsDialog open shortcuts={shortcuts} onClose={() => {}} />);
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "shortcuts.title" })
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "shortcuts.navigateGroup" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "shortcuts.createGroup" })
+    ).toBeInTheDocument();
 
-    const table = screen.getByRole("table");
-    expect(within(table).getByText("dashboard.dashboard")).toBeInTheDocument();
-    expect(within(table).getByText("dashboard.payments")).toBeInTheDocument();
-    expect(within(table).getAllByText("g")).toHaveLength(2);
-    expect(within(table).getByText("p")).toBeInTheDocument();
+    const [navigation, actions] = screen.getAllByRole("table");
+    expect(within(navigation).getByText("dashboard.dashboard")).toBeInTheDocument();
+    expect(within(navigation).getByText("dashboard.payments")).toBeInTheDocument();
+    expect(within(navigation).getAllByText("g")).toHaveLength(2);
+    expect(within(actions).getByText("shortcuts.newReservation")).toBeInTheDocument();
+    expect(within(actions).getByText("shortcuts.newClient")).toBeInTheDocument();
+    expect(within(actions).getAllByText("n")).toHaveLength(2);
   });
 
   it("closes with Escape", () => {

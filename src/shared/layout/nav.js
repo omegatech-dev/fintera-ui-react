@@ -154,6 +154,14 @@ export const SELLER_NAV_ITEMS = [
     match: ["/vendedor/documentos"],
     shortcut: "o",
   },
+  {
+    to: "/docs",
+    labelKey: "docs.title",
+    icon: faBookOpen,
+    roles: ["seller"],
+    shortcut: "g",
+    bottomNav: false,
+  },
 ];
 
 export function isRouteActive(pathname, to) {
@@ -207,6 +215,20 @@ export const ACTION_SHORTCUTS = [
     keys: ["n", "u"],
     to: "/users/create",
     roles: ["admin"],
+  },
+  {
+    id: "new-reservation",
+    labelKey: "shortcuts.newReservation",
+    keys: ["n", "r"],
+    to: "/projects",
+    roles: ["seller"],
+  },
+  {
+    id: "new-client",
+    labelKey: "shortcuts.newClient",
+    keys: ["n", "c"],
+    to: "/vendedor/clientes/historicos",
+    roles: ["seller"],
   },
 ];
 

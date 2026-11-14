@@ -909,14 +909,18 @@
   },
   "shortcuts": {
     "title": "Atajos de teclado",
-    "description": "Pulsa g y luego la tecla del atajo para ir a una sección. Pulsa ? para abrir esta lista en cualquier momento.",
-    "action": "Sección",
+    "description": "Pulsa g para navegar o n para crear, luego la tecla del atajo. Pulsa ? para abrir esta lista en cualquier momento.",
+    "action": "Acción",
+    "navigateGroup": "Navegar",
+    "createGroup": "Crear",
     "keys": "Atajo",
     "close": "Entendido",
     "sidebarHint": "Pulsa g y luego {key}",
     "typingNote": "Los atajos se pausan mientras escribes en un campo y mientras mantienes Ctrl, Cmd o Alt.",
     "newProject": "Nuevo proyecto",
-    "newUser": "Agregar usuario"
+    "newUser": "Agregar usuario",
+    "newReservation": "Nueva reserva",
+    "newClient": "Crear cliente"
   },
   "docs": {
     "title": "Guía de usuario",
@@ -1285,6 +1289,7 @@
     },
     "monthSales": "Ventas del mes",
     "newReservation": "Nueva reserva",
+    "newClient": "Crear cliente",
     "collectionsShortcut": "Cobros",
     "summaryTitle": "Resumen",
     "activityTitle": "Actividad reciente",

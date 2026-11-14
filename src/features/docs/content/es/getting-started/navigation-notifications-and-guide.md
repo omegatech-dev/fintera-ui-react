@@ -22,7 +22,7 @@ Cada elemento muestra un título, un mensaje corto y el tiempo relativo. Usa **L
 
 ## La guía
 
-La guía vive en `/docs`. Los administradores llegan desde la entrada **Guía** de la barra lateral; los vendedores pueden abrir la misma URL. Incluye:
+La guía vive en `/docs`. Los administradores y los vendedores llegan desde la entrada **Guía** de la barra lateral. Incluye:
 
 - un **buscador** que filtra artículos por título y contenido,
 - **secciones** agrupadas por tema,

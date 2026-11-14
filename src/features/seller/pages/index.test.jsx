@@ -398,6 +398,24 @@ describe("Seller workspace commissions", () => {
     expect(commissionsApi.list).toHaveBeenCalledTimes(1);
   });
 
+  it("shows the origin chips and the acceptance score KPI", async () => {
+    commissionsApi.list.mockResolvedValueOnce({
+      commissions: [
+        { ...commissions[0], origin: "referral" },
+        { ...commissions[1], origin: "historical" },
+      ],
+    });
+
+    renderWorkspace("/vendedor/comisiones");
+
+    expect(await screen.findByText("Origin")).toBeInTheDocument();
+    expect(screen.getAllByText("Referral").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Historical").length).toBeGreaterThan(0);
+    expect(screen.getByText("Acceptance score")).toBeInTheDocument();
+    expect(screen.getByText("100%")).toBeInTheDocument();
+    expect(screen.getByText("No assignments yet")).toBeInTheDocument();
+  });
+
   it("shows an error state when commissions cannot be loaded", async () => {
     commissionsApi.list.mockRejectedValueOnce(new Error("Network"));
     renderWorkspace("/vendedor/comisiones");

@@ -17,6 +17,7 @@ import {
   getFullImageUrl,
   getInitials,
 } from "../../../shared/utils/avatarUtils";
+import SellerScorePanel from "./SellerScorePanel";
 
 export function formatCedula(raw) {
   const d = raw.replace(/\D/g, "");
@@ -579,6 +580,10 @@ function UserForm({
             <Card title={t("users.photoTitle")} bodyClassName="p-4">
               {photoBlock}
             </Card>
+
+            {role === "seller" && (
+              <SellerScorePanel user={user} canEdit={isAdmin} />
+            )}
 
             <Card title={t("users.permissionsTitle")} bodyClassName="p-4">
               <ul className="space-y-2">

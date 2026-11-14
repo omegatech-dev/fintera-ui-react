@@ -6,8 +6,11 @@ import AuthContext from "@/contexts/AuthContext";
 import debounce from "lodash.debounce";
 import { useLocale } from "@/contexts/LocaleContext";
 import CreditScoreCard from "../../../contracts/components/CreditScoreCard";
+import { sellerApi } from "../../../seller/api";
+import { normalizeSellerList, sellerName } from "../../../seller/utils/assignment";
 import { formatBytes } from "../../components/media/mediaFiles";
 import { validateClient, validateReserveAmount } from "./reserveRules";
+import SellerQuestion from "./SellerQuestion";
 import {
   Banner,
   Button,
@@ -52,6 +55,13 @@ function ReserveWizard({
   const [rtn, setRtn] = useState("");
   const [email, setEmail] = useState("");
 
+  // Seller assignment state
+  const [sellers, setSellers] = useState([]);
+  const [sellersLoading, setSellersLoading] = useState(true);
+  const [sellersError, setSellersError] = useState(null);
+  const [sellerMode, setSellerMode] = useState("automatic");
+  const [selectedSeller, setSelectedSeller] = useState(null);
+
   // Financing state
   const [financingType, setFinancingType] = useState("direct");
   const [paymentTerm, setPaymentTerm] = useState(12);
@@ -88,6 +98,37 @@ function ReserveWizard({
       setMaxPaymentDate("");
     }
   }, [financingType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadSellers = async () => {
+      setSellersLoading(true);
+      setSellersError(null);
+      try {
+        const data = await sellerApi.listSellers();
+        if (!cancelled) setSellers(normalizeSellerList(data));
+      } catch {
+        if (!cancelled) {
+          setSellers([]);
+          setSellersError(t("sellerAssignments.sellersError"));
+        }
+      } finally {
+        if (!cancelled) setSellersLoading(false);
+      }
+    };
+
+    loadSellers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [t]);
+
+  const handleSellerModeChange = (mode, seller) => {
+    setSellerMode(mode);
+    setSelectedSeller(mode === "manual" ? seller : null);
+  };
 
   const handleUserSearch = useCallback(async (query, page = 1) => {
     if (query.length > 2) {
@@ -195,7 +236,6 @@ function ReserveWizard({
     numericDownPayment,
     financedAmount,
     monthlyPayment,
-    estimatedCommission,
   } = useMemo(() => {
     const price = Number(lot.price) || 0;
     const reserveNum = parseFloat(reserveAmount) || 0;
@@ -208,29 +248,17 @@ function ReserveWizard({
       parseInt(paymentTerm, 10) > 0 ? parseInt(paymentTerm, 10) : null;
     const monthly = financed !== null && months ? financed / months : null;
 
-    const commissionRate =
-      financingType === "direct"
-        ? lot.commissionRates.direct
-        : financingType === "bank"
-          ? lot.commissionRates.bank
-          : financingType === "cash"
-            ? lot.commissionRates.cash
-            : 0;
-
     return {
       numericReserve: reserveNum,
       numericDownPayment: downNum,
       financedAmount: financed,
       monthlyPayment: monthly,
-      estimatedCommission: price ? (price * commissionRate) / 100 : 0,
     };
   }, [
     lot.price,
-    lot.commissionRates,
     reserveAmount,
     downPayment,
     paymentTerm,
-    financingType,
   ]);
 
   const formatCurrency = (v) => {
@@ -344,11 +372,32 @@ function ReserveWizard({
       note,
       applicantUserId: selectedUser?.id || "",
       user: { full_name: fullName, phone, identity, rtn, email },
+      assignmentOrigin:
+        sellerMode === "manual" && selectedSeller ? "manual" : "automatic",
+      sellerId:
+        sellerMode === "manual" && selectedSeller ? selectedSeller.id : "",
       documents,
     });
   };
 
   const clientLabel = selectedUser?.full_name || fullName || "—";
+  const assignedSeller =
+    sellerMode === "manual" && selectedSeller ? selectedSeller : null;
+  const assignedSellerLabel = assignedSeller
+    ? sellerName(assignedSeller)
+    : t("sellerAssignments.automaticSeller");
+  const assignedSellerHint = assignedSeller
+    ? t("sellerAssignments.assignedSellerHint")
+    : t("sellerAssignments.automaticSellerHint");
+  const assignedSellerInitials = assignedSeller
+    ? sellerName(assignedSeller)
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join("")
+        .toUpperCase()
+    : "A";
   const financingLabel = {
     direct: t("reservations.direct"),
     bank: t("reservations.bank"),
@@ -369,7 +418,11 @@ function ReserveWizard({
     : t("common.notAvailable");
   const lotMeta = [
     lot.dimensions,
-    lot.area ? `${lot.area} ${lot.measurementUnit || "m²"}` : null,
+    lot.area
+      ? typeof lot.area === "number"
+        ? `${lot.area} ${lot.measurementUnit || "m²"}`
+        : lot.area
+      : null,
   ]
     .filter(Boolean)
     .join("  ·  ");
@@ -614,6 +667,17 @@ function ReserveWizard({
                     </div>
                   </div>
                 )}
+
+                <div className="border-t border-line pt-5">
+                  <SellerQuestion
+                    sellers={sellers}
+                    loading={sellersLoading}
+                    error={sellersError}
+                    mode={sellerMode}
+                    selectedSellerId={selectedSeller?.id ?? null}
+                    onModeChange={handleSellerModeChange}
+                  />
+                </div>
               </div>
             </Card>
           )}
@@ -921,13 +985,10 @@ function ReserveWizard({
                 </div>
               )}
 
-            <div className="flex items-center justify-between gap-3 border-t border-line pt-3 text-micro">
-              <span className="text-ink-3">
-                {t("reservations.estimatedCommission")}
-              </span>
-              <span className="font-mono font-semibold text-ink-2">
-                {formatCurrency(estimatedCommission)}
-              </span>
+            <div className="border-t border-line pt-3">
+              <p className="text-micro font-medium text-ink-3">
+                {t("sellerAssignments.noChargeNote")}
+              </p>
             </div>
           </Card>
 
@@ -954,6 +1015,28 @@ function ReserveWizard({
               )}
             </Card>
           )}
+
+          <Card bodyClassName="p-[18px]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.6px] text-ink-3">
+              {t("sellerAssignments.assignedSeller")}
+            </p>
+            <div className="mt-3 flex items-start gap-3">
+              <span
+                aria-hidden="true"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-label font-bold text-brand-strong"
+              >
+                {assignedSellerInitials}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-label font-bold text-ink">
+                  {assignedSellerLabel}
+                </p>
+                <p className="text-micro font-medium text-ink-3">
+                  {assignedSellerHint}
+                </p>
+              </div>
+            </div>
+          </Card>
         </aside>
       </div>
     </div>

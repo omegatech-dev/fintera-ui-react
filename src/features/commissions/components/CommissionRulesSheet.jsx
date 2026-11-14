@@ -2,128 +2,179 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useLocale } from "@/contexts/LocaleContext";
 import { Button, Dialog, Field, Input, Select } from "@/shared/ui";
-import { commissionsApi } from "../api";
+import { sellerApi } from "@/features/seller/api";
+import {
+  DEFAULT_RULES,
+  buildExceptionChanges,
+  buildRulesPayload,
+  buildSellerRows,
+  normalizeExceptions,
+  normalizeRules,
+  normalizeSellers,
+} from "./rulesUtils";
 
-const EMPTY_RATES = { direct: "", bank: "", cash: "" };
+function RateInput({
+  label,
+  value,
+  onChange,
+  disabled,
+  suffix = "%",
+  min = "0",
+  max = "100",
+  step = "0.1",
+  width = "w-24",
+}) {
+  return (
+    <div className={`relative shrink-0 ${width}`}>
+      <Input
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        aria-label={label}
+        className="h-9 pl-3 pr-10 text-right tabular-nums"
+      />
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-micro text-ink-3">
+        {suffix}
+      </span>
+    </div>
+  );
+}
 
-const projectPayload = (project, rates) => ({
-  name: project.name,
-  guid: project.guid,
-  description: project.description ?? "",
-  address: project.address ?? "",
-  city: project.city ?? null,
-  code: project.code ?? null,
-  lot_count: Number(project.lot_count ?? 0),
-  price_per_square_unit: Number(project.price_per_square_unit ?? 0),
-  measurement_unit: project.measurement_unit || "m2",
-  interest_rate: Number(project.interest_rate ?? 0),
-  commission_rate_direct: Number(rates.direct || 0),
-  commission_rate_bank: Number(rates.bank || 0),
-  commission_rate_cash: Number(rates.cash || 0),
-  delivery_date: project.delivery_date
-    ? String(project.delivery_date).slice(0, 10)
-    : null,
-  project_type: project.project_type || "residential",
-});
+RateInput.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
+  suffix: PropTypes.string,
+  min: PropTypes.string,
+  max: PropTypes.string,
+  step: PropTypes.string,
+  width: PropTypes.string,
+};
 
 function CommissionRulesSheet({ open = false, sellers = [], onClose, onSaved }) {
   const { t } = useLocale();
-  const [projects, setProjects] = useState([]);
-  const [projectId, setProjectId] = useState("");
-  const [project, setProject] = useState(null);
-  const [rates, setRates] = useState(EMPTY_RATES);
-  const [loadingProjects, setLoadingProjects] = useState(false);
-  const [loadingProject, setLoadingProject] = useState(false);
+  const [rules, setRules] = useState(DEFAULT_RULES);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const propSellersKey = sellers.join("|");
 
   useEffect(() => {
     if (!open) return undefined;
 
     let active = true;
-    setLoadingProjects(true);
+    setLoading(true);
     setError(null);
 
-    commissionsApi
-      .listProjects()
-      .then((data) => {
+    const requests = [
+      sellerApi.getCommissionRules(),
+      sellerApi.listCommissionExceptions(),
+      sellerApi.listSellers({}),
+    ];
+
+    Promise.allSettled(requests)
+      .then(([rulesResult, exceptionsResult, sellersResult]) => {
         if (!active) return;
-        const list = data?.projects || data?.data?.projects || [];
-        setProjects(list);
-        setProjectId((current) =>
-          list.some((item) => String(item.id) === String(current))
-            ? current
-            : String(list[0]?.id ?? "")
+
+        const loadedRules =
+          rulesResult.status === "fulfilled"
+            ? normalizeRules(rulesResult.value)
+            : DEFAULT_RULES;
+        const exceptions =
+          exceptionsResult.status === "fulfilled"
+            ? normalizeExceptions(exceptionsResult.value)
+            : [];
+        const sellerList =
+          sellersResult.status === "fulfilled"
+            ? normalizeSellers(sellersResult.value)
+            : [];
+
+        setRules(loadedRules);
+        setRows(
+          buildSellerRows({
+            sellers: sellerList,
+            exceptions,
+            propSellers: propSellersKey
+              ? propSellersKey.split("|")
+              : [],
+            defaultRate: loadedRules.defaultRate,
+          })
         );
-      })
-      .catch(() => {
-        if (active) {
-          setProjects([]);
-          setProjectId("");
-          setProject(null);
-          setRates(EMPTY_RATES);
-          setError(t("projects.failedToLoadProject"));
+
+        if (rulesResult.status === "rejected") {
+          setError(t("commissions.rulesLoadError"));
         }
       })
       .finally(() => {
-        if (active) setLoadingProjects(false);
+        if (active) setLoading(false);
       });
 
     return () => {
       active = false;
     };
-  }, [open, t]);
+  }, [open, t, propSellersKey]);
 
-  useEffect(() => {
-    if (!open || !projectId) {
-      setProject(null);
-      setRates(EMPTY_RATES);
-      return undefined;
+  const updateRule = (field, value) => {
+    setRules((current) => ({ ...current, [field]: value }));
+    if (field === "defaultRate") {
+      setRows((currentRows) =>
+        currentRows.map((row) =>
+          row.exceptionId ? row : { ...row, rate: value }
+        )
+      );
     }
+  };
 
-    let active = true;
-    setLoadingProject(true);
-    setError(null);
-
-    commissionsApi
-      .getProject(projectId)
-      .then((data) => {
-        if (!active) return;
-        const loaded = data?.project || data?.data || data;
-        setProject(loaded || null);
-        setRates({
-          direct: loaded?.commission_rate_direct ?? 0,
-          bank: loaded?.commission_rate_bank ?? 0,
-          cash: loaded?.commission_rate_cash ?? 0,
-        });
-      })
-      .catch(() => {
-        if (active) setError(t("projects.failedToLoadProject"));
-      })
-      .finally(() => {
-        if (active) setLoadingProject(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [open, projectId, t]);
-
-  const updateRate = (field, value) => {
-    setRates((current) => ({ ...current, [field]: value }));
+  const updateRowRate = (key, value) => {
+    setRows((current) =>
+      current.map((row) => (row.key === key ? { ...row, rate: value } : row))
+    );
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!project || saving) return;
+    if (saving) return;
+
+    const payload = buildRulesPayload(rules);
+    const invalidRate = rows.some((row) => {
+      const rate = Number(row.rate);
+      return row.rate !== "" && (Number.isNaN(rate) || rate < 0 || rate > 100);
+    });
+    if (
+      Number.isNaN(payload.default_rate) ||
+      payload.default_rate < 0 ||
+      payload.default_rate > 100 ||
+      Number.isNaN(payload.acceptance_window_hours) ||
+      payload.acceptance_window_hours <= 0 ||
+      Number.isNaN(payload.unassigned_rate) ||
+      payload.unassigned_rate < 0 ||
+      payload.unassigned_rate > 100 ||
+      invalidRate
+    ) {
+      setError(t("commissions.rulesInvalid"));
+      return;
+    }
 
     setSaving(true);
     setError(null);
     try {
-      await commissionsApi.updateProject(
-        project.id || projectId,
-        projectPayload(project, rates)
+      await sellerApi.updateCommissionRules(payload);
+      const { upserts, deletes } = buildExceptionChanges(
+        rows,
+        rules.defaultRate
       );
+      await Promise.all([
+        ...upserts.map((exception) =>
+          sellerApi.upsertCommissionException(exception)
+        ),
+        ...deletes.map((id) => sellerApi.deleteCommissionException(id)),
+      ]);
       onSaved?.();
     } catch (err) {
       setError(err?.message || t("commissions.rulesSaveError"));
@@ -132,14 +183,14 @@ function CommissionRulesSheet({ open = false, sellers = [], onClose, onSaved }) 
     }
   };
 
-  const disabled = loadingProjects || loadingProject || saving || !project;
+  const disabled = loading || saving;
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
       title={t("commissions.rulesTitle")}
-      description={t("commissions.rulesSubtitle")}
+      description={t("commissions.rulesSubtitleGlobal")}
       size="md"
       footer={
         <>
@@ -162,136 +213,114 @@ function CommissionRulesSheet({ open = false, sellers = [], onClose, onSaved }) 
         onSubmit={handleSubmit}
         className="flex flex-col gap-4"
       >
-        {loadingProjects ? (
+        {loading ? (
           <p className="text-body text-ink-3">{t("common.loading")}</p>
-        ) : projects.length === 0 ? (
-          <p className="text-body text-ink-3">{t("commissions.noProjects")}</p>
         ) : (
           <>
-            <Field label={t("commissions.projectLabel")}>
-              <Select
-                value={projectId}
-                onChange={(event) => setProjectId(event.target.value)}
-                disabled={saving}
-                autoFocus
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field
+                label={t("commissions.defaultRate")}
+                hint={t("commissions.defaultRateHintGlobal")}
               >
-                {projects.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
+                <RateInput
+                  label={t("commissions.defaultRate")}
+                  value={rules.defaultRate}
+                  onChange={(event) =>
+                    updateRule("defaultRate", event.target.value)
+                  }
+                  disabled={saving}
+                />
+              </Field>
+
+              <Field
+                label={t("commissions.acceptanceWindow")}
+                hint={t("commissions.acceptanceWindowHint")}
+              >
+                <RateInput
+                  label={t("commissions.acceptanceWindow")}
+                  value={rules.acceptanceWindow}
+                  onChange={(event) =>
+                    updateRule("acceptanceWindow", event.target.value)
+                  }
+                  disabled={saving}
+                  suffix={t("commissions.hours")}
+                  min="1"
+                  max="72"
+                  step="1"
+                  width="w-32"
+                />
+              </Field>
+            </div>
+
+            <Field
+              label={t("commissions.paymentRule")}
+              hint={t("commissions.paymentRuleHint")}
+            >
+              <Select
+                value={rules.paymentRule}
+                onChange={() => {}}
+                disabled
+              >
+                <option value="contract_approval">
+                  {t("commissions.approveTrigger")}
+                </option>
               </Select>
             </Field>
 
-            {loadingProject ? (
-              <p className="text-body text-ink-3">
-                {t("projects.loadingProject")}
+            <div className="flex flex-col gap-2">
+              <p className="text-micro font-bold uppercase tracking-wide text-ink-3">
+                {t("commissions.sellerExceptions")}
               </p>
-            ) : project ? (
-              <>
-                <div className="rounded-control border border-line bg-surface-2/60 p-3">
-                  <p className="text-label font-semibold text-ink-2">
-                    {t("commissions.defaultRate")}
-                  </p>
-                  <p className="text-micro text-ink-3">
-                    {t("commissions.defaultRateHint")}
-                  </p>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                    <Field label={t("projects.commissionRateDirect")}>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        required
-                        value={rates.direct}
+
+              <div className="flex flex-col gap-2">
+                {rows.length > 0 ? (
+                  rows.map((row) => (
+                    <div
+                      key={row.key}
+                      className="flex items-center justify-between gap-3 rounded-control border border-line px-3 py-2"
+                    >
+                      <span className="min-w-0 truncate text-body text-ink">
+                        {row.sellerName}
+                      </span>
+                      <RateInput
+                        label={`${row.sellerName} ${t("commissions.rate")}`}
+                        value={row.rate}
                         onChange={(event) =>
-                          updateRate("direct", event.target.value)
+                          updateRowRate(row.key, event.target.value)
                         }
-                        disabled={saving}
+                        disabled={saving || row.sellerId === null}
                       />
-                    </Field>
-                    <Field label={t("projects.commissionRateBank")}>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        required
-                        value={rates.bank}
-                        onChange={(event) => updateRate("bank", event.target.value)}
-                        disabled={saving}
-                      />
-                    </Field>
-                    <Field label={t("projects.commissionRateCash")}>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        required
-                        value={rates.cash}
-                        onChange={(event) => updateRate("cash", event.target.value)}
-                        disabled={saving}
-                      />
-                    </Field>
-                  </div>
-                </div>
-
-                <Field
-                  label={t("commissions.paymentRule")}
-                  hint={t("commissions.paymentRuleHint")}
-                >
-                  <Select defaultValue="approval" disabled>
-                    <option value="approval">
-                      {t("commissions.approveTrigger")}
-                    </option>
-                  </Select>
-                </Field>
-
-                <div className="flex flex-col gap-2">
-                  <p className="text-label font-semibold text-ink-2">
-                    {t("commissions.sellerExceptions")}
-                  </p>
-                  {sellers.length > 0 ? (
-                    <div className="flex flex-col gap-2">
-                      {sellers.map((seller) => (
-                        <div
-                          key={seller}
-                          className="flex items-center justify-between gap-3 rounded-control border border-line px-3 py-2"
-                        >
-                          <span className="min-w-0 truncate text-body text-ink">
-                            {seller}
-                          </span>
-                          <Input
-                            type="number"
-                            value=""
-                            readOnly
-                            placeholder="—"
-                            aria-label={`${seller} ${t(
-                              "commissions.defaultRate"
-                            )}`}
-                            className="w-24 text-right"
-                            disabled
-                          />
-                        </div>
-                      ))}
                     </div>
-                  ) : (
-                    <p className="text-micro text-ink-3">
-                      {t("commissions.noSellers")}
-                    </p>
-                  )}
+                  ))
+                ) : (
                   <p className="text-micro text-ink-3">
-                    {t("commissions.sellerExceptionsHint")}
+                    {t("commissions.noSellers")}
                   </p>
-                </div>
+                )}
 
-                <p className="rounded-control bg-info-soft px-3 py-2 text-micro text-info">
-                  {t("commissions.rulesNote")}
-                </p>
-              </>
-            ) : null}
+                <div className="flex items-center justify-between gap-3 rounded-control border border-line bg-surface-2/60 px-3 py-2">
+                  <span className="min-w-0 truncate text-body font-semibold text-ink">
+                    {t("commissions.unassignedRate")}
+                  </span>
+                  <RateInput
+                    label={t("commissions.unassignedRate")}
+                    value={rules.unassignedRate}
+                    onChange={(event) =>
+                      updateRule("unassignedRate", event.target.value)
+                    }
+                    disabled={saving}
+                  />
+                </div>
+              </div>
+
+              <p className="text-micro text-ink-3">
+                {t("commissions.sellerExceptionsHintActive")}
+              </p>
+            </div>
+
+            <p className="rounded-control bg-info-soft px-3 py-2 text-micro text-info">
+              {t("commissions.rulesNote")}
+            </p>
           </>
         )}
 

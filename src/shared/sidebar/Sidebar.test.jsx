@@ -81,6 +81,7 @@ describe("seller navigation", () => {
 
     expect(sellerLinks().map((link) => link.textContent.trim())).toEqual([
       "seller.myDay",
+      "nav.myLink",
       "seller.myClients",
       "seller.collections",
       "seller.tabCommissions",
@@ -88,6 +89,7 @@ describe("seller navigation", () => {
     ]);
     expect(sellerLinks().map((link) => link.getAttribute("href"))).toEqual([
       "/",
+      "/vendedor/enlace",
       "/vendedor/clientes",
       "/vendedor/cobros",
       "/vendedor/comisiones",

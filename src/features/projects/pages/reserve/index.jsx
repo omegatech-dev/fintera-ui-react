@@ -127,6 +127,16 @@ function Reserve() {
     }
     formData.append("contract[note]", payload.note);
     formData.append("contract[applicant_user_id]", payload.applicantUserId || "");
+    if (payload.assignmentOrigin) {
+      formData.append("contract[assignment_origin]", payload.assignmentOrigin);
+    }
+    if (payload.sellerId) {
+      formData.append("contract[seller_id]", payload.sellerId);
+    }
+    const referralSlug = new URLSearchParams(window.location.search).get("ref");
+    if (referralSlug) {
+      formData.append("contract[referral_slug]", referralSlug);
+    }
     formData.append("user[full_name]", payload.user.full_name);
     formData.append("user[phone]", payload.user.phone);
     formData.append("user[identity]", payload.user.identity);

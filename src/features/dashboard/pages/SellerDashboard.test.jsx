@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import SellerDashboard from "./SellerDashboard";
 import { dashboardApi } from "../api";
+import { sellerApi } from "@/features/seller/api";
+import { CUSTOMER_PORTAL_URL } from "@config";
 
 expect.extend(matchers);
 
@@ -48,6 +50,26 @@ const translations = {
   "sellerDashboard.loadErrorTitle": "No pudimos cargar tu día",
   "sellerDashboard.loadErrorDescription":
     "Revisa tu conexión e intenta de nuevo.",
+  "sellerDashboard.referralTitle": "Tu enlace de referido",
+  "sellerDashboard.referralDescription":
+    "Comparte este enlace con tus clientes: cada reserva completada desde él se te asigna automáticamente y genera tu comisión.",
+  "sellerDashboard.referralVisits": "VISITAS AL ENLACE",
+  "sellerDashboard.referralReservations": "RESERVAS ATRIBUIDAS",
+  "sellerDashboard.referralCommission": "COMISIÓN GENERADA",
+  "sellerDashboard.referralViewAll": "Ver todas",
+  "sellerDashboard.referralShare": "Compartir / Imprimir",
+  "sellerReferrals.active": "Activo",
+  "sellerReferrals.copy": "Copiar",
+  "sellerReferrals.copied": "Copiado",
+  "sellerReferrals.copyError": "No pudimos copiar el enlace",
+  "sellerReferrals.linkUnavailable":
+    "Tu enlace estará disponible cuando un administrador lo active.",
+  "sellerReferrals.qrCaption": "Imprime o comparte con tus clientes",
+  "sellerReferrals.qrAlt": "Código QR del enlace de referido de {name}",
+  "sellerReferrals.loadErrorDescription":
+    "Revisa tu conexión e intenta de nuevo.",
+  "common.copiedToClipboard": "Copiado al portapapeles",
+  "common.retry": "Reintentar",
   "payments.statusOptions.approved": "Aprobado",
   "payments.statusOptions.pending": "Pendiente",
 };
@@ -73,6 +95,16 @@ vi.mock("../api", () => ({
     getCommissions: vi.fn(),
     downloadCommissionsCsv: vi.fn(),
   },
+}));
+
+vi.mock("@/features/seller/api", () => ({
+  sellerApi: {
+    getReferral: vi.fn(),
+  },
+}));
+
+vi.mock("@/contexts/ToastContext", () => ({
+  useToast: () => ({ showToast: vi.fn() }),
 }));
 
 const sellerStats = {
@@ -109,6 +141,19 @@ const seller = {
   role: "seller",
 };
 
+const REFERRAL_GUID = "9f2c1e6a-7b3d-4c58-9a10-2d5e8f4b6c71";
+const REFERRAL_URL = `${CUSTOMER_PORTAL_URL.replace(/\/+$/, "")}/r/${REFERRAL_GUID}`;
+const DISPLAY_REFERRAL_URL = REFERRAL_URL.replace(/^https?:\/\//i, "");
+
+const sellerReferral = {
+  referral_guid: REFERRAL_GUID,
+  slug: "cristofer-m",
+  visits: 128,
+  attributed_reservations: 6,
+  generated_commission: 45000,
+  commission_rate: 5,
+};
+
 const renderDashboard = () =>
   render(
     <MemoryRouter>
@@ -129,6 +174,8 @@ const deferred = () => {
 beforeEach(() => {
   dashboardApi.getSellerStats.mockReset();
   dashboardApi.getCommissions.mockReset();
+  sellerApi.getReferral.mockReset();
+  sellerApi.getReferral.mockResolvedValue(sellerReferral);
 });
 
 afterEach(() => {
@@ -141,7 +188,9 @@ describe("SellerDashboard", () => {
     renderDashboard();
 
     expect(
-      await screen.findByRole("heading", { name: /Buenos días|Buenas tardes|Buenas noches, Cristofer/i })
+      await screen.findByRole("heading", {
+        name: /Buen[oa]s (días|tardes|noches), Cristofer/i,
+      })
     ).toBeInTheDocument();
 
     expect(screen.getByText("Ventas del mes")).toBeInTheDocument();
@@ -246,6 +295,29 @@ describe("SellerDashboard", () => {
       screen.getByText("Sin ventas en los últimos 6 meses")
     ).toBeInTheDocument();
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+  });
+
+  it("renders the referral card with the link, metrics and a shortcut to the referral screen", async () => {
+    dashboardApi.getSellerStats.mockResolvedValue(sellerStats);
+
+    renderDashboard();
+
+    expect(
+      await screen.findByText("Tu enlace de referido")
+    ).toBeInTheDocument();
+    expect(screen.getByText(DISPLAY_REFERRAL_URL)).toBeInTheDocument();
+    expect(screen.getByText("VISITAS AL ENLACE")).toBeInTheDocument();
+    expect(screen.getByText("128")).toBeInTheDocument();
+    expect(screen.getByText("RESERVAS ATRIBUIDAS")).toBeInTheDocument();
+    expect(screen.getByText("6")).toBeInTheDocument();
+    expect(screen.getByText("COMISIÓN GENERADA")).toBeInTheDocument();
+    expect(screen.getByText("L 45,000")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Ver todas/i })
+    ).toHaveAttribute("href", "/vendedor/enlace");
+    expect(
+      screen.getByRole("button", { name: /Compartir \/ Imprimir/i })
+    ).toBeInTheDocument();
   });
 
   it("opens the commissions dialog from the commission card", async () => {

@@ -12,6 +12,7 @@ import {
 } from "@/shared/utils/avatarUtils";
 import { formatDate } from "@/shared/utils/formatters";
 import { Chip } from "@/shared/ui";
+import SellerScoreSummary from "./SellerScoreSummary";
 
 const FICO_MIN = 300;
 const FICO_MAX = 850;
@@ -243,6 +244,8 @@ function RightSidebar({
             )}
           </dl>
         </section>
+
+        {role === "seller" && <SellerScoreSummary user={user} />}
 
         {role === "user" && (
           <section className="rounded-card border border-line bg-surface-2 p-3.5">

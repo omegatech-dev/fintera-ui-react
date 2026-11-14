@@ -2875,8 +2875,6 @@
     "expiredBadge": "TIEMPO AGOTADO",
     "expiredNote": "No aceptaste a tiempo: perdiste la oportunidad de ganar la comisión de esta reserva.",
     "accept": "Aceptar",
-    "reject": "Rechazar",
-    "acceptError": "No pudimos aceptar la asignación.",
-    "rejectError": "No pudimos rechazar la asignación."
+    "acceptError": "No pudimos aceptar la asignación."
   }
 }

@@ -2873,8 +2873,6 @@
     "expiredBadge": "TIME'S UP",
     "expiredNote": "You didn't accept in time: you lost the chance to earn the commission on this reservation.",
     "accept": "Accept",
-    "reject": "Reject",
-    "acceptError": "We couldn't accept the assignment.",
-    "rejectError": "We couldn't reject the assignment."
+    "acceptError": "We couldn't accept the assignment."
   }
 }

@@ -24,8 +24,6 @@ export const sellerApi = {
   listPendingAssignments: () => apiClient.get(`${API}/assignments/pending`),
   acceptAssignment: (id) =>
     apiClient.post(`${API}/assignments/${id}/accept`, {}),
-  rejectAssignment: (id) =>
-    apiClient.post(`${API}/assignments/${id}/reject`, {}),
 
   overrideScore: (userId, { score, reason } = {}) =>
     apiClient.patch(`${API}/users/${userId}/score`, { score, reason }),

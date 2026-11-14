@@ -315,7 +315,6 @@ function NotificationsBell() {
                   assignment={assignment}
                   compact
                   onAccepted={() => resolveAssignment(assignment.id, "accepted")}
-                  onRejected={() => resolveAssignment(assignment.id, "expired")}
                 />
               ))}
             {!loading &&

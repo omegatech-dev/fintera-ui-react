@@ -33,9 +33,7 @@ const elapsedLabel = (value, t) => {
 function AssignmentCard({
   assignment,
   onAccept,
-  onReject,
   onAccepted,
-  onRejected,
   className = "",
   compact = false,
 }) {
@@ -57,30 +55,18 @@ function AssignmentCard({
   const effectiveStatus =
     status === "pending" && clockExpired ? "expired" : status;
 
-  const run = async (action) => {
+  const runAccept = async () => {
     if (!assignment?.id) return;
-    setActing(action);
+    setActing("accept");
     setError(null);
     try {
-      const result =
-        action === "accept"
-          ? onAccept
-            ? await onAccept(assignment)
-            : await sellerApi.acceptAssignment(assignment.id)
-          : onReject
-            ? await onReject(assignment)
-            : await sellerApi.rejectAssignment(assignment.id);
-      setStatus(action === "accept" ? "accepted" : "expired");
-      if (action === "accept") onAccepted?.(result);
-      else onRejected?.(result);
+      const result = onAccept
+        ? await onAccept(assignment)
+        : await sellerApi.acceptAssignment(assignment.id);
+      setStatus("accepted");
+      onAccepted?.(result);
     } catch {
-      setError(
-        t(
-          action === "accept"
-            ? "sellerAssignments.acceptError"
-            : "sellerAssignments.rejectError"
-        )
-      );
+      setError(t("sellerAssignments.acceptError"));
     } finally {
       setActing(null);
     }
@@ -181,21 +167,10 @@ function AssignmentCard({
       {effectiveStatus === "pending" && (
         <div className="mt-3 flex gap-2">
           <Button
-            variant="secondary"
-            size="sm"
-            className="flex-1"
-            loading={acting === "reject"}
-            disabled={acting === "accept"}
-            onClick={() => run("reject")}
-          >
-            {t("sellerAssignments.reject")}
-          </Button>
-          <Button
             size="sm"
             className="flex-1"
             loading={acting === "accept"}
-            disabled={acting === "reject"}
-            onClick={() => run("accept")}
+            onClick={runAccept}
           >
             {t("sellerAssignments.accept")}
           </Button>
@@ -224,9 +199,7 @@ AssignmentCard.propTypes = {
     contract: PropTypes.object,
   }),
   onAccept: PropTypes.func,
-  onReject: PropTypes.func,
   onAccepted: PropTypes.func,
-  onRejected: PropTypes.func,
   className: PropTypes.string,
   compact: PropTypes.bool,
 };

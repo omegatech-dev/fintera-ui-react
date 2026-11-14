@@ -26,7 +26,6 @@ vi.mock("@/contexts/LocaleContext", () => ({
 vi.mock("../api", () => ({
   sellerApi: {
     acceptAssignment: vi.fn(),
-    rejectAssignment: vi.fn(),
   },
 }));
 
@@ -48,7 +47,6 @@ afterEach(() => {
 
 beforeEach(() => {
   sellerApi.acceptAssignment.mockResolvedValue({ status: "accepted" });
-  sellerApi.rejectAssignment.mockResolvedValue({ status: "expired" });
 });
 
 describe("AssignmentCard", () => {
@@ -93,20 +91,6 @@ describe("AssignmentCard", () => {
       screen.getByText("You can now follow up with the client from My clients.")
     ).toBeInTheDocument();
     expect(sellerApi.acceptAssignment).toHaveBeenCalledWith(4);
-  });
-
-  it("rejects the assignment as an immediate expiry", async () => {
-    render(<AssignmentCard assignment={pending} />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Reject" }));
-
-    expect(await screen.findByText("TIME'S UP")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "You didn't accept in time: you lost the chance to earn the commission on this reservation."
-      )
-    ).toBeInTheDocument();
-    expect(sellerApi.rejectAssignment).toHaveBeenCalledWith(4);
   });
 
   it("renders the expired state without actions", () => {

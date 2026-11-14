@@ -47,7 +47,6 @@ vi.mock("@/features/seller/api", () => ({
   sellerApi: {
     listPendingAssignments: vi.fn(),
     acceptAssignment: vi.fn(),
-    rejectAssignment: vi.fn(),
   },
 }));
 
@@ -79,7 +78,6 @@ beforeEach(() => {
     assignments: [pendingAssignment],
   });
   sellerApi.acceptAssignment.mockResolvedValue({ status: "accepted" });
-  sellerApi.rejectAssignment.mockResolvedValue({ status: "expired" });
 });
 
 afterEach(() => {
@@ -103,7 +101,7 @@ describe("NotificationsBell assignments", () => {
     expect(screen.getByText(/^\d{2}:\d{2}:\d{2}$/)).toBeInTheDocument();
     expect(screen.getByText("TIME TO ACCEPT")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Accept" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Reject" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reject" })).toBeNull();
   });
 
   it("accepts an assignment and shows the accepted state", async () => {
@@ -120,18 +118,6 @@ describe("NotificationsBell assignments", () => {
     expect(
       screen.getByText("You can now follow up with the client from My clients.")
     ).toBeInTheDocument();
-  });
-
-  it("rejects an assignment", async () => {
-    render(<NotificationsBell />);
-    await waitFor(() => expect(sellerApi.listPendingAssignments).toHaveBeenCalled());
-    await openBell();
-
-    fireEvent.click(await screen.findByRole("button", { name: "Reject" }));
-
-    await waitFor(() =>
-      expect(sellerApi.rejectAssignment).toHaveBeenCalledWith(4)
-    );
   });
 
   it("keeps the assignment visible and surfaces the error when accept fails", async () => {

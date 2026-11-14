@@ -18,6 +18,7 @@ export const formatStatus = (status, t) => {
     under_review: t && typeof t === 'function' ? t('payments.statusOptions.under_review') : "Under Review",
     in_process: t && typeof t === 'function' ? t('payments.statusOptions.in_process') : "In Process",
     adjustment: t && typeof t === 'function' ? t('payments.statusOptions.adjustment') : "Adjustment",
+    refund: t && typeof t === 'function' ? t('payments.statusOptions.refund') : "Refund",
     reservation: t && typeof t === 'function' ? t('payments.statusOptions.reservation') : "Reservation",
     down_payment: t && typeof t === 'function' ? t('payments.statusOptions.down_payment') : "Down Payment",
     installment: t && typeof t === 'function' ? t('payments.statusOptions.installment') : "Installment",

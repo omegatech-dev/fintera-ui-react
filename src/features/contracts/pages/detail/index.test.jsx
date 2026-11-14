@@ -7,6 +7,9 @@ import AuthContext from "@/contexts/AuthContext";
 import ContractDetail from "./index";
 import { contractsApi } from "../../api";
 import { projectsApi } from "@/features/projects/api";
+import { confirmDialog } from "@/shared/ui/ConfirmProvider";
+import en from "@/locales/en.json";
+import es from "@/locales/es.json";
 
 expect.extend(matchers);
 
@@ -61,12 +64,24 @@ const lotDetails = {
 
 const contract = { ...baseContract };
 
-vi.mock("@/contexts/LocaleContext", () => ({
-  useLocale: () => ({ t: (key) => key }),
-}));
+vi.mock("@/contexts/LocaleContext", async () => {
+  const { default: en } = await import("@/locales/en.json");
+  return {
+    useLocale: () => ({
+      t: (key) =>
+        key === "contracts.cancelDescription"
+          ? en.contracts.cancelDescription
+          : key,
+    }),
+  };
+});
 
 vi.mock("@/contexts/ToastContext", () => ({
   useToast: () => ({ showToast: vi.fn() }),
+}));
+
+vi.mock("@/shared/ui/ConfirmProvider", () => ({
+  confirmDialog: vi.fn(() => Promise.resolve(false)),
 }));
 
 vi.mock("../../api", () => ({
@@ -77,6 +92,7 @@ vi.mock("../../api", () => ({
     sendReminder: vi.fn(),
     approve: vi.fn(),
     reject: vi.fn(),
+    cancel: vi.fn(),
   },
 }));
 
@@ -112,6 +128,8 @@ beforeEach(() => {
   contractsApi.sendReminder.mockResolvedValue({});
   contractsApi.approve.mockResolvedValue({});
   contractsApi.reject.mockResolvedValue({});
+  contractsApi.cancel.mockResolvedValue({});
+  confirmDialog.mockResolvedValue(false);
   projectsApi.getLot.mockResolvedValue({ lot: lotDetails });
   window.URL.createObjectURL = vi.fn(() => "blob:contract");
   window.URL.revokeObjectURL = vi.fn();
@@ -301,4 +319,86 @@ describe("ContractDetail actions", () => {
       await screen.findByRole("heading", { name: "projects.lotDetails" })
     ).toBeInTheDocument();
   });
+
+  it.each(["approved", "signed"])(
+    "offers the cancel action for a %s contract",
+    async (status) => {
+      renderDetail({ value: { ...contract, status } });
+      await screen.findByText("contracts.contractNumber");
+
+      fireEvent.click(screen.getByRole("button", { name: "common.actions" }));
+
+      expect(
+        screen.getByRole("menuitem", { name: "contracts.cancelContract" })
+      ).toBeInTheDocument();
+    }
+  );
+
+  it("explains the cancel consequences in the confirmation", async () => {
+    renderDetail();
+    await screen.findByText("contracts.contractNumber");
+
+    fireEvent.click(screen.getByRole("button", { name: "common.actions" }));
+    fireEvent.click(
+      screen.getByRole("menuitem", { name: "contracts.cancelContract" })
+    );
+
+    await waitFor(() => {
+      expect(confirmDialog).toHaveBeenCalledTimes(1);
+    });
+    const options = confirmDialog.mock.calls[0][0];
+    expect(options.title).toBe("contracts.cancelTitle");
+    expect(options.description).toBe(en.contracts.cancelDescription);
+    expect(options.description).toMatch(/future installments/i);
+    expect(options.description).toMatch(/refunded in the ledger/i);
+    expect(options.description).toMatch(/lot will be released/i);
+    expect(options.description).toMatch(/commission credit/i);
+  });
+
+  it("keeps the same cancel consequences in the Spanish copy", () => {
+    expect(es.contracts.cancelDescription).toMatch(/cuotas futuras/i);
+    expect(es.contracts.cancelDescription).toMatch(/libro mayor/i);
+    expect(es.contracts.cancelDescription).toMatch(/lote quedará liberado/i);
+    expect(es.contracts.cancelDescription).toMatch(/crédito de comisión/i);
+  });
+
+  it("cancels an approved contract after confirmation and refreshes it", async () => {
+    confirmDialog.mockResolvedValue(true);
+    renderDetail();
+    await screen.findByText("contracts.contractNumber");
+
+    fireEvent.click(screen.getByRole("button", { name: "common.actions" }));
+    fireEvent.click(
+      screen.getByRole("menuitem", { name: "contracts.cancelContract" })
+    );
+
+    await waitFor(() => {
+      expect(contractsApi.cancel).toHaveBeenCalledWith(
+        1,
+        2,
+        16,
+        "contracts.cancelNote"
+      );
+    });
+    expect(contractsApi.getByGuid).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(["cancelled", "closed"])(
+    "does not offer reopen on a %s contract",
+    async (status) => {
+      renderDetail({ value: { ...contract, status } });
+      await screen.findByText("contracts.contractNumber");
+
+      fireEvent.click(screen.getByRole("button", { name: "common.actions" }));
+
+      expect(
+        screen.queryByRole("menuitem", { name: /reopen|reabrir/i })
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("menuitem", {
+          name: "paymentSchedule.reopenContract",
+        })
+      ).not.toBeInTheDocument();
+    }
+  );
 });

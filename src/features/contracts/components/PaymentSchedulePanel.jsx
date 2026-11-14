@@ -28,7 +28,12 @@ const READ_ONLY_STATUSES = new Set(["closed", "cancelled", "canceled", "rejected
 const pendingRows = (rows) =>
   (Array.isArray(rows) ? rows : []).filter((row) => {
     const status = String(row?.status || "pending").toLowerCase();
-    return status !== "paid" && status !== "readjustment";
+    return (
+      status !== "paid" &&
+      status !== "readjustment" &&
+      status !== "cancelled" &&
+      status !== "canceled"
+    );
   });
 
 function PaymentSchedulePanelView({
@@ -70,7 +75,10 @@ function PaymentSchedulePanelView({
   const isReadOnly = user?.role === "seller" || READ_ONLY_STATUSES.has(status);
 
   const totals = useMemo(() => {
-    const safeSchedule = Array.isArray(schedule) ? schedule : [];
+    const safeSchedule = (Array.isArray(schedule) ? schedule : []).filter((payment) => {
+      const status = String(payment?.status || "pending").toLowerCase();
+      return status !== "cancelled" && status !== "canceled";
+    });
     const subtotal = safeSchedule.reduce((sum, payment) => {
       const amount = Number(payment.amount || 0);
       const paid = Number(payment.paid_amount || 0);

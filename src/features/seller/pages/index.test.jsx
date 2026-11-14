@@ -416,6 +416,34 @@ describe("Seller workspace commissions", () => {
     expect(screen.getByText("No assignments yet")).toBeInTheDocument();
   });
 
+  it("shows the pending commission credit read-only with the net payable", async () => {
+    commissionsApi.list.mockResolvedValueOnce({
+      commissions,
+      credits: [
+        {
+          id: 9,
+          seller: "Ana Vendedora",
+          contract_id: 16,
+          amount: 25000,
+          status: "pending",
+          created_at: "2026-11-10T00:00:00Z",
+        },
+      ],
+    });
+
+    renderWorkspace("/vendedor/comisiones");
+
+    expect(await screen.findByText("Commission credits")).toBeInTheDocument();
+    expect(screen.getByText("Pending credit")).toBeInTheDocument();
+    expect(screen.getByText("Net payable")).toBeInTheDocument();
+    expect(screen.getAllByText("L 25,000").length).toBeGreaterThan(0);
+    expect(screen.getByText("L 0")).toBeInTheDocument();
+    expect(screen.getAllByText("Pending").length).toBeGreaterThan(0);
+    expect(
+      screen.queryByRole("button", { name: /apply credit/i })
+    ).toBeNull();
+  });
+
   it("shows an error state when commissions cannot be loaded", async () => {
     commissionsApi.list.mockRejectedValueOnce(new Error("Network"));
     renderWorkspace("/vendedor/comisiones");

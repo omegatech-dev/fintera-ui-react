@@ -8,6 +8,8 @@ import {
 import AuthContext from "@/contexts/AuthContext";
 import { sellerApi } from "../api";
 import { commissionsApi } from "@/features/commissions/api";
+import CommissionCreditsCard from "@/features/commissions/components/CommissionCreditsCard";
+import { readCommissionCredits } from "@/features/commissions/utils/credits";
 import { contractsApi } from "@/features/contracts/api";
 import { paymentsApi } from "@/features/payments/api";
 import { reportsApi } from "@/shared/api/reports";
@@ -98,6 +100,7 @@ function SellerWorkspace() {
   const [stats, setStats] = useState({ pending: 0, overdue: 0, collected: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
   const [commissions, setCommissions] = useState([]);
+  const [commissionsCredits, setCommissionsCredits] = useState([]);
   const [commissionsLoading, setCommissionsLoading] = useState(true);
   const [commissionsError, setCommissionsError] = useState(false);
   const [historicalSales, setHistoricalSales] = useState([]);
@@ -139,6 +142,7 @@ function SellerWorkspace() {
     try {
       const data = await commissionsApi.list(monthStart(), monthEnd());
       setCommissions(data?.commissions || []);
+      setCommissionsCredits(readCommissionCredits(data));
     } catch {
       setCommissionsError(true);
     } finally {
@@ -1266,6 +1270,14 @@ function SellerWorkspace() {
             </div>
           )}
         </div>
+
+        {tab === "comisiones" && !commissionsError && (
+          <CommissionCreditsCard
+            credits={commissionsCredits}
+            pendingCommissions={commissionTotals.pending}
+            loading={commissionsLoading}
+          />
+        )}
 
         {activeError ? (
           <ErrorState

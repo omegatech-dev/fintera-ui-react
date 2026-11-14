@@ -39,14 +39,19 @@ const PaymentScheduleTab = memo(function PaymentScheduleTab({
   }
 
   const safeSchedule = Array.isArray(schedule) ? schedule : [];
-  const totalSteps = safeSchedule.length || 1;
-  const paidSteps = safeSchedule.filter((p) => p.status?.toLowerCase() === "paid").length;
-  const overdueSteps = safeSchedule.filter((p) => {
+  const isCancelledRow = (payment) => {
+    const status = payment.status?.toLowerCase();
+    return status === "cancelled" || status === "canceled";
+  };
+  const activeSchedule = safeSchedule.filter((payment) => !isCancelledRow(payment));
+  const totalSteps = activeSchedule.length;
+  const paidSteps = activeSchedule.filter((p) => p.status?.toLowerCase() === "paid").length;
+  const overdueSteps = activeSchedule.filter((p) => {
     const status = p.status?.toLowerCase() || "pending";
     const mora = calculateMoratoryDays(p.due_date);
     return status !== "paid" && status !== "readjustment" && mora > 0;
   }).length;
-  const progressPercent = (paidSteps / totalSteps) * 100;
+  const progressPercent = totalSteps ? (paidSteps / totalSteps) * 100 : 0;
 
   const header = (
     <PaymentScheduleHeader

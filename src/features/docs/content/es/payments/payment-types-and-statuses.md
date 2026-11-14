@@ -22,6 +22,7 @@ Cada pago tiene un **tipo** y un **estado**. El tipo indica para qué es el dine
 | **Pagado** | Aprobado y registrado en el libro mayor. |
 | **Rechazado** | El comprobante fue rechazado; el cliente puede subir uno nuevo. |
 | **Reajuste** | La fila se ajustó después de un abono a capital. |
+| **Cancelado** | La cuota se canceló junto con el contrato; no se cobra. |
 
 El espacio del vendedor también muestra **En revisión** después de subir un comprobante. Significa lo mismo que **enviado**: el administrador aún no lo ha aprobado.
 

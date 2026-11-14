@@ -1,4 +1,4 @@
-# Approving, rejecting, and reopening contracts
+# Approving and rejecting contracts
 
 > **Admin only.** These actions change money and lot availability.
 
@@ -19,11 +19,14 @@ Rejecting requires a reason. The customer is notified and the lot returns to **a
 
 ## Cancel
 
-Cancelling stops the sale before approval. Like rejection, it releases the lot. Use cancellation when the customer walks away. The cancellation is recorded in the contract notes.
+Cancelling stops the sale. You can cancel an **approved** or **signed** contract, in addition to pending, submitted, or rejected ones. When cancelling:
 
-## Reopen
+- future installments become **cancelled** and stop sending collection reminders,
+- the paid amount is recorded as a **refund** in the ledger,
+- the lot returns to **available**,
+- if the commission was already paid, a **commission credit** is generated for you to apply later.
 
-A **cancelled** or **closed** contract can be reopened. It returns to **approved** and payments can continue. Reopen only when a closing or cancellation was a mistake or a refund/reversal is needed.
+The cancellation is recorded in the audit log and the contract notes.
 
 ## Delete a rejected contract
 

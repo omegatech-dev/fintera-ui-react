@@ -36,6 +36,10 @@ Los vendedores ven **Comisiones** en su espacio de trabajo, en solo lectura:
 
 Los vendedores no pueden marcar una comisión como pagada ni cambiar tasas.
 
+## Crédito de comisión por cancelación
+
+Si cancelas un contrato cuya comisión ya se pagó, se genera un **crédito de comisión** a favor de Fintera para ese vendedor. Aparece en Comisiones como un crédito pendiente. El administrador puede **aplicarlo** (marcarlo como saldado) cuando corresponda. Si la comisión no se pagó, no se crea ningún crédito: la comisión simplemente deja de aparecer.
+
 ## Relacionado
 
 - [Tipos de financiamiento: directo, banco y efectivo](/docs/financing-types)

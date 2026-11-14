@@ -52,13 +52,12 @@ La nota general del contrato. Los administradores pueden editarla cuando el cont
 - **Ver lote** — abre la lista de lotes del proyecto con el lote actual resaltado.
 - **Descargar PDF** — descarga el PDF del contrato.
 - **Enviar recordatorio** (administrador, no cancelado ni cerrado) — envía un recordatorio de pago al cliente.
-- **Reabrir contrato** (administrador, cancelado o cerrado) — lo devuelve a aprobado.
-- **Cancelar contrato** (administrador, no cancelado ni cerrado) — pide confirmación, libera el lote y registra la cancelación.
+- **Cancelar contrato** (administrador, aprobado o firmado) — pide confirmación, marca las cuotas futuras como canceladas, registra el reembolso, libera el lote y, si la comisión estaba pagada, genera un crédito de comisión.
 
 Los vendedores solo ven las acciones de lectura: ver lote, descargar PDF y las descargas de documentos.
 
 ## Relacionado
 
 - [Ciclo de vida y estados del contrato](/docs/contract-lifecycle)
-- [Aprobar, rechazar y reabrir contratos](/docs/approving-contracts)
+- [Aprobar y rechazar contratos](/docs/approving-contracts)
 - [Tipos y estados de pago](/docs/payment-types-and-statuses)

@@ -10,10 +10,8 @@ Un **contrato** es la venta de un lote a un cliente. Su estado sigue un ciclo fi
 | **Enviado** | Se subió el comprobante de reserva y espera revisión del administrador. |
 | **Aprobado** | La venta está aprobada y el calendario de pagos está activo. |
 | **Rechazado** | Un administrador lo rechazó; el lote queda disponible. |
-| **Cancelado** | La venta se canceló antes de la aprobación; el lote queda disponible. |
+| **Cancelado** | La venta se canceló; el lote queda disponible y el monto pagado se registra como reembolso. |
 | **Cerrado** | El saldo llegó a cero (pagado totalmente). |
-
-No existe un estado "reabierto": reabrir devuelve el contrato a **aprobado**.
 
 ## Transiciones permitidas
 
@@ -21,8 +19,8 @@ No existe un estado "reabierto": reabrir devuelve el contrato a **aprobado**.
 - Pendiente, enviado o rechazado → **aprobado** (administrador).
 - Pendiente o enviado → **rechazado** (administrador).
 - Pendiente, enviado o rechazado → **cancelado** (administrador).
+- Aprobado o firmado → **cancelado** (administrador).
 - Aprobado → **cerrado** automáticamente cuando el saldo es cero.
-- Cancelado o cerrado → **aprobado** (el administrador reabre el contrato).
 
 Los vendedores pueden ver el estado pero no cambiarlo.
 
@@ -33,5 +31,5 @@ El saldo del contrato es la deuda pendiente. Los pagos se registran como crédit
 ## Relacionado
 
 - [Lista, detalle y acciones del contrato](/docs/contract-detail-and-actions)
-- [Aprobar, rechazar y reabrir contratos](/docs/approving-contracts)
+- [Aprobar y rechazar contratos](/docs/approving-contracts)
 - [Tipos y estados de pago](/docs/payment-types-and-statuses)

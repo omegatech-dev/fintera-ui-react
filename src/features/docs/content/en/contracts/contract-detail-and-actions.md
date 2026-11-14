@@ -52,13 +52,12 @@ The general contract note. Admins can edit it when the contract has a project an
 - **View lot** — opens the project's lot list with the current lot highlighted.
 - **Download PDF** — downloads the contract PDF.
 - **Send reminder** (admin, not cancelled or closed) — emails the customer a payment reminder.
-- **Reopen contract** (admin, cancelled or closed) — returns it to approved.
-- **Cancel contract** (admin, not cancelled or closed) — asks for confirmation, releases the lot, and records the cancellation.
+- **Cancel contract** (admin, approved or signed) — asks for confirmation, marks future installments as cancelled, records the refund, releases the lot, and, if the commission was paid, generates a commission credit.
 
 Sellers only see the read-only actions: view lot, download PDF, and the document downloads.
 
 ## Related
 
 - [Contract lifecycle and statuses](/docs/contract-lifecycle)
-- [Approving, rejecting, and reopening contracts](/docs/approving-contracts)
+- [Approving and rejecting contracts](/docs/approving-contracts)
 - [Payment types and statuses](/docs/payment-types-and-statuses)

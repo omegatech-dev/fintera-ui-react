@@ -158,8 +158,8 @@ export const ARTICLES = [
     order: 11,
     audience: ["admin"],
     title: {
-      en: "Approving, rejecting, and reopening contracts",
-      es: "Aprobar, rechazar y reabrir contratos",
+      en: "Approving and rejecting contracts",
+      es: "Aprobar y rechazar contratos",
     },
   },
   {

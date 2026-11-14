@@ -37,11 +37,11 @@ Las fechas de reserva y pago inicial se configuran en ajustes:
 
 ## Qué hacen los vendedores
 
-Los vendedores crean reservas para sus clientes, suben el comprobante de reserva y dan seguimiento al contrato. No pueden aprobar, rechazar, cancelar ni reabrir un contrato.
+Los vendedores crean reservas para sus clientes, suben el comprobante de reserva y dan seguimiento al contrato. No pueden aprobar, rechazar ni cancelar un contrato.
 
 ## Qué hacen los administradores
 
-Los administradores pueden cambiar la retención y las fechas de vencimiento, aprobar o rechazar la reserva, cancelarla y reabrirla cuando haga falta. Ver [Aprobar, rechazar y reabrir contratos](/docs/approving-contracts).
+Los administradores pueden cambiar la retención y las fechas de vencimiento, aprobar o rechazar la reserva, o cancelarla cuando haga falta. Ver [Aprobar y rechazar contratos](/docs/approving-contracts).
 
 ## Relacionado
 

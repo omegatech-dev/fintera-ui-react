@@ -11,7 +11,7 @@ Un **lote** es una pieza vendible de un proyecto. Su estado indica si se puede v
 | **Financiado** | La reserva se aprobó y se están cobrando los pagos. |
 | **Pagado totalmente** | El saldo llegó a cero y el contrato se cerró. |
 
-Un lote pasa de **disponible → reservado → financiado → pagado totalmente**. Si una reserva se rechaza o se cancela, el lote vuelve a **disponible**. Reabrir un contrato cerrado lo devuelve a **financiado**.
+Un lote pasa de **disponible → reservado → financiado → pagado totalmente**. Si una reserva se rechaza o se cancela, el lote vuelve a **disponible**.
 
 ## La lista de lotes
 

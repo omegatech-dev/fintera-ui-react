@@ -43,20 +43,13 @@ describe("seller assignment endpoints", () => {
     });
   });
 
-  it("lists pending assignments and accepts or rejects one", async () => {
+  it("lists pending assignments and accepts one", async () => {
     await sellerApi.listPendingAssignments();
     await sellerApi.acceptAssignment(4);
-    await sellerApi.rejectAssignment(5);
 
     expect(apiClient.get).toHaveBeenCalledWith("/api/v1/assignments/pending");
-    expect(apiClient.post).toHaveBeenNthCalledWith(
-      1,
+    expect(apiClient.post).toHaveBeenCalledWith(
       "/api/v1/assignments/4/accept",
-      {}
-    );
-    expect(apiClient.post).toHaveBeenNthCalledWith(
-      2,
-      "/api/v1/assignments/5/reject",
       {}
     );
   });

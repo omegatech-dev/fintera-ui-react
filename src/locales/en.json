@@ -375,7 +375,7 @@
     "rowIssueNumber": "{field} must be a number",
     "rowIssueInteger": "{field} must be a whole number",
     "rowIssueNegative": "{field} cannot be negative",
-    "rowIssueDate": "{field} must use YYYY-MM-DD",
+    "rowIssueDate": "{field} must use YYYY-MM-DD (DD/MM/YYYY or M/D/YYYY are also accepted)",
     "rowIssueUnit": "{field} must be m2, ft2 or vara2",
     "importCount": "Import {count} projects",
     "importValidCount": "Import {count} valid rows",

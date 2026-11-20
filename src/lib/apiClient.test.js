@@ -71,4 +71,46 @@ describe("apiClient auth handling", () => {
       "/api/v1/payments?page=2&status=submitted"
     );
   });
+
+  it("returns the raw Response in raw-response mode", async () => {
+    const raw = {
+      ok: true,
+      status: 200,
+      headers: { get: () => "application/pdf" },
+    };
+    fetch.mockResolvedValue(raw);
+
+    const result = await request("/api/v1/historical_sales/1/evidence", {
+      responseType: "response",
+    });
+
+    expect(result).toBe(raw);
+  });
+
+  it("returns non-ok statuses untouched in raw-response mode", async () => {
+    const raw = { ok: false, status: 404, headers: { get: () => "" } };
+    fetch.mockResolvedValue(raw);
+
+    const result = await request("/api/v1/historical_sales/1/evidence", {
+      responseType: "response",
+    });
+
+    expect(result).toBe(raw);
+  });
+
+  it("still broadcasts 401 in raw-response mode", async () => {
+    const listener = vi.fn();
+    window.addEventListener("auth:unauthorized", listener);
+    setAuthToken("current-token");
+    fetch.mockResolvedValue(jsonResponse(401, { error: "Unauthorized" }));
+
+    await expect(
+      request("/api/v1/historical_sales/1/evidence", {
+        responseType: "response",
+      })
+    ).rejects.toMatchObject({ status: 401 });
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    window.removeEventListener("auth:unauthorized", listener);
+  });
 });

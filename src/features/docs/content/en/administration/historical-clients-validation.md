@@ -2,6 +2,8 @@
 
 A **historical client** is a client and sale that happened before the team started using Fintera. Sellers register these records instead of creating a reservation, so they never go through projects, lots, or the reservation flow.
 
+Records usually start from a **CSV import**, which carries no evidence. After importing, sellers edit each record to attach the **evidence** photo (contract, receipt, or payment proof). The uploaded file is the real document — admins review it in the validation queue before validating the record. Evidence is optional for migrations.
+
 Historical records create **no reservation**, block **no lot**, change **no availability**, and do **not** affect the seller's acceptance score. They do create a commission with the real sale date.
 
 ## Where to validate
@@ -43,11 +45,22 @@ The summary cards and the table follow the same seller and search filters.
 | **Sale price** | The price recorded by the seller. |
 | **Rate** | The commission rate stored on the record. |
 | **Commission** | The commission amount stored on the record. |
-| **Evidence** | The attached contract, receipt, or payment proof, when present. |
+| **Evidence** | A **View evidence** action that opens the attached contract, receipt, or payment proof, when present. Records without evidence show —. |
 | **Status** | Pending, validated, or rejected. |
 | **Actions** | Edit, validate, or reject. |
 
 ## Actions
+
+### View evidence
+
+When a row has evidence, the **Evidence** column shows a **View evidence** button. It opens a side panel with the file the seller uploaded:
+
+- Images are shown inline; PDFs open in an embedded viewer.
+- Old records that stored an external link open that link instead.
+- Records without evidence show a **No evidence** empty state.
+- **Download** saves the file as `respaldo-<id>.<extension>`.
+
+Review the evidence here before deciding to **Validate** or **Reject** the record. Sellers can also open their own evidence from the historical client edit page.
 
 ### Edit
 

@@ -27,6 +27,9 @@ vi.mock("../../../api", () => ({
     getHistoricalSale: vi.fn(),
     createHistoricalSale: vi.fn(),
     updateHistoricalSale: vi.fn(),
+    uploadHistoricalEvidence: vi.fn(),
+    fetchHistoricalEvidence: vi.fn(),
+    downloadHistoricalEvidence: vi.fn(),
   },
 }));
 
@@ -105,9 +108,15 @@ beforeEach(() => {
   sellerApi.getHistoricalSale.mockReset();
   sellerApi.createHistoricalSale.mockReset();
   sellerApi.updateHistoricalSale.mockReset();
+  sellerApi.uploadHistoricalEvidence.mockReset();
   sellerApi.getCommissionRules.mockResolvedValue({ default_rate: 5 });
   sellerApi.createHistoricalSale.mockResolvedValue({ id: 91 });
   sellerApi.updateHistoricalSale.mockResolvedValue({ id: 91 });
+  sellerApi.uploadHistoricalEvidence.mockResolvedValue({
+    historical_sale: { id: 91 },
+  });
+  sellerApi.fetchHistoricalEvidence.mockReset();
+  sellerApi.downloadHistoricalEvidence.mockReset();
 });
 
 afterEach(() => {
@@ -293,5 +302,202 @@ describe("historical client form", () => {
         })
       )
     );
+  });
+
+  const evidenceFile = new File(["bytes"], "respaldo.png", {
+    type: "image/png",
+  });
+
+  const attachEvidence = () => {
+    const input = screen.getByLabelText(/Evidence \(optional\)/);
+    Object.defineProperty(input, "files", { value: [evidenceFile] });
+    fireEvent.change(input);
+  };
+
+  it("uploads the attached evidence after creating the record", async () => {
+    renderPage();
+    fillForm();
+    attachEvidence();
+
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() =>
+      expect(sellerApi.createHistoricalSale).toHaveBeenCalledTimes(1)
+    );
+    await waitFor(() =>
+      expect(sellerApi.uploadHistoricalEvidence).toHaveBeenCalledWith(
+        91,
+        evidenceFile
+      )
+    );
+    expect(showToast).toHaveBeenCalledWith(
+      "Historical · pending validation",
+      "success"
+    );
+  });
+
+  it("preserves the uploaded evidence when editing without a new file", async () => {
+    sellerApi.getHistoricalSale.mockResolvedValue({
+      historical_sale: {
+        id: 91,
+        full_name: "Ana Ramos",
+        client_identity: "0801-1990-12345",
+        sale_price: 750000,
+        sale_date: "2023-05-15",
+        rate: 6,
+        commission_amount: 45000,
+        validation_status: "pending",
+        evidence_file: "evidence/2026/11/a3f8.png",
+      },
+    });
+
+    renderEditPage();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Full name/)).toHaveValue("Ana Ramos")
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() =>
+      expect(sellerApi.updateHistoricalSale).toHaveBeenCalledWith(
+        "91",
+        expect.objectContaining({
+          evidence_file: "evidence/2026/11/a3f8.png",
+        })
+      )
+    );
+    expect(sellerApi.uploadHistoricalEvidence).not.toHaveBeenCalled();
+  });
+
+  it("keeps the created record and retries only the upload when it fails", async () => {
+    sellerApi.uploadHistoricalEvidence.mockRejectedValue({
+      message: "Solo se aceptan archivos PDF, JPEG o PNG",
+    });
+
+    renderPage();
+    fillForm();
+    attachEvidence();
+
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(
+      await screen.findByText("Solo se aceptan archivos PDF, JPEG o PNG")
+    ).toBeInTheDocument();
+    expect(showToast).toHaveBeenCalledWith(
+      "Historical · pending validation",
+      "success"
+    );
+    expect(sellerApi.createHistoricalSale).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(sellerApi.uploadHistoricalEvidence).toHaveBeenCalledTimes(2)
+    );
+    expect(sellerApi.createHistoricalSale).toHaveBeenCalledTimes(1);
+  });
+
+  it("stays on the page when the upload fails after an update", async () => {
+    sellerApi.getHistoricalSale.mockResolvedValue({
+      historical_sale: {
+        id: 91,
+        full_name: "Ana Ramos",
+        client_identity: "0801-1990-12345",
+        sale_price: 750000,
+        sale_date: "2023-05-15",
+        rate: 6,
+        commission_amount: 45000,
+        validation_status: "pending",
+      },
+    });
+    sellerApi.uploadHistoricalEvidence.mockRejectedValue({
+      status: 403,
+      message: "forbidden",
+    });
+
+    renderEditPage();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Full name/)).toHaveValue("Ana Ramos")
+    );
+    attachEvidence();
+
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() =>
+      expect(sellerApi.uploadHistoricalEvidence).toHaveBeenCalledWith(
+        "91",
+        evidenceFile
+      )
+    );
+    expect(
+      await screen.findByText(
+        "You do not have permission to upload evidence for this client."
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Edit historical client" })
+    ).toBeInTheDocument();
+  });
+
+  describe("evidence viewer in edit page", () => {
+    const editSaleWithEvidence = {
+      id: 91,
+      full_name: "Ana Ramos",
+      client_identity: "0801-1990-12345",
+      sale_price: 750000,
+      sale_date: "2023-05-15",
+      rate: 6,
+      commission_amount: 45000,
+      validation_status: "pending",
+      evidence_file: "evidence/2026/11/a3f8.png",
+    };
+
+    beforeEach(() => {
+      vi.stubGlobal("URL", {
+        ...URL,
+        createObjectURL: vi.fn(() => "blob:preview"),
+        revokeObjectURL: vi.fn(),
+      });
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    const openEditWithEvidence = async () => {
+      sellerApi.getHistoricalSale.mockResolvedValue({
+        historical_sale: editSaleWithEvidence,
+      });
+      renderEditPage();
+      await waitFor(() =>
+        expect(screen.getByLabelText(/Full name/)).toHaveValue("Ana Ramos")
+      );
+    };
+
+    it("lets the owner view the uploaded evidence", async () => {
+      sellerApi.fetchHistoricalEvidence.mockResolvedValue({
+        kind: "file",
+        url: "blob:preview",
+        contentType: "image/png",
+      });
+
+      await openEditWithEvidence();
+      fireEvent.click(screen.getByRole("button", { name: "View evidence" }));
+
+      const image = await screen.findByRole("img");
+      expect(image).toHaveAttribute("src", "blob:preview");
+    });
+
+    it("shows the error state when the evidence request is rejected", async () => {
+      sellerApi.fetchHistoricalEvidence.mockRejectedValue({
+        status: 403,
+        message: "No autorizado",
+      });
+
+      await openEditWithEvidence();
+      fireEvent.click(screen.getByRole("button", { name: "View evidence" }));
+
+      expect(await screen.findByText("No autorizado")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Retry" })).toBeEnabled();
+    });
   });
 });

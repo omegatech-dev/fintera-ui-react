@@ -11,7 +11,7 @@ vi.mock("@/lib/apiClient", () => ({
 }));
 
 import { apiClient } from "@/lib/apiClient";
-import { sellerApi } from "./api";
+import { evidenceFileName, sellerApi } from "./api";
 
 beforeEach(() => {
   Object.values(apiClient).forEach((mock) => mock.mockReset());
@@ -151,5 +151,116 @@ describe("commission rule endpoints", () => {
     expect(apiClient.delete).toHaveBeenCalledWith(
       "/api/v1/commissions/exceptions/7"
     );
+  });
+});
+
+describe("historical evidence endpoints", () => {
+  const makeResponse = ({
+    status = 200,
+    contentType = "",
+    body = null,
+    blob = null,
+  }) => ({
+    ok: status >= 200 && status < 300,
+    status,
+    headers: { get: () => contentType },
+    json: async () => body,
+    blob: async () => blob,
+  });
+
+  it("uploads evidence as multipart with only the file field", async () => {
+    const file = new File(["bytes"], "respaldo.png", { type: "image/png" });
+    apiClient.post.mockResolvedValue({ historical_sale: { id: 7 } });
+
+    await sellerApi.uploadHistoricalEvidence(7, file);
+
+    const [url, body] = apiClient.post.mock.calls[0];
+    expect(url).toBe("/api/v1/historical_sales/7/evidence");
+    expect(body).toBeInstanceOf(FormData);
+    expect(body.get("file")).toBe(file);
+    expect(body.has("evidence_file")).toBe(false);
+  });
+
+  it("normalizes a stored file response into a blob object URL", async () => {
+    const createObjectURL = vi.fn(() => "blob:respaldo");
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal("URL", { ...URL, createObjectURL, revokeObjectURL });
+    const blob = new Blob(["bytes"], { type: "image/png" });
+    apiClient.get.mockResolvedValue(
+      makeResponse({ contentType: "image/png", blob })
+    );
+
+    const result = await sellerApi.fetchHistoricalEvidence(7);
+
+    expect(apiClient.get).toHaveBeenCalledWith(
+      "/api/v1/historical_sales/7/evidence",
+      { responseType: "response" }
+    );
+    expect(result).toEqual({
+      kind: "file",
+      url: "blob:respaldo",
+      contentType: "image/png",
+    });
+    vi.unstubAllGlobals();
+  });
+
+  it("returns the external URL for legacy evidence", async () => {
+    apiClient.get.mockResolvedValue(
+      makeResponse({
+        contentType: "application/json",
+        body: { evidence_url: "https://cdn.example.com/old.png" },
+      })
+    );
+
+    const result = await sellerApi.fetchHistoricalEvidence(7);
+
+    expect(result).toEqual({
+      kind: "external",
+      url: "https://cdn.example.com/old.png",
+    });
+  });
+
+  it("reports no evidence on 404", async () => {
+    apiClient.get.mockResolvedValue(
+      makeResponse({ status: 404, body: { error: "sin evidencia" } })
+    );
+
+    await expect(sellerApi.fetchHistoricalEvidence(7)).resolves.toEqual({
+      kind: "none",
+    });
+  });
+
+  it("throws the backend error on other failures", async () => {
+    apiClient.get.mockResolvedValue(
+      makeResponse({ status: 403, body: { error: "No autorizado" } })
+    );
+
+    await expect(sellerApi.fetchHistoricalEvidence(7)).rejects.toMatchObject({
+      message: "No autorizado",
+      status: 403,
+    });
+  });
+
+  it("downloads the evidence with the download flag", async () => {
+    const blob = new Blob(["bytes"], { type: "application/pdf" });
+    apiClient.get.mockResolvedValue(blob);
+
+    await expect(sellerApi.downloadHistoricalEvidence(7)).resolves.toBe(blob);
+
+    expect(apiClient.get).toHaveBeenCalledWith(
+      "/api/v1/historical_sales/7/evidence?download=1",
+      { responseType: "blob" }
+    );
+  });
+
+  it("builds the download file name from the path or content type", () => {
+    expect(evidenceFileName(7, "evidence/2026/11/a3f8.png")).toBe(
+      "respaldo-7.png"
+    );
+    expect(evidenceFileName(7, "", "application/pdf")).toBe("respaldo-7.pdf");
+    expect(evidenceFileName(7, "", "image/jpeg;charset=utf-8")).toBe(
+      "respaldo-7.jpg"
+    );
+    expect(evidenceFileName(7, "", "")).toBe("respaldo-7.bin");
   });
 });

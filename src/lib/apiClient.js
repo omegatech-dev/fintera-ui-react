@@ -83,6 +83,12 @@ export async function request(endpoint, { body, ...customConfig } = {}) {
         return Promise.reject({ message: "Unauthorized", status: 401 });
     }
 
+    if (customConfig.responseType === 'response') {
+        // Raw mode: the caller inspects status/headers/body itself (e.g. to
+        // distinguish a binary file from a JSON envelope or a 404).
+        return response;
+    }
+
     if (customConfig.responseType === 'blob') {
         if (response.ok) {
             return response.blob();

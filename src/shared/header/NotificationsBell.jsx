@@ -60,6 +60,15 @@ function NotificationsBell() {
   const [counts, setCounts] = useState({ all: null, unread: 0 });
   const rootRef = useRef(null);
   const retriedRef = useRef(false);
+  const retryTimerRef = useRef(null);
+
+  // Cancel the pending hydration retry if the bell unmounts first.
+  useEffect(
+    () => () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    },
+    []
+  );
 
   const canSeeAssignments = user?.role === "seller";
 
@@ -94,7 +103,10 @@ function NotificationsBell() {
         // cold load; retry once shortly after hydration.
         if (err?.status === 401 && attempt < 1 && !retriedRef.current) {
           retriedRef.current = true;
-          setTimeout(() => load(attempt + 1, false, activeFilter), 700);
+          retryTimerRef.current = setTimeout(
+            () => load(attempt + 1, false, activeFilter),
+            700
+          );
           return;
         }
         if (!silent) setError("notifications.loadError");

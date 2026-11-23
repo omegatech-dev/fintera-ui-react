@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import { LocaleProvider, useLocale } from '../LocaleContext';
 import AuthContext from '../AuthContext';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -44,7 +44,7 @@ describe('LocaleContext', () => {
     cleanup();
   });
 
-  it('provides translations and replaces parameters', () => {
+  it('provides translations and replaces parameters', async () => {
     render(
       <MockAuthProvider user={{ locale: 'en' }}>
         <LocaleProvider>
@@ -53,7 +53,8 @@ describe('LocaleContext', () => {
       </MockAuthProvider>
     );
 
-    expect(screen.getByTestId('simple').textContent).toBe('Save');
+    // en is loaded lazily, so the dictionary resolves a moment after mount.
+    await waitFor(() => expect(screen.getByTestId('simple').textContent).toBe('Save'));
     expect(screen.getByTestId('params').textContent).toBe('Welcome Alice, here you can see your financial summary');
     expect(screen.getByTestId('fallback').textContent).toBe('non.existent.key');
   });
@@ -71,7 +72,7 @@ describe('LocaleContext', () => {
     expect(screen.getByTestId('fallback-template').textContent).toBe('Template {name}');
   });
 
-  it('uses the deployment default locale when the user has not chosen one', () => {
+  it('uses the deployment default locale when the user has not chosen one', async () => {
     render(
       <MockAuthProvider user={null}>
         <LocaleProvider>
@@ -80,7 +81,8 @@ describe('LocaleContext', () => {
       </MockAuthProvider>
     );
 
-    expect(screen.getByTestId('simple').textContent).toBe('Save');
+    // The deployment default here is en, which is loaded lazily.
+    await waitFor(() => expect(screen.getByTestId('simple').textContent).toBe('Save'));
   });
 
   it('keeps an explicit saved locale over the deployment default', () => {

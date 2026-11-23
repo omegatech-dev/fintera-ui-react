@@ -1,6 +1,8 @@
 /* eslint-disable react-refresh/only-export-components -- this context file intentionally exports the LocaleProvider and useLocale hook together. */
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import enTranslations from '../locales/en.json';
+// es is the default locale, so it is bundled statically to avoid a first-paint
+// flash for the majority of users. en is loaded on demand (see ensureLoaded)
+// so its dictionary is only downloaded and held in memory when actually used.
 import esTranslations from '../locales/es.json';
 import AuthContext from './AuthContext';
 import { useGeneralSettings } from './generalSettings';
@@ -16,9 +18,30 @@ const SUPPORTED_LOCALES = {
   es: 'Español'
 };
 
-const translations = {
-  en: enTranslations,
-  es: esTranslations
+// Loaded dictionaries, keyed by locale. Only the default (es) is present at
+// module load; others are added once their chunk resolves.
+const translations = { es: esTranslations };
+
+// Module-level cache of the in-flight/settled dictionary promise per locale so
+// the request is issued at most once (including across provider remounts).
+const loading = {};
+
+const ensureLoaded = (locale) => {
+  if (translations[locale]) return Promise.resolve(translations[locale]);
+  if (!loading[locale]) {
+    loading[locale] = import(`../locales/${locale}.json`)
+      .then((mod) => {
+        translations[locale] = mod.default ?? mod;
+        return translations[locale];
+      })
+      .catch(() => {
+        // A failed dictionary load must not reject the caller; fall back to
+        // key-based lookups (the same as an unset locale) and allow a retry.
+        delete loading[locale];
+        return null;
+      });
+  }
+  return loading[locale];
 };
 
 // Utility functions
@@ -68,12 +91,14 @@ export const useLocale = () => {
 export const LocaleProvider = ({ children }) => {
   const { settings: generalSettings } = useGeneralSettings();
   const regionalDefault = generalSettings?.default_locale;
-  // Initialize from localStorage directly to avoid flicker
+  // Initialize from localStorage directly to avoid flicker. Gate on the
+  // supported set (not the loaded dictionary) so a lazy locale such as "en" is
+  // honored immediately even though its chunk is still on its way.
   const [locale, setLocale] = useState(() => {
     try {
       const savedLocale = localStorage.getItem(STORAGE_KEY);
-      if (savedLocale && translations[savedLocale]) return savedLocale;
-      if (regionalDefault && translations[regionalDefault]) return regionalDefault;
+      if (savedLocale && SUPPORTED_LOCALES[savedLocale]) return savedLocale;
+      if (regionalDefault && SUPPORTED_LOCALES[regionalDefault]) return regionalDefault;
       return DEFAULT_LOCALE;
     } catch {
       return DEFAULT_LOCALE;
@@ -83,11 +108,26 @@ export const LocaleProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
   const userSelectedRef = useRef(false);
 
+  // Bumped each time a lazily-loaded dictionary finishes, so `t` (and the
+  // context value) change identity and consumers re-render with real text
+  // instead of the key they were shown while the dictionary was loading.
+  const [dictVersion, setDictVersion] = useState(0);
+  useEffect(() => {
+    if (translations[locale]) return undefined;
+    let active = true;
+    ensureLoaded(locale).then((dict) => {
+      if (active && dict) setDictVersion((version) => version + 1);
+    });
+    return () => {
+      active = false;
+    };
+  }, [locale]);
+
   // Follow the deployment default only when the user has not chosen a locale.
   useEffect(() => {
     try {
       const savedLocale = localStorage.getItem(STORAGE_KEY);
-      if (!savedLocale && regionalDefault && translations[regionalDefault] && regionalDefault !== locale) {
+      if (!savedLocale && regionalDefault && SUPPORTED_LOCALES[regionalDefault] && regionalDefault !== locale) {
         setLocale(regionalDefault);
       }
     } catch {
@@ -102,7 +142,7 @@ export const LocaleProvider = ({ children }) => {
   // unrelated user-object mutation.
   const userLocale = user?.locale;
   useEffect(() => {
-    if (userLocale && translations[userLocale] && userLocale !== locale) {
+    if (userLocale && SUPPORTED_LOCALES[userLocale] && userLocale !== locale) {
       userSelectedRef.current = true;
       setLocale(userLocale);
     }
@@ -137,6 +177,13 @@ export const LocaleProvider = ({ children }) => {
       value = getNestedValue(translations[FALLBACK_LOCALE], keys);
     }
 
+    // While a lazily-loaded dictionary is still in flight, lookups miss for a
+    // different reason than a truly absent key: return the key quietly instead
+    // of flooding the console. Consumers re-render once the dictionary loads.
+    if (!isValidTranslation(value) && !translations[locale]) {
+      return key;
+    }
+
     // If still not found, return the key with a warning
     if (!isValidTranslation(value)) {
       console.warn(`Translation key "${key}" not found for locale "${locale}"`);
@@ -145,7 +192,7 @@ export const LocaleProvider = ({ children }) => {
 
     // Replace parameters in the translation string
     return Object.keys(params).length > 0 ? replaceParams(value, params) : value;
-  }, [locale]);
+  }, [locale, dictVersion]);
 
   const changeLocale = useCallback((newLocale) => {
     if (SUPPORTED_LOCALES[newLocale]) {

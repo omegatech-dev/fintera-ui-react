@@ -9,15 +9,21 @@ const FUSE_OPTIONS = {
 };
 
 export function useDocsSearch(sections, query) {
+  // Build the flat article list and the Fuse index only when the source
+  // sections change. Rebuilding it on every keystroke (the previous behavior,
+  // because `query` was a dependency) re-indexes every article body per key.
+  const { articles, fuse } = useMemo(() => {
+    const flat = sections.flatMap((section) => section.articles);
+    return { articles: flat, fuse: new Fuse(flat, FUSE_OPTIONS) };
+  }, [sections]);
+
   return useMemo(() => {
-    const articles = sections.flatMap((section) => section.articles);
     const trimmed = query.trim();
 
     if (!trimmed) {
       return { filteredSections: sections, matchCount: articles.length };
     }
 
-    const fuse = new Fuse(articles, FUSE_OPTIONS);
     const matches = fuse.search(trimmed).map((result) => result.item);
     const matchedSlugs = new Set(matches.map((article) => article.slug));
 
@@ -29,5 +35,5 @@ export function useDocsSearch(sections, query) {
       .filter((section) => section.articles.length > 0);
 
     return { filteredSections, matchCount: matches.length };
-  }, [sections, query]);
+  }, [sections, articles, fuse, query]);
 }

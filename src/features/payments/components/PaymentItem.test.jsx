@@ -1,4 +1,4 @@
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 import PaymentItem, { PaymentDetailModal } from "./PaymentItem";
@@ -154,5 +154,59 @@ describe("PaymentItem receipt metadata", () => {
     expect(
       screen.queryByText(translations["payments.payerAccount"])
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("PaymentItem receipt blob lifecycle", () => {
+  let createSpy;
+  let revokeSpy;
+
+  afterEach(() => {
+    cleanup();
+    createSpy?.mockRestore();
+    revokeSpy?.mockRestore();
+  });
+
+  function mockObjectUrls() {
+    createSpy = vi.fn(() => "blob:receipt-url");
+    revokeSpy = vi.fn();
+    window.URL.createObjectURL = createSpy;
+    window.URL.revokeObjectURL = revokeSpy;
+  }
+
+  it("revokes the receipt preview URL when the detail modal unmounts", async () => {
+    mockObjectUrls();
+    const withReceipt = { ...basePayment, status: "paid", has_receipt: true };
+
+    const { unmount } = render(
+      <PaymentDetailModal payment={withReceipt} onClose={vi.fn()} />
+    );
+
+    await waitFor(() => expect(createSpy).toHaveBeenCalled());
+    expect(revokeSpy).not.toHaveBeenCalled();
+
+    unmount();
+    expect(revokeSpy).toHaveBeenCalledWith("blob:receipt-url");
+  });
+
+  it("revokes the selected-file preview URL when the approval modal unmounts", async () => {
+    mockObjectUrls();
+
+    render(
+      <PaymentItem
+        paymentInfo={{ ...basePayment, contract: { status: "approved" } }}
+        userRole="admin"
+        refreshPayments={vi.fn()}
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: /aprobar/i }));
+
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = new File(["x"], "receipt.png", { type: "image/png" });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => expect(createSpy).toHaveBeenCalled());
+    cleanup();
+    expect(revokeSpy).toHaveBeenCalledWith("blob:receipt-url");
   });
 });

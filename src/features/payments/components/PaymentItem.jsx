@@ -97,16 +97,23 @@ function ReceiptPreview({ paymentId, hasReceipt }) {
   useEffect(() => {
     if (!hasReceipt) return undefined;
     let active = true;
+    let url = null;
     paymentsApi
       .downloadReceipt(paymentId)
       .then((blob) => {
-        if (active) setReceiptUrl(URL.createObjectURL(blob));
+        url = URL.createObjectURL(blob);
+        if (active) {
+          setReceiptUrl(url);
+        } else {
+          URL.revokeObjectURL(url);
+        }
       })
       .catch(() => {
         if (active) setFailed(true);
       });
     return () => {
       active = false;
+      if (url) URL.revokeObjectURL(url);
     };
   }, [hasReceipt, paymentId]);
 
@@ -178,6 +185,17 @@ function PaymentItem({
   const [approvalResult, setApprovalResult] = useState(null);
   const [rejectResult, setRejectResult] = useState(null);
 
+  // Track deferred refresh/close timers so they are cancelled if the item
+  // unmounts before they fire (e.g. the list refreshes after an approval).
+  const pendingTimers = useRef([]);
+  useEffect(
+    () => () => {
+      pendingTimers.current.forEach(clearTimeout);
+      pendingTimers.current = [];
+    },
+    []
+  );
+
   const meta = getPaymentMeta(paymentInfo, t);
 
   const handleApprove = async (fileToUpload = null) => {
@@ -207,11 +225,13 @@ function PaymentItem({
           type: "success",
           message: t("payments.approveSuccess"),
         });
-        setTimeout(() => {
-          if (typeof refreshPayments === "function") refreshPayments();
-          setShowApproveModal(false);
-          setApprovalResult(null);
-        }, 1500);
+        pendingTimers.current.push(
+          setTimeout(() => {
+            if (typeof refreshPayments === "function") refreshPayments();
+            setShowApproveModal(false);
+            setApprovalResult(null);
+          }, 1500)
+        );
       }
     } catch (err) {
       setApprovalResult({
@@ -234,11 +254,13 @@ function PaymentItem({
           type: "success",
           message: t("payments.rejectSuccess"),
         });
-        setTimeout(() => {
-          if (typeof refreshPayments === "function") refreshPayments();
-          setShowRejectModal(false);
-          setRejectResult(null);
-        }, 1500);
+        pendingTimers.current.push(
+          setTimeout(() => {
+            if (typeof refreshPayments === "function") refreshPayments();
+            setShowRejectModal(false);
+            setRejectResult(null);
+          }, 1500)
+        );
       }
     } catch (err) {
       setRejectResult({
@@ -437,16 +459,31 @@ function ApproveModal({
   useEffect(() => {
     if (!hasReceipt) return undefined;
     let active = true;
+    let url = null;
     paymentsApi
       .downloadReceipt(paymentInfo.id)
       .then((blob) => {
-        if (active) setReceiptUrl(URL.createObjectURL(blob));
+        url = URL.createObjectURL(blob);
+        if (active) {
+          setReceiptUrl(url);
+        } else {
+          URL.revokeObjectURL(url);
+        }
       })
       .catch(() => {});
     return () => {
       active = false;
+      if (url) URL.revokeObjectURL(url);
     };
   }, [hasReceipt, paymentInfo.id]);
+
+  // The selected-file preview is a blob URL too: revoke it whenever it is
+  // replaced or the modal unmounts so the image/PDF is not pinned in memory.
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const onFileChange = (event) => {
     const file = event.target.files[0];

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { paymentsApi } from "../../../payments/api";
 import { useLocale } from "../../../../contexts/LocaleContext";
 
@@ -12,6 +12,15 @@ function Upload() {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const navigateTimerRef = useRef(null);
+
+  // Cancel the post-success redirect if the view unmounts first.
+  useEffect(
+    () => () => {
+      if (navigateTimerRef.current) clearTimeout(navigateTimerRef.current);
+    },
+    []
+  );
 
   const handleFileChange = (e) => {
     setReceiptFile(e.target.files[0]);
@@ -36,7 +45,7 @@ function Upload() {
 
       if (data) {
         setSuccess(data.message || t('payments.paymentSuccessful'));
-        setTimeout(() => navigate(-1), 2000);
+        navigateTimerRef.current = setTimeout(() => navigate(-1), 2000);
       } else {
         setError(t('payments.uploadError'));
       }

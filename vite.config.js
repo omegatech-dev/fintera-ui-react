@@ -16,6 +16,12 @@ const pwaConfig = {
       {
         urlPattern: /\.(png|jpg|gif|svg)$/,
         handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "image-cache",
+          // Bound the Cache Storage footprint; without this the image cache
+          // grows forever across visits.
+          expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+        },
       },
       // Cache GET API responses briefly to reduce Railway egress on repeat visits
       {

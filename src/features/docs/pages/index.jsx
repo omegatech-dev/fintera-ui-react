@@ -12,7 +12,7 @@ function Documentation() {
   const { user } = useContext(AuthContext);
   const { locale, t } = useLocale();
   const { slug } = useParams();
-  const { articles, sections } = useDocs(locale, user?.role);
+  const { articles, sections, ready } = useDocs(locale, user?.role);
   const [query, setQuery] = useState("");
   const contentRef = useRef(null);
   const { filteredSections, matchCount } = useDocsSearch(sections, query);
@@ -25,6 +25,20 @@ function Documentation() {
   const section = article
     ? sections.find((entry) => entry.id === article.section)
     : null;
+
+  // Wait for the article bodies to load before rendering so the sidebar, body
+  // and table of contents all appear together (avoids an empty-content flash).
+  if (!ready) {
+    return (
+      <main className="w-full px-6 pb-6 page-shell xl:px-[48px] xl:pb-[48px]">
+        <div className="mx-auto w-full max-w-[1600px]">
+          <p className="rounded-card border border-line bg-surface p-8 text-body text-ink-3">
+            {t("common.loading")}
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   if (articles.length === 0) {
     return (

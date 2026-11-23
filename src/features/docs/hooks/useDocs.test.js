@@ -1,10 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { canReadArticle, normalizeRole, useDocs } from "./useDocs";
 
+// Markdown bodies now load asynchronously from the active locale's chunk, so
+// hook tests wait until the dictionary is ready before asserting on bodies.
+async function renderDocs(locale, role) {
+  const view = renderHook(() => useDocs(locale, role));
+  await waitFor(() => expect(view.result.current.ready).toBe(true));
+  return view;
+}
+
 describe("useDocs", () => {
-  it("hides admin-only articles from sellers", () => {
-    const { result } = renderHook(() => useDocs("en", "seller"));
+  it("hides admin-only articles from sellers", async () => {
+    const { result } = await renderDocs("en", "seller");
     const slugs = result.current.articles.map((article) => article.slug);
 
     expect(slugs).toContain("payment-schedule");
@@ -14,9 +22,9 @@ describe("useDocs", () => {
     expect(slugs).not.toContain("managing-projects");
   });
 
-  it("serves the seller-specific overview to sellers and the shared one to admins", () => {
-    const seller = renderHook(() => useDocs("en", "seller"));
-    const admin = renderHook(() => useDocs("en", "admin"));
+  it("serves the seller-specific overview to sellers and the shared one to admins", async () => {
+    const seller = await renderDocs("en", "seller");
+    const admin = await renderDocs("en", "admin");
 
     const sellerOverview = seller.result.current.articles.find(
       (article) => article.slug === "overview-and-roles",
@@ -31,8 +39,8 @@ describe("useDocs", () => {
     expect(adminOverview.body).toContain("## Seller workspace");
   });
 
-  it("localizes the seller-specific overview", () => {
-    const { result } = renderHook(() => useDocs("es", "seller"));
+  it("localizes the seller-specific overview", async () => {
+    const { result } = await renderDocs("es", "seller");
     const overview = result.current.articles.find(
       (article) => article.slug === "overview-and-roles",
     );
@@ -41,8 +49,8 @@ describe("useDocs", () => {
     expect(overview.body).not.toContain("## Menú del administrador");
   });
 
-  it("shows every article to admins", () => {
-    const { result } = renderHook(() => useDocs("en", "admin"));
+  it("shows every article to admins", async () => {
+    const { result } = await renderDocs("en", "admin");
     const slugs = result.current.articles.map((article) => article.slug);
 
     expect(slugs).toContain("settings-and-branding");
@@ -50,8 +58,8 @@ describe("useDocs", () => {
     expect(slugs).toContain("approving-payments");
   });
 
-  it("drops sections that have no visible articles", () => {
-    const { result } = renderHook(() => useDocs("en", "seller"));
+  it("drops sections that have no visible articles", async () => {
+    const { result } = await renderDocs("en", "seller");
     const administration = result.current.sections.find(
       (section) => section.id === "administration",
     );
@@ -63,8 +71,8 @@ describe("useDocs", () => {
     ]);
   });
 
-  it("shows the seller workspace articles to sellers", () => {
-    const { result } = renderHook(() => useDocs("en", "seller"));
+  it("shows the seller workspace articles to sellers", async () => {
+    const { result } = await renderDocs("en", "seller");
     const slugs = result.current.articles.map((article) => article.slug);
 
     expect(slugs).toEqual(
@@ -79,17 +87,17 @@ describe("useDocs", () => {
     expect(slugs).not.toContain("audits");
   });
 
-  it("loads localized titles and bodies", () => {
-    const { result } = renderHook(() => useDocs("es", "admin"));
+  it("loads localized titles and bodies", async () => {
+    const { result } = await renderDocs("es", "admin");
     const article = result.current.articles.find((entry) => entry.slug === "overdue-interest");
 
     expect(article.title).toBe("Interés por mora");
     expect(article.body).toContain("La fórmula");
   });
 
-  it("includes the keyboard shortcuts article for staff roles", () => {
-    const admin = renderHook(() => useDocs("en", "admin"));
-    const seller = renderHook(() => useDocs("es", "seller"));
+  it("includes the keyboard shortcuts article for staff roles", async () => {
+    const admin = await renderDocs("en", "admin");
+    const seller = await renderDocs("es", "seller");
 
     expect(admin.result.current.articles.map((article) => article.slug)).toContain(
       "keyboard-shortcuts",

@@ -15,6 +15,7 @@ import {
   Select,
 } from "@/shared/ui";
 import { sellerApi } from "../../../api";
+import HistoricalEvidenceViewer from "@/features/commissions/components/HistoricalEvidenceViewer";
 import { downloadHistoricalTemplate } from "../../../utils/historicalCsv";
 
 const MAX_EVIDENCE_BYTES = 10 * 1024 * 1024;
@@ -74,6 +75,9 @@ function HistoricalClientPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(false);
+  // Id of a record that was created but whose evidence upload failed; a
+  // retry must upload against this record instead of creating a duplicate.
+  const [pendingEvidenceSaleId, setPendingEvidenceSaleId] = useState(null);
 
   const locked =
     isEdit && record && record.validation_status !== "pending" && !isAdmin;
@@ -321,19 +325,79 @@ function HistoricalClientPage() {
       rate: effectiveRate,
       amount: Number.isFinite(amount) ? amount : fallbackAmount,
       commission_status: form.commission_status,
-      evidence_file: evidence?.name || existingEvidence || null,
       is_historical: true,
     };
+    // New files are uploaded to the evidence endpoint after the save, which
+    // persists the real storage path by itself. When editing without a new
+    // file, send the current path back so the stored evidence survives until
+    // the backend preserves it on its own.
+    if (isEdit && !evidence) {
+      payload.evidence_file = existingEvidence || null;
+    }
 
     setSaving(true);
     try {
+      let targetId = id;
       if (isEdit) {
         await sellerApi.updateHistoricalSale(id, payload);
+      } else if (pendingEvidenceSaleId) {
+        targetId = pendingEvidenceSaleId;
+      } else {
+        const data = await sellerApi.createHistoricalSale(payload);
+        targetId = data?.historical_sale?.id ?? data?.id;
+      }
+
+      if (!evidence) {
+        if (pendingEvidenceSaleId) {
+          setPendingEvidenceSaleId(null);
+          setSaved(true);
+          showToast(t("historical.savedPending"), "success");
+          return;
+        }
+        if (isEdit) {
+          showToast(t("historical.updated"), "success");
+          navigate(location.state?.from || "/vendedor/clientes");
+          return;
+        }
+        setForm({ ...emptyForm(), commission_rate: String(rulesRate) });
+        rateTouched.current = false;
+        setSaved(true);
+        showToast(t("historical.savedPending"), "success");
+        return;
+      }
+
+      if (!targetId) {
+        throw new Error(t("historical.evidenceUploadFailed"));
+      }
+
+      try {
+        await sellerApi.uploadHistoricalEvidence(targetId, evidence);
+      } catch (uploadErr) {
+        setError(
+          uploadErr?.status === 403
+            ? t("historical.evidenceForbidden")
+            : uploadErr?.message || t("historical.evidenceUploadFailed")
+        );
+        if (isEdit) {
+          showToast(t("historical.updated"), "success");
+        } else {
+          setPendingEvidenceSaleId(targetId);
+          setSaved(true);
+          showToast(t("historical.savedPending"), "success");
+        }
+        // Keep the page open with the file still selected so the user can
+        // retry the upload without recreating the record.
+        return;
+      }
+
+      if (isEdit) {
+        setEvidence(null);
+        setExistingEvidence("");
         showToast(t("historical.updated"), "success");
         navigate(location.state?.from || "/vendedor/clientes");
         return;
       }
-      await sellerApi.createHistoricalSale(payload);
+      setPendingEvidenceSaleId(null);
       setForm({ ...emptyForm(), commission_rate: String(rulesRate) });
       setEvidence(null);
       rateTouched.current = false;
@@ -671,6 +735,12 @@ function HistoricalClientPage() {
                   onChange={handleEvidence}
                   hint={t("historical.evidenceDropHint")}
                 />
+                {isEdit && existingEvidence && (
+                  <HistoricalEvidenceViewer
+                    saleId={id}
+                    evidencePath={existingEvidence}
+                  />
+                )}
               </section>
 
               <Banner tone="neutral">{t("historical.formNote")}</Banner>

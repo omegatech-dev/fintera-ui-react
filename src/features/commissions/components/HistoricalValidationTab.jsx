@@ -17,6 +17,7 @@ import {
 } from "@/shared/ui";
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import { sellerApi } from "@/features/seller/api";
+import HistoricalEvidenceViewer from "./HistoricalEvidenceViewer";
 import { normalizeSellers } from "./rulesUtils";
 
 const PAGE_SIZE = 20;
@@ -302,9 +303,10 @@ function HistoricalValidationTab({ onPendingChange }) {
       header: t("historical.validationQueue.evidence"),
       render: (row) =>
         row.evidence_file ? (
-          <span className="text-micro font-semibold text-ink-3">
-            {row.evidence_file}
-          </span>
+          <HistoricalEvidenceViewer
+            saleId={row.id}
+            evidencePath={row.evidence_file}
+          />
         ) : (
           <span className="text-ink-3">
             {t("historical.validationQueue.noEvidence")}
@@ -498,11 +500,14 @@ function HistoricalValidationTab({ onPendingChange }) {
                         {formatRate(rateOf(row))} ·{" "}
                         {money(row.commission_amount)}
                       </span>
-                      {row.evidence_file && (
-                        <span className="truncate">{row.evidence_file}</span>
-                      )}
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1.5">
+                      {row.evidence_file && (
+                        <HistoricalEvidenceViewer
+                          saleId={row.id}
+                          evidencePath={row.evidence_file}
+                        />
+                      )}
                       <Button
                         size="sm"
                         variant="secondary"

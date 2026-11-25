@@ -27,6 +27,8 @@ vi.mock("@/features/seller/api", () => ({
     listSellers: vi.fn(),
     validateHistoricalSale: vi.fn(),
     rejectHistoricalSale: vi.fn(),
+    fetchHistoricalEvidence: vi.fn(),
+    downloadHistoricalEvidence: vi.fn(),
   },
 }));
 
@@ -97,13 +99,57 @@ describe("HistoricalValidationTab", () => {
     expect(
       screen.getAllByText("Pending validation").length
     ).toBeGreaterThan(0);
-    expect(screen.getAllByText("contrato.pdf").length).toBeGreaterThan(0);
+    expect(screen.queryAllByText("contrato.pdf")).toHaveLength(0);
+    expect(
+      screen.getAllByRole("button", { name: "View evidence" }).length
+    ).toBeGreaterThan(0);
     expect(screen.getAllByRole("button", { name: "Edit" }).length).toBeGreaterThan(0);
     expect(
       screen.getAllByRole("button", { name: "Validate" }).length
     ).toBeGreaterThan(0);
     expect(
       screen.getAllByRole("button", { name: "Reject" }).length
+    ).toBeGreaterThan(0);
+  });
+
+  it("opens the evidence viewer for rows with evidence", async () => {
+    render(
+      <MemoryRouter>
+        <HistoricalValidationTab />
+      </MemoryRouter>
+    );
+
+    await screen.findAllByText("María López");
+    fireEvent.click(screen.getAllByRole("button", { name: "View evidence" })[0]);
+
+    expect(
+      await screen.findByRole("dialog", { name: "Client evidence" })
+    ).toBeInTheDocument();
+  });
+
+  it("shows the no-evidence state for rows without evidence", async () => {
+    sellerApi.listHistoricalSales.mockImplementation(({ per_page }) => {
+      if (per_page === 1) {
+        return Promise.resolve({ pagination: { total: 1 } });
+      }
+      return Promise.resolve({
+        historical_sales: [
+          { ...pendingSale, evidence_file: null },
+        ],
+        pagination: { page: 1, per_page: 20, total: 1, total_pages: 1 },
+      });
+    });
+
+    render(
+      <MemoryRouter>
+        <HistoricalValidationTab />
+      </MemoryRouter>
+    );
+
+    await screen.findAllByText("María López");
+    expect(screen.queryByRole("button", { name: "View evidence" })).toBeNull();
+    expect(
+      screen.getAllByText("—").length
     ).toBeGreaterThan(0);
   });
 

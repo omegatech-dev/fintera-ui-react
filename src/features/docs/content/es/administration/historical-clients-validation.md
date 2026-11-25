@@ -2,6 +2,8 @@
 
 Un **cliente histórico** es un cliente y una venta anteriores a que el equipo empezara a usar Fintera. Los vendedores registran estos datos en lugar de crear una reserva, así que no pasan por proyectos, lotes ni el flujo de reservas.
 
+Los registros normalmente empiezan con una **importación CSV**, que no trae respaldo. Después de importar, el vendedor edita cada registro para adjuntar la **foto de respaldo** (contrato, recibo o comprobante de pago). El archivo subido es el documento real: el administrador lo revisa en la cola de validación antes de validar el registro. El respaldo es opcional para migraciones.
+
 Los registros históricos **no crean reserva**, **no bloquean lote**, **no cambian la disponibilidad** y **no afectan el score de aceptación** del vendedor. Sí crean una comisión con la fecha real de la venta.
 
 ## Dónde validar
@@ -43,11 +45,22 @@ Las tarjetas de resumen y la tabla respetan los mismos filtros de vendedor y bú
 | **Precio** | El precio registrado por el vendedor. |
 | **Tasa** | La tasa de comisión guardada en el registro. |
 | **Comisión** | El monto de comisión guardado en el registro. |
-| **Respaldo** | El contrato, recibo o comprobante adjunto, cuando existe. |
+| **Respaldo** | Una acción **Ver respaldo** que abre el contrato, recibo o comprobante adjunto, cuando existe. Los registros sin respaldo muestran —. |
 | **Estado** | Pendiente, validado o rechazado. |
 | **Acciones** | Editar, validar o rechazar. |
 
 ## Acciones
+
+### Ver respaldo
+
+Cuando un registro tiene respaldo, la columna **Respaldo** muestra el botón **Ver respaldo**. Abre un panel lateral con el archivo que subió el vendedor:
+
+- Las imágenes se muestran en línea; los PDF se abren en un visor integrado.
+- Los registros antiguos con enlace externo abren ese enlace.
+- Los registros sin respaldo muestran un estado vacío **Sin respaldo**.
+- **Descargar** guarda el archivo como `respaldo-<id>.<extensión>`.
+
+Revisa el respaldo aquí antes de decidir **Validar** o **Rechazar** el registro. El vendedor dueño también puede abrir su respaldo desde la edición del cliente histórico.
 
 ### Editar
 

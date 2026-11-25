@@ -143,6 +143,15 @@ function Reserve() {
     formData.append("user[rtn]", payload.user.rtn);
     formData.append("user[email]", payload.user.email);
 
+    // The typed identity fields file the uploads as the applicant's DNI and
+    // RTN; documents[N] stays free-form. Empty slots are filled, documents
+    // already on file are kept and reported as already_present.
+    if (payload.dniDocument) {
+      formData.append("identity_document", payload.dniDocument);
+    }
+    if (payload.rtnDocument) {
+      formData.append("rtn_document", payload.rtnDocument);
+    }
     payload.documents.forEach((doc, index) => {
       formData.append(`documents[${index}]`, doc);
     });

@@ -11,6 +11,7 @@ import { BrandingProvider } from './contexts/BrandingContext.jsx';
 import { GeneralSettingsProvider } from './contexts/GeneralSettingsContext.jsx';
 import { ConfirmProvider } from './shared/ui/ConfirmProvider';
 import { buildRollbarConfig } from './lib/rollbarConfig';
+import { createNoopRollbar } from './lib/noopRollbar';
 import { registerSW } from "virtual:pwa-register";
 
 if (import.meta.env.MODE === "production") {
@@ -18,9 +19,11 @@ if (import.meta.env.MODE === "production") {
 }
 
 // Initialize Rollbar only when an access token is provided to avoid noisy errors in
-// non-production or local environments.
+// non-production or local environments. The provider stays mounted with an
+// inert stub in that case: useRollbar throws without a provider and would
+// crash the whole tree on boot.
 const rollbarConfig = buildRollbarConfig();
-const rollbar = rollbarConfig ? new Rollbar(rollbarConfig) : null;
+const rollbar = rollbarConfig ? new Rollbar(rollbarConfig) : createNoopRollbar();
 
 const appTree = (
   <BrandingProvider>
@@ -36,12 +39,8 @@ const appTree = (
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    {rollbar ? (
-      <RollbarProvider instance={rollbar}>
-        <ErrorBoundary>{appTree}</ErrorBoundary>
-      </RollbarProvider>
-    ) : (
-      appTree
-    )}
+    <RollbarProvider instance={rollbar}>
+      <ErrorBoundary>{appTree}</ErrorBoundary>
+    </RollbarProvider>
   </React.StrictMode>
 );

@@ -10,6 +10,7 @@ import { useToast } from "@/contexts/ToastContext";
 import { Card } from "@/shared/ui";
 
 import { contractsApi } from "../../../api";
+import IdentityDocumentsPanel from "./IdentityDocumentsPanel";
 
 const DocumentsTab = ({ contract }) => {
   const { t } = useLocale();
@@ -64,10 +65,13 @@ const DocumentsTab = ({ contract }) => {
   );
 
   return (
-    <Card title={t("contracts.documents")} bodyClassName="px-5 pb-5 pt-3">
-      <p className="text-label text-ink-3">
-        {t("contracts.availableDocuments") || t("contracts.documentsCard")}
-      </p>
+    <div className="space-y-3.5">
+      <IdentityDocumentsPanel contract={contract} />
+
+      <Card title={t("contracts.documents")} bodyClassName="px-5 pb-5 pt-3">
+        <p className="text-label text-ink-3">
+          {t("contracts.availableDocuments") || t("contracts.documentsCard")}
+        </p>
 
       <div className="mt-3 space-y-2">
         <button
@@ -181,6 +185,7 @@ const DocumentsTab = ({ contract }) => {
         </button>
       </div>
     </Card>
+    </div>
   );
 };
 

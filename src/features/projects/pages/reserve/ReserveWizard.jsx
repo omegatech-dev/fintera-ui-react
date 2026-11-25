@@ -73,6 +73,10 @@ function ReserveWizard({
   const [maxPaymentDate, setMaxPaymentDate] = useState("");
   const [note, setNote] = useState("");
   const [documents, setDocuments] = useState([]);
+  // Identity documents of the applicant, typed so the API files them as the
+  // person's DNI and RTN instead of free-form contract attachments.
+  const [dniDocument, setDniDocument] = useState(null);
+  const [rtnDocument, setRtnDocument] = useState(null);
 
   const [errors, setErrors] = useState({});
 
@@ -230,10 +234,27 @@ function ReserveWizard({
     setIdentity("");
     setRtn("");
     setEmail("");
+    // The typed identity files belong to the applicant that was cleared.
+    setDniDocument(null);
+    setRtnDocument(null);
   };
 
   const handleFileChange = (e) => {
     setDocuments([...e.target.files]);
+  };
+
+  const IDENTITY_ACCEPT = "application/pdf,image/jpeg,image/png,image/webp,image/heic,image/heif";
+
+  const handleIdentityFileChange = (e) => {
+    const [file] = e.target.files || [];
+    if (file) setDniDocument(file);
+    e.target.value = "";
+  };
+
+  const handleRtnFileChange = (e) => {
+    const [file] = e.target.files || [];
+    if (file) setRtnDocument(file);
+    e.target.value = "";
   };
 
   const removeDocument = (index) => {
@@ -389,6 +410,8 @@ function ReserveWizard({
       assignmentOrigin: isSeller || manualSeller ? "manual" : "automatic",
       sellerId: assignedSellerId || "",
       documents,
+      dniDocument,
+      rtnDocument,
     });
   };
 
@@ -865,6 +888,66 @@ function ReserveWizard({
                     </p>
                   </div>
                 </div>
+
+                <Field label={t("reservations.identityDocuments.dni")}>
+                  <label className="group cursor-pointer">
+                    <input
+                      type="file"
+                      accept={IDENTITY_ACCEPT}
+                      onChange={handleIdentityFileChange}
+                      className="hidden"
+                    />
+                    <div className="flex flex-col items-center justify-center gap-2 rounded-control border border-dashed border-line-strong bg-surface-2 px-6 py-6 transition-colors group-hover:border-brand">
+                      <span className="text-body font-semibold text-ink-2">
+                        {dniDocument?.name || t("reservations.identityDocuments.uploadDni")}
+                      </span>
+                      {dniDocument && (
+                        <span className="text-micro text-ink-3">
+                          {formatBytes(dniDocument.size)}
+                        </span>
+                      )}
+                    </div>
+                  </label>
+                  {dniDocument && (
+                    <button
+                      type="button"
+                      onClick={() => setDniDocument(null)}
+                      className="mt-1 text-micro text-ink-3 underline hover:text-danger"
+                    >
+                      {t("common.remove")}
+                    </button>
+                  )}
+                </Field>
+
+                <Field label={t("reservations.identityDocuments.rtn")}>
+                  <label className="group cursor-pointer">
+                    <input
+                      type="file"
+                      accept={IDENTITY_ACCEPT}
+                      onChange={handleRtnFileChange}
+                      className="hidden"
+                    />
+                    <div className="flex flex-col items-center justify-center gap-2 rounded-control border border-dashed border-line-strong bg-surface-2 px-6 py-6 transition-colors group-hover:border-brand">
+                      <span className="text-body font-semibold text-ink-2">
+                        {rtnDocument?.name || t("reservations.identityDocuments.uploadRtn")}
+                      </span>
+                      {rtnDocument && (
+                        <span className="text-micro text-ink-3">
+                          {formatBytes(rtnDocument.size)}
+                        </span>
+                      )}
+                    </div>
+                  </label>
+                  {rtnDocument && (
+                    <button
+                      type="button"
+                      onClick={() => setRtnDocument(null)}
+                      className="mt-1 text-micro text-ink-3 underline hover:text-danger"
+                    >
+                      {t("common.remove")}
+                    </button>
+                  )}
+                </Field>
 
                 <Field label={t("reservations.documents")}>
                   <label className="group cursor-pointer">

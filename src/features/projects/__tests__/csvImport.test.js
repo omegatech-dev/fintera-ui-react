@@ -7,6 +7,7 @@ import {
   detectCsvDelimiter,
   isCsvFile,
   normalizeCsvFile,
+  normalizeDeliveryDate,
   normalizeHeader,
   parseCsvRows,
   readCsvText,
@@ -137,6 +138,54 @@ describe("csvImport", () => {
     expect(analysis.rowIssues[1].issues.map(({ code }) => code)).toEqual([
       "required",
     ]);
+  });
+
+  it("normalizes delivery dates in every accepted format", () => {
+    expect(normalizeDeliveryDate("2027-06-30")).toBe("2027-06-30");
+    expect(normalizeDeliveryDate("30/06/2027")).toBe("2027-06-30");
+    expect(normalizeDeliveryDate("6/30/2027")).toBe("2027-06-30");
+    expect(normalizeDeliveryDate("05/06/2027")).toBe("2027-06-05");
+    expect(normalizeDeliveryDate("30-06-2027")).toBe("2027-06-30");
+    expect(normalizeDeliveryDate("2027/06/30")).toBe("2027-06-30");
+  });
+
+  it("rejects invalid delivery dates", () => {
+    expect(normalizeDeliveryDate("31/02/2027")).toBeNull();
+    expect(normalizeDeliveryDate("13/13/2027")).toBeNull();
+    expect(normalizeDeliveryDate("6/30/27")).toBeNull();
+    expect(normalizeDeliveryDate("no es fecha")).toBeNull();
+    expect(normalizeDeliveryDate("")).toBeNull();
+    expect(normalizeDeliveryDate("2027-02-30")).toBeNull();
+  });
+
+  it("accepts rows whose delivery date uses an alternate format", () => {
+    const analysis = analyzeCsv(
+      "nombre,direccion,precio_m2,fecha_entrega\n" +
+        "Altos,Calle 1,1500,30/06/2027\n" +
+        "Bosques,Calle 2,1800,6/30/2027\n"
+    );
+
+    expect(analysis.rowCount).toBe(2);
+    expect(analysis.validRowCount).toBe(2);
+    expect(analysis.rowIssues).toEqual([]);
+  });
+
+  it("rewrites delivery dates to ISO in the normalized upload file", async () => {
+    const file = new File(
+      [
+        "nombre,direccion,precio_m2,fecha_entrega\n" +
+          "Altos,Calle 1,1500,6/30/2027\n" +
+          "Bosques,Calle 2,1800,30/06/2027\n",
+      ],
+      "projects.csv"
+    );
+
+    const normalized = normalizeCsvFile(file, await file.text(), ",");
+    const content = await normalized.text();
+
+    expect(content).toContain("2027-06-30");
+    expect(content).not.toContain("6/30/2027");
+    expect(content).not.toContain("30/06/2027");
   });
 
   it("decodes Windows-1252 files", async () => {

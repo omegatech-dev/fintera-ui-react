@@ -57,7 +57,7 @@ const { t, showToast } = vi.hoisted(() => {
     "projectsPage.rowIssueNumber": "{field} debe ser un número",
     "projectsPage.rowIssueInteger": "{field} debe ser un número entero",
     "projectsPage.rowIssueNegative": "{field} no puede ser negativo",
-    "projectsPage.rowIssueDate": "{field} debe tener el formato YYYY-MM-DD",
+    "projectsPage.rowIssueDate": "{field} debe tener formato YYYY-MM-DD (también se acepta DD/MM/YYYY o M/D/YYYY)",
     "projectsPage.rowIssueUnit": "{field} debe ser m2, ft2 o vara2",
     "projectsPage.importCount": "Importar {count} proyectos",
     "projectsPage.importValidCount": "Importar {count} filas válidas",

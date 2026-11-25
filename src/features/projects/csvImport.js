@@ -292,16 +292,61 @@ const parseInteger = (value) => {
   return Number.isSafeInteger(number) ? number : null;
 };
 
-const isIsoDate = (value) => {
-  const match = DATE_PATTERN.exec(String(value ?? "").trim());
-  if (!match) return false;
-  const [, year, month, day] = match;
-  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+// Keep these patterns aligned with the delivery date parser in FinteraAPI.
+const CALENDAR_DATE_PATTERN = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/;
+const YEAR_FIRST_DATE_PATTERN = /^(\d{4})[/-](\d{2})[/-](\d{2})$/;
+
+const isValidUtcDate = (year, month, day) => {
+  const date = new Date(Date.UTC(year, month - 1, day));
   return (
-    date.getUTCFullYear() === Number(year) &&
-    date.getUTCMonth() === Number(month) - 1 &&
-    date.getUTCDate() === Number(day)
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
   );
+};
+
+const pad2 = (value) => String(value).padStart(2, "0");
+
+// Accepts YYYY-MM-DD plus the calendar formats the API parser accepts
+// (DD/MM/YYYY, M/D/YYYY, DD-MM-YYYY, YYYY/MM/DD). Ambiguous day/month
+// pairs read day-first, and a component over 12 forces the only possible
+// reading. Returns the ISO YYYY-MM-DD string, or null when invalid.
+export const normalizeDeliveryDate = (value) => {
+  const text = String(value ?? "").trim();
+  if (!text) return null;
+
+  const iso = DATE_PATTERN.exec(text);
+  if (iso) {
+    const [, year, month, day] = iso;
+    return isValidUtcDate(Number(year), Number(month), Number(day))
+      ? text
+      : null;
+  }
+
+  const yearFirst = YEAR_FIRST_DATE_PATTERN.exec(text);
+  if (yearFirst) {
+    const [, year, month, day] = yearFirst;
+    return isValidUtcDate(Number(year), Number(month), Number(day))
+      ? `${year}-${pad2(month)}-${pad2(day)}`
+      : null;
+  }
+
+  const calendar = CALENDAR_DATE_PATTERN.exec(text);
+  if (!calendar) return null;
+
+  const [, first, second, year] = calendar;
+  const a = Number(first);
+  const b = Number(second);
+  let day = a;
+  let month = b;
+  if (a <= 12 && b > 12) {
+    day = b;
+    month = a;
+  }
+
+  return isValidUtcDate(Number(year), month, day)
+    ? `${year}-${pad2(month)}-${pad2(day)}`
+    : null;
 };
 
 const issue = (code, reasonKey, field) => ({ code, reasonKey, field });
@@ -354,7 +399,7 @@ const validateRow = (cells, mapping) => {
   }
 
   if (has("delivery_date") && value("delivery_date") !== "") {
-    if (!isIsoDate(value("delivery_date"))) {
+    if (normalizeDeliveryDate(value("delivery_date")) === null) {
       issues.push(
         issue("date", "projectsPage.rowIssueDate", FIELDS_BY_KEY.get("delivery_date"))
       );
@@ -520,8 +565,32 @@ export async function readCsvText(file) {
   return { text, encoding };
 }
 
+const deliveryDateColumnIndex = (rows) => {
+  const headers = rows[0] ?? [];
+  const field = FIELDS_BY_KEY.get("delivery_date");
+  return headers.findIndex(
+    (header) => FIELD_BY_HEADER.get(normalizeHeader(header)) === field
+  );
+};
+
+const normalizeDeliveryDateCells = (rows) => {
+  const index = deliveryDateColumnIndex(rows);
+  if (index < 0) return rows;
+  return rows.map((cells, rowIndex) => {
+    if (rowIndex === 0) return cells;
+    const cell = String(cells[index] ?? "").trim();
+    if (!cell) return cells;
+    const normalized = normalizeDeliveryDate(cell);
+    if (normalized === null || normalized === cell) return cells;
+    const next = [...cells];
+    next[index] = normalized;
+    return next;
+  });
+};
+
 export function normalizeCsvFile(file, text, delimiter) {
-  const content = `\uFEFF${toCsv(parseCsvRows(text, delimiter))}\n`;
+  const rows = normalizeDeliveryDateCells(parseCsvRows(text, delimiter));
+  const content = `\uFEFF${toCsv(rows)}\n`;
   return new File([content], file.name, { type: "text/csv" });
 }
 

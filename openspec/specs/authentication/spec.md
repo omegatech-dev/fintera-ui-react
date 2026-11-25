@@ -19,9 +19,9 @@ the attempted location for post-login navigation.
 
 ### Requirement: First login requires a password change
 
-When the authenticated user has `must_change_password` set, the application
-SHALL redirect them to `/settings/user/:id/security` until the password is
-changed.
+The application SHALL redirect an authenticated user with
+`must_change_password` set to `/settings/user/:id/security` until the password
+is changed.
 
 #### Scenario: First-login redirect
 

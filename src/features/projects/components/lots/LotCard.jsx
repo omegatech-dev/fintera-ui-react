@@ -53,7 +53,7 @@ function LotCard({
   const ownerLabel = owner || t("lots.noOwner");
 
   const action =
-    statusKey === "available"
+    statusKey === "available" && !isAdmin
       ? {
           label: t("lots.reserve"),
           onClick: onReserve,

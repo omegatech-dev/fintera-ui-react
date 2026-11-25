@@ -22,7 +22,7 @@ Abre un proyecto y selecciona **Ver lotes** para ver el inventario completo. La 
 - Ordenamiento por última actualización, nombre del lote, dimensiones, precio o estado.
 - Una línea de resumen con el total, los disponibles y el precio por lote.
 
-Cada tarjeta de lote muestra dimensiones, área, precio, estado y el cliente que lo reservó. **Reservar** inicia una reserva para un lote disponible. Para lotes reservados, financiados y pagados, la acción abre el detalle del lote.
+Cada tarjeta de lote muestra dimensiones, área, precio, estado y el cliente que lo reservó. Los vendedores ven **Reservar** en lotes disponibles para iniciar una reserva. Los administradores no crean reservas desde el portal de administración; ven **Ver** y abren el detalle para revisar o editar el lote. Para lotes reservados, financiados y pagados, la acción abre el detalle del lote.
 
 ## Área y precio
 

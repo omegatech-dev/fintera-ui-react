@@ -212,7 +212,7 @@ function LotDetailsModal({ lot, onClose, onReserve, onEdit, isAdmin = false }) {
         </div>
 
         <div className="flex flex-col gap-2 pt-0.5">
-          {statusKey === "available" && onReserve && (
+          {statusKey === "available" && onReserve && !isAdmin && (
             <Button onClick={onReserve} className="h-[46px] w-full">
               {t("projects.reserveLot")}
             </Button>

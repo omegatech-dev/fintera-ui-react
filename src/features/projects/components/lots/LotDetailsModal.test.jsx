@@ -29,7 +29,7 @@ afterEach(() => {
 });
 
 describe("LotDetailsModal", () => {
-  it("renders the sheet facts, price, and available lot actions", () => {
+  it("renders the sheet facts, price, and admin actions", () => {
     const onReserve = vi.fn();
     const onEdit = vi.fn();
 
@@ -46,12 +46,28 @@ describe("LotDetailsModal", () => {
     expect(screen.getByRole("heading", { name: "Lote 3" })).toBeInTheDocument();
     expect(screen.getByText("PMP-L03")).toBeInTheDocument();
     expect(screen.getByText("750,000 HNL")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "projects.reserveLot" }));
-    expect(onReserve).toHaveBeenCalledTimes(1);
+    expect(
+      screen.queryByRole("button", { name: "projects.reserveLot" })
+    ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "lots.editLot" }));
     expect(onEdit).toHaveBeenCalledTimes(1);
+    expect(onReserve).not.toHaveBeenCalled();
+  });
+
+  it("offers the reserve action to sellers", () => {
+    const onReserve = vi.fn();
+
+    render(
+      <LotDetailsModal
+        lot={lot}
+        onClose={vi.fn()}
+        onReserve={onReserve}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "projects.reserveLot" }));
+    expect(onReserve).toHaveBeenCalledTimes(1);
   });
 
   it("does not offer the reserve action for a reserved lot", () => {

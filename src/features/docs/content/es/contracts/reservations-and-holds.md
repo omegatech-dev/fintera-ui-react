@@ -11,7 +11,7 @@ Una **reserva** aparta un lote para un cliente antes de completar la venta.
 
 ## El asistente de reserva
 
-Los vendedores y administradores inician una reserva desde un lote o desde **Nueva reserva** en **Mi día** del vendedor.
+Los vendedores inician una reserva desde un lote o desde **Nueva reserva** en **Mi día** del vendedor. Los administradores no crean reservas desde el portal de administración.
 
 1. **Cliente** — busca un cliente existente o crea uno con nombre, teléfono, identidad, RTN y correo. Los clientes históricos aparecen en la búsqueda con un chip **HISTÓRICO**; al seleccionar uno se reutiliza su cuenta de cliente.
 2. **Plan de financiamiento** — elige directo, banco o efectivo; ingresa el plazo, la fecha máxima de pago, el monto de reserva, el pago inicial y las notas según corresponda.
@@ -41,7 +41,7 @@ Los vendedores crean reservas para sus clientes, suben el comprobante de reserva
 
 ## Qué hacen los administradores
 
-Los administradores pueden cambiar la retención y las fechas de vencimiento, aprobar o rechazar la reserva, o cancelarla cuando haga falta. Ver [Aprobar y rechazar contratos](/docs/approving-contracts).
+Los administradores revisan las reservas y pueden cambiar la retención y las fechas de vencimiento, aprobar o rechazar la reserva, o cancelarla cuando haga falta. No crean reservas desde el portal de administración. Ver [Aprobar y rechazar contratos](/docs/approving-contracts).
 
 ## Relacionado
 

@@ -11,7 +11,7 @@ A **reservation** locks a lot for a customer before the sale is complete.
 
 ## The reservation wizard
 
-Sellers and admins start a reservation from a lot or from **New reservation** on the seller's **My day**.
+Sellers start a reservation from a lot or from **New reservation** on the seller's **My day**. Admins do not create reservations from the admin portal.
 
 1. **Client** — search for an existing customer or create a new one with name, phone, identity, RTN, and email. Historical clients appear in the search with a **HISTÓRICO** chip; selecting one reuses their customer account.
 2. **Financing plan** — choose direct, bank, or cash; enter the payment term, maximum payment date, reservation amount, down payment, and notes as required.
@@ -41,7 +41,7 @@ Sellers create reservations for their customers, upload the reservation voucher,
 
 ## What admins do
 
-Admins can change the hold and due dates, approve or reject the reservation, or cancel it when needed. See [Approving and rejecting contracts](/docs/approving-contracts).
+Admins review reservations and can change the hold and due dates, approve or reject the reservation, or cancel it when needed. They do not create reservations from the admin portal. See [Approving and rejecting contracts](/docs/approving-contracts).
 
 ## Related
 

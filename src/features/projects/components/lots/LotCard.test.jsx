@@ -40,6 +40,28 @@ describe("LotCard", () => {
     expect(screen.getByText("lots.noOwner")).toBeInTheDocument();
   });
 
+  it("shows the view action instead of reserve for admins", () => {
+    const onReserve = vi.fn();
+    const onView = vi.fn();
+    render(
+      <LotCard
+        lot={baseLot}
+        isAdmin
+        onReserve={onReserve}
+        onView={onView}
+      />
+    );
+
+    expect(
+      screen.queryByRole("button", { name: /lots\.reserve/ })
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /common\.view/ }));
+
+    expect(onView).toHaveBeenCalledTimes(1);
+    expect(onReserve).not.toHaveBeenCalled();
+  });
+
   it("opens the reservation for a reserved lot", () => {
     const onView = vi.fn();
     render(

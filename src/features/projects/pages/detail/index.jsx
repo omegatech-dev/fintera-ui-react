@@ -589,7 +589,7 @@ function ProjectDetail() {
                       size="sm"
                       onClick={() => navigate(`/projects/${id}/lots`)}
                     >
-                      {lot.status === "available"
+                      {!isAdmin && lot.status === "available"
                         ? t("lots.reserve")
                         : t("common.view")}{" "}
                       →

@@ -22,7 +22,7 @@ Open a project and select **View lots** to see the complete inventory. The list 
 - Sorting by last update, lot name, dimensions, price, or status.
 - A summary line with the total count, available count, and the price per lot.
 
-Each lot card shows the dimensions, area, price, status, and the customer who reserved it. **Reserve** starts a reservation for an available lot. For reserved, financed, and paid lots the action opens the lot detail instead.
+Each lot card shows the dimensions, area, price, status, and the customer who reserved it. Sellers see **Reserve** on available lots to start a reservation. Admins do not create reservations from the admin portal; they see **View** and open the lot detail to review or edit the lot. For reserved, financed, and paid lots the action opens the lot detail instead.
 
 ## Area and price
 

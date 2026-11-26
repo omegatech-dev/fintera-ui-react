@@ -97,8 +97,6 @@ export default defineConfig({
     hookTimeout: 20000,
   },
   server: {
-    port: 5173,
-    strictPort: true,
     watch: {
       usePolling: true,
     },

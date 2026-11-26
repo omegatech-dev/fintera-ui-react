@@ -25,4 +25,4 @@
 ## 5. Verification
 
 - [x] 5.1 Run relevant commissions and seller tests, then `npm run verify`.
-- [ ] 5.2 Verify the UI against the backend with netting disabled and enabled, including partial application, remaining balance, preview failure, and server-confirmed payout values.
+- [x] 5.2 Verify the UI against the backend with netting disabled and enabled, including partial application, remaining balance, preview failure, and server-confirmed payout values.

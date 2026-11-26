@@ -39,8 +39,10 @@ export const commissionsApi = {
   },
   markPaid: (contractGuid) =>
     apiClient.patch(`/api/v1/contracts/${contractGuid}/commission/pay`),
-  applyCredit: (creditId) =>
-    apiClient.post(`/api/v1/commissions/credits/${creditId}/apply`),
+  previewPayout: (contractGuid) =>
+    apiClient.get(
+      `/api/v1/contracts/${contractGuid}/commission/payout-preview`
+    ),
   getProject: (projectId) => projectsApi.get(projectId),
   updateProject: (projectId, project) => projectsApi.update(projectId, { project }),
 };

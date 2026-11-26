@@ -34,7 +34,7 @@ vi.mock("../api", () => ({
   commissionsApi: {
     list: vi.fn(),
     markPaid: vi.fn(),
-    applyCredit: vi.fn(),
+    previewPayout: vi.fn(),
     download: vi.fn(),
   },
 }));
@@ -97,6 +97,19 @@ const credits = [
     contract_id: 16,
     contract_guid: "contract-1",
     amount: 25000,
+    applied_amount: 10000,
+    remaining_amount: 15000,
+    source: "cancellation",
+    applications_total: 1,
+    applications: [
+      {
+        id: 21,
+        credit_id: 9,
+        applied_contract_id: 22,
+        applied_contract_guid: "contract-2",
+        amount: 10000,
+      },
+    ],
     status: "pending",
     created_at: "2026-11-10T00:00:00Z",
   },
@@ -117,7 +130,8 @@ const buildResponse = (overrides = {}) => ({
   sellers: [{ id: 3, name: "Ana Vendedora" }],
   credits,
   credits_pagination: { page: 1, per_page: 20, total: 1, total_pages: 1 },
-  pending_credits: 25000,
+  pending_credits: 15000,
+  seller_balance: 15000,
   net_pending: 0,
   ...overrides,
 });
@@ -133,14 +147,21 @@ const lastNextButton = () =>
 beforeEach(() => {
   commissionsApi.list.mockReset();
   commissionsApi.markPaid.mockReset();
-  commissionsApi.applyCredit.mockReset();
+  commissionsApi.previewPayout.mockReset();
   commissionsApi.download.mockReset();
   sellerApi.listHistoricalSales.mockReset();
   confirmDialog.mockReset();
   showToast.mockReset();
 
   commissionsApi.list.mockResolvedValue(buildResponse());
-  commissionsApi.applyCredit.mockResolvedValue({});
+  commissionsApi.previewPayout.mockResolvedValue({
+    enabled: true,
+    commission: 25000,
+    available_credit: 15000,
+    applicable: 15000,
+    net_cash: 10000,
+    remaining_credit: 0,
+  });
   sellerApi.listHistoricalSales.mockResolvedValue({ pagination: { total: 0 } });
   confirmDialog.mockResolvedValue(true);
 });
@@ -151,45 +172,36 @@ afterEach(() => {
 });
 
 describe("Admin commissions credits", () => {
-  it("shows the pending credit per seller and the net payable", async () => {
+  it("shows seller balance and traceable credit applications without manual apply", async () => {
     render(<MemoryRouter><Commissions /></MemoryRouter>);
 
     expect(await screen.findByText("Commission credits")).toBeInTheDocument();
-    expect(screen.getByText("Pending credit")).toBeInTheDocument();
-    expect(screen.getByText("Recoverable from the seller")).toBeInTheDocument();
-    expect(screen.getByText("Net payable")).toBeInTheDocument();
+    expect(screen.getByText("Seller credit balance")).toBeInTheDocument();
+    expect(screen.getByText("Outstanding credits across all commissions")).toBeInTheDocument();
+    expect(screen.getAllByText("Applied to commissions").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Cancellation").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Ana Vendedora").length).toBeGreaterThan(0);
     expect(screen.getAllByText("#16").length).toBeGreaterThan(0);
     expect(screen.getAllByText("L 25,000").length).toBeGreaterThan(0);
-    expect(screen.getByText("L 0")).toBeInTheDocument();
+    expect(screen.getAllByText("L 15,000").length).toBeGreaterThan(0);
     expect(
-      screen.getAllByRole("button", { name: "Apply credit" }).length
-    ).toBeGreaterThan(0);
+      screen.getAllByRole("link", { name: "#22" })[0]
+    ).toHaveAttribute("href", "/contracts/contract-2");
+    expect(
+      screen.queryByRole("button", { name: "Apply credit" })
+    ).not.toBeInTheDocument();
   });
 
-  it("applies a credit and refreshes the report", async () => {
-    render(<MemoryRouter><Commissions /></MemoryRouter>);
-
-    fireEvent.click(
-      (await screen.findAllByRole("button", { name: "Apply credit" }))[0]
-    );
-
-    await waitFor(() =>
-      expect(commissionsApi.applyCredit).toHaveBeenCalledWith(9)
-    );
-    await waitFor(() => expect(commissionsApi.list).toHaveBeenCalledTimes(2));
-    expect(showToast).toHaveBeenCalledWith("Commission credit applied.");
-  });
-
-  it("shows the server pending credits total instead of the page sum", async () => {
+  it("uses the global seller balance instead of netting against period totals", async () => {
     commissionsApi.list.mockResolvedValue(
-      buildResponse({ pending_credits: 40000, net_pending: -15000 })
+      buildResponse({ seller_balance: 40000, pending_credits: 40000, net_pending: -15000 })
     );
 
     render(<MemoryRouter><Commissions /></MemoryRouter>);
 
     expect(await screen.findByText("L 40,000")).toBeInTheDocument();
-    expect(screen.getByText("L -15,000")).toBeInTheDocument();
+    expect(screen.queryByText("L -15,000")).not.toBeInTheDocument();
+    expect(screen.queryByText("Net payable")).not.toBeInTheDocument();
   });
 
   it("pages the credits card and requests the second page", async () => {
@@ -225,6 +237,29 @@ describe("Admin commissions credits", () => {
 });
 
 describe("Admin commissions list", () => {
+  it("shows the credit adjustment for commissions paid with seller credit", async () => {
+    commissionsApi.list.mockResolvedValue(
+      buildResponse({
+        commissions: commissions.map((row) =>
+          row.contract_id === 17 ? { ...row, credit_applied: 13800 } : row
+        ),
+      })
+    );
+
+    render(<MemoryRouter><Commissions /></MemoryRouter>);
+
+    const adjustments = await screen.findAllByText(/Credit adjustment/);
+    expect(adjustments.length).toBeGreaterThan(0);
+    for (const adjustment of adjustments) {
+      expect(adjustment.textContent).toContain("L 13,800");
+      expect(adjustment.textContent).toContain("L 6,200");
+    }
+    expect(
+      screen.queryByText("Credit adjustment: −L 16,800 · Cash: L 3,200")
+    ).not.toBeInTheDocument();
+  });
+
+
   it("requests the first page of 20 commissions", async () => {
     render(<MemoryRouter><Commissions /></MemoryRouter>);
 
@@ -396,9 +431,89 @@ describe("Admin commissions list", () => {
     fireEvent.click((await screen.findAllByRole("button", { name: "Pay" }))[0]);
 
     await waitFor(() =>
+      expect(commissionsApi.previewPayout).toHaveBeenCalledWith("contract-1")
+    );
+    await waitFor(() =>
       expect(commissionsApi.markPaid).toHaveBeenCalledWith("contract-1")
     );
     await waitFor(() => expect(commissionsApi.list).toHaveBeenCalledTimes(2));
+  });
+
+  it("shows preview amounts and the final server payout breakdown", async () => {
+    let confirmationDescription;
+    confirmDialog.mockImplementation(async (options) => {
+      confirmationDescription = options.description;
+      return true;
+    });
+    commissionsApi.markPaid.mockResolvedValue({
+      payout: {
+        commission: 25000,
+        applied_total: 8000,
+        net_cash: 17000,
+        remaining_credit: 7000,
+        applications: [
+          {
+            id: 31,
+            credit_id: 9,
+            applied_contract_id: 16,
+            applied_contract_guid: "commission-guid-16",
+            amount: 8000,
+          },
+        ],
+      },
+    });
+
+    render(<MemoryRouter><Commissions /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByRole("button", { name: "Pay" }))[0]);
+
+    await waitFor(() => expect(commissionsApi.markPaid).toHaveBeenCalled());
+    const preview = render(confirmationDescription);
+    expect(preview.container.textContent).toContain("Gross commission");
+    expect(preview.container.textContent).toContain("L 15,000");
+    expect(preview.container.textContent).toContain("L 10,000");
+
+    expect(await screen.findByText("Commission payout details")).toBeInTheDocument();
+    expect(screen.getAllByText("L 8,000").length).toBeGreaterThan(0);
+    expect(screen.getByText("L 17,000")).toBeInTheDocument();
+    expect(screen.getByText("L 7,000")).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("link", { name: "#16" })[1]
+    ).toHaveAttribute("href", "/contracts/commission-guid-16");
+  });
+
+  it("uses a gross-only confirmation when backend netting is disabled", async () => {
+    commissionsApi.previewPayout.mockResolvedValue({
+      enabled: false,
+      commission: 25000,
+      available_credit: 0,
+      applicable: 0,
+      net_cash: 25000,
+      remaining_credit: 0,
+    });
+    commissionsApi.markPaid.mockResolvedValue({});
+
+    render(<MemoryRouter><Commissions /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByRole("button", { name: "Pay" }))[0]);
+
+    await waitFor(() => expect(commissionsApi.markPaid).toHaveBeenCalled());
+    expect(confirmDialog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: expect.stringContaining("25,000"),
+      })
+    );
+  });
+
+  it("blocks payout confirmation when preview fails", async () => {
+    commissionsApi.previewPayout.mockRejectedValue(new Error("preview unavailable"));
+
+    render(<MemoryRouter><Commissions /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByRole("button", { name: "Pay" }))[0]);
+
+    await waitFor(() =>
+      expect(showToast).toHaveBeenCalledWith("preview unavailable", "error")
+    );
+    expect(confirmDialog).not.toHaveBeenCalled();
+    expect(commissionsApi.markPaid).not.toHaveBeenCalled();
   });
 });
 

@@ -100,3 +100,18 @@ describe("commissionsApi.download", () => {
     );
   });
 });
+
+describe("commissionsApi.previewPayout", () => {
+  beforeEach(() => {
+    apiClient.get.mockReset();
+    apiClient.get.mockResolvedValue({});
+  });
+
+  it("requests the payout preview for a contract", async () => {
+    await commissionsApi.previewPayout("contract-guid");
+
+    expect(apiClient.get).toHaveBeenCalledWith(
+      "/api/v1/contracts/contract-guid/commission/payout-preview"
+    );
+  });
+});

@@ -23,7 +23,7 @@ Open **Commissions** from the admin menu. The page has:
 - A detail table with contract, seller, client, sale value, commission and rate, status, date, and an action.
 - **Export** to download the period as CSV.
 
-For a pending commission, **Pay** asks for confirmation and marks the commission as paid. It writes an audit entry and does **not** change the contract balance. Paid commissions show **View**, which opens a read-only detail dialog.
+For a pending commission, **Pay** first previews the gross commission, available credit to apply, net cash to pay, and remaining credit balance. After confirmation, the server applies eligible credits for that seller as part of the payout and returns the final breakdown. The commission is recorded at its gross amount; net cash is the amount actually disbursed. The action writes an audit entry and does **not** change the contract balance. If the preview cannot be loaded, the payout cannot be confirmed. When backend netting is disabled, the preview clearly shows that no credit will be applied. Paid commissions show **View**, which opens a read-only detail dialog.
 
 ## Historical clients to validate
 
@@ -48,9 +48,11 @@ Sellers see **Commissions** in their workspace, read-only:
 
 Sellers cannot mark a commission as paid or change rates.
 
-## Commission credit on cancellation
+## Commission credit balance and applications
 
-If you cancel a contract whose commission was already paid, a **commission credit** is generated in Fintera's favor for that seller. It appears in Commissions as a pending credit. The admin can **apply it** (mark it settled) when appropriate. If the commission was not paid, no credit is created: the commission simply stops appearing.
+When a previously paid commission is reversed, the resulting **commission credit** appears in the seller's balance. Credits are carried forward across reporting periods and are applied by the server to future commissions for the same seller. The credit list shows the original, applied, and remaining amounts, its source, and the commissions it has been applied to. The admin and seller views are read-only for credits; there is no manual action that marks a credit settled without recording how it was recovered.
+
+If a contract with an applied credit is later cancelled or reassigned, the backend reverses the relevant application and updates the seller's credit balance. The contract's customer balance remains separate from commission credits.
 
 ## Related
 

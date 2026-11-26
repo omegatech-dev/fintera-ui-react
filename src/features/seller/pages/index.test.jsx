@@ -438,7 +438,7 @@ describe("Seller workspace commissions", () => {
     expect(screen.getByText("No assignments yet")).toBeInTheDocument();
   });
 
-  it("shows the pending commission credit read-only with the net payable", async () => {
+  it("shows the seller credit balance and application history read-only", async () => {
     commissionsApi.list.mockResolvedValueOnce(
       commissionsResponse({
         credits: [
@@ -447,22 +447,40 @@ describe("Seller workspace commissions", () => {
             seller: "Ana Vendedora",
             contract_id: 16,
             amount: 25000,
+            applied_amount: 10000,
+            remaining_amount: 15000,
+            source: "cancellation",
+            applications_total: 1,
+            applications: [
+              {
+                id: 21,
+                credit_id: 9,
+                applied_contract_id: 22,
+                applied_contract_guid: "contract-2",
+                amount: 10000,
+              },
+            ],
             status: "pending",
             created_at: "2026-11-10T00:00:00Z",
           },
         ],
         credits_pagination: { page: 1, per_page: 20, total: 1, total_pages: 1 },
-        pending_credits: 25000,
+        pending_credits: 15000,
+        seller_balance: 15000,
       })
     );
 
     renderWorkspace("/vendedor/comisiones");
 
     expect(await screen.findByText("Commission credits")).toBeInTheDocument();
-    expect(screen.getByText("Pending credit")).toBeInTheDocument();
-    expect(screen.getByText("Net payable")).toBeInTheDocument();
+    expect(screen.getByText("Seller credit balance")).toBeInTheDocument();
+    expect(screen.getAllByText("Applied to commissions").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Cancellation").length).toBeGreaterThan(0);
     expect(screen.getAllByText("L 25,000").length).toBeGreaterThan(0);
-    expect(screen.getByText("L 0")).toBeInTheDocument();
+    expect(screen.getAllByText("L 15,000").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByRole("link", { name: "#22" })[0]
+    ).toHaveAttribute("href", "/contracts/contract-2");
     expect(screen.getAllByText("Pending").length).toBeGreaterThan(0);
     expect(
       screen.queryByRole("button", { name: /apply credit/i })
@@ -530,7 +548,7 @@ describe("Seller workspace commissions", () => {
     ).toBeInTheDocument();
   });
 
-  it("pages the credits card and uses the server pending credits total", async () => {
+  it("pages the credits card and keeps the global seller balance", async () => {
     commissionsApi.list.mockImplementation(async (_start, _end, options = {}) =>
       commissionsResponse({
         credits: [
@@ -550,6 +568,7 @@ describe("Seller workspace commissions", () => {
           total_pages: 2,
         },
         pending_credits: 40000,
+        seller_balance: 40000,
       })
     );
 

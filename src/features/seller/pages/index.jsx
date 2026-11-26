@@ -123,7 +123,7 @@ function SellerWorkspace() {
   const [commissionsPagination, setCommissionsPagination] = useState(EMPTY_COMMISSION_PAGINATION);
   const [commissionsPage, setCommissionsPage] = useState(1);
   const [commissionsCredits, setCommissionsCredits] = useState([]);
-  const [commissionsPendingCredits, setCommissionsPendingCredits] = useState(0);
+  const [commissionsSellerBalance, setCommissionsSellerBalance] = useState(0);
   const [commissionsCreditsPagination, setCommissionsCreditsPagination] = useState(EMPTY_COMMISSION_PAGINATION);
   const [commissionsCreditsPage, setCommissionsCreditsPage] = useState(1);
   const [commissionsLoading, setCommissionsLoading] = useState(true);
@@ -176,7 +176,9 @@ function SellerWorkspace() {
       setCommissionsTotals(data?.totals || EMPTY_COMMISSION_TOTALS);
       setCommissionsPagination(data?.pagination || EMPTY_COMMISSION_PAGINATION);
       setCommissionsCredits(readCommissionCredits(data));
-      setCommissionsPendingCredits(Number(data?.pending_credits || 0));
+      setCommissionsSellerBalance(
+        Number(data?.seller_balance ?? data?.pending_credits ?? 0)
+      );
       setCommissionsCreditsPagination(
         data?.credits_pagination || EMPTY_COMMISSION_PAGINATION
       );
@@ -1372,8 +1374,7 @@ function SellerWorkspace() {
         {tab === "comisiones" && !commissionsError && (
           <CommissionCreditsCard
             credits={commissionsCredits}
-            pendingCredits={commissionsPendingCredits}
-            pendingCommissions={commissionTotals.pending}
+            sellerBalance={commissionsSellerBalance}
             loading={commissionsLoading}
             creditsPagination={commissionsCreditsPagination}
             onCreditsPageChange={setCommissionsCreditsPage}

@@ -4,7 +4,11 @@ import { motion } from "framer-motion";
 import { projectsApi } from "../../api";
 import { useToast } from "@/contexts/ToastContext";
 import { useLocale } from "@/contexts/LocaleContext";
-import { useGeneralSettings } from "@/contexts/generalSettings";
+import {
+  DEFAULT_GENERAL_SETTINGS,
+  resolveSettingsNumber,
+  useGeneralSettings,
+} from "@/contexts/generalSettings";
 import { getDefaultCurrency } from "@/shared/utils/formatSettings";
 import { Chip } from "@/shared/ui";
 import ReserveWizard from "./ReserveWizard";
@@ -13,7 +17,10 @@ function Reserve() {
   const { t } = useLocale();
   const { settings: generalSettings } = useGeneralSettings();
   const { id, lot_id } = useParams();
-  const minReserveAmount = Number(generalSettings.reservation_min_amount) || 0;
+  const minReserveAmount = resolveSettingsNumber(
+    generalSettings.reservation_min_amount,
+    DEFAULT_GENERAL_SETTINGS.reservation_min_amount
+  );
   const defaultCurrency =
     generalSettings.default_currency || getDefaultCurrency();
 

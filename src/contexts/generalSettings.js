@@ -2,6 +2,15 @@ import { createContext, useContext } from "react";
 
 export const STORAGE_KEY = "fintera_general_settings";
 
+// Capability published by the API. It is not a setting: it is stripped before
+// normalization so it never reaches the snapshot, the cache or the request.
+export const PARTIAL_UPDATES_FLAG = "supports_partial_updates";
+
+// The API may expose the flag at the root of the payload or inside `settings`.
+export const readPartialUpdateSupport = (raw = {}) =>
+  raw?.[PARTIAL_UPDATES_FLAG] === true ||
+  raw?.settings?.[PARTIAL_UPDATES_FLAG] === true;
+
 // Safe defaults preserve current hardcoded contact/legal data until an admin
 // saves a replacement. They also keep the app usable when the API is offline.
 export const DEFAULT_GENERAL_SETTINGS = {
@@ -49,7 +58,8 @@ const toBoolean = (value, fallback) => {
 };
 
 export const normalizeGeneralSettings = (raw = {}) => {
-  const next = { ...DEFAULT_GENERAL_SETTINGS, ...(raw || {}) };
+  const { [PARTIAL_UPDATES_FLAG]: _capability, ...values } = raw || {};
+  const next = { ...DEFAULT_GENERAL_SETTINGS, ...values };
 
   NUMBER_FIELDS.forEach((field) => {
     const parsed = Number(next[field]);
@@ -90,6 +100,16 @@ export const normalizeGeneralSettings = (raw = {}) => {
     DEFAULT_GENERAL_SETTINGS.timezone;
 
   return next;
+};
+
+/**
+ * Resolve a numeric settings value, falling back when it is missing or is not
+ * a finite number. An explicit 0 is a valid value and is preserved.
+ */
+export const resolveSettingsNumber = (value, fallback) => {
+  if (value === null || value === undefined || value === "") return fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
 };
 
 const GeneralSettingsContext = createContext();

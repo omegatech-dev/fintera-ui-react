@@ -100,7 +100,8 @@ vi.mock("@/contexts/LocaleContext", () => ({
   }),
 }));
 
-vi.mock("@/contexts/generalSettings", () => ({
+vi.mock("@/contexts/generalSettings", async (importOriginal) => ({
+  ...(await importOriginal()),
   useGeneralSettings: () => ({
     settings: { default_currency: "HNL", reservation_min_amount: 15000 },
   }),

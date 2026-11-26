@@ -5,6 +5,7 @@ import GeneralSettingsContext, {
   DEFAULT_GENERAL_SETTINGS,
   STORAGE_KEY,
   normalizeGeneralSettings,
+  readPartialUpdateSupport,
 } from "./generalSettings";
 
 const readCachedSettings = () => {
@@ -31,6 +32,7 @@ export const GeneralSettingsProvider = ({ children }) => {
   );
   const [loading, setLoading] = useState(true);
   const settingsRef = useRef(settings);
+  const partialSupportRef = useRef(false);
 
   useEffect(() => {
     settingsRef.current = settings;
@@ -47,6 +49,9 @@ export const GeneralSettingsProvider = ({ children }) => {
   const refresh = useCallback(async () => {
     try {
       const data = await settingsApi.get();
+      // The API advertises partial update support explicitly. Without the flag
+      // the admin keeps sending the full settings snapshot.
+      partialSupportRef.current = readPartialUpdateSupport(data);
       const next = normalizeGeneralSettings(data?.settings || data);
       return applySettings(next);
     } catch (error) {
@@ -68,8 +73,13 @@ export const GeneralSettingsProvider = ({ children }) => {
   const update = useCallback(
     async (partial) => {
       const snapshot = { ...settingsRef.current, ...partial };
-      const data = await settingsApi.update(snapshot);
+      // Only the saved section is sent when the API merges provided fields.
+      const payload = partialSupportRef.current ? partial : snapshot;
+      const data = await settingsApi.update(payload);
       const serverSettings = data?.settings || data || {};
+      if (readPartialUpdateSupport(data)) {
+        partialSupportRef.current = true;
+      }
       const next = normalizeGeneralSettings({
         ...snapshot,
         ...serverSettings,

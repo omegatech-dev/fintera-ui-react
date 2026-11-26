@@ -802,7 +802,7 @@ function ReserveWizard({
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <Field
-                    label={t("reservations.reserveAmount")}
+                    label={t("reservations.reserveAmount", { currency })}
                     required
                     error={errors.reserveAmount}
                     hint={
@@ -829,7 +829,7 @@ function ReserveWizard({
 
                   {financingType === "direct" && (
                     <Field
-                      label={t("reservations.downPayment")}
+                      label={t("reservations.downPayment", { currency })}
                       required
                       error={errors.downPayment}
                     >
@@ -879,7 +879,7 @@ function ReserveWizard({
                     </p>
                     <p className="text-body font-bold text-ink">{financingLabel}</p>
                     <p className="text-micro text-ink-3">
-                      {t("reservations.reserveAmount")}:{" "}
+                      {t("reservations.reserveAmount", { currency })}:{" "}
                       {formatCurrency(Number(reserveAmount) || 0)}
                       {financingType === "direct" &&
                         ` · ${t("reservations.installments", {

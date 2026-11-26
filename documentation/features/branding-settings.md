@@ -44,9 +44,8 @@ still render as paragraphs, and the contact block is rendered by the page/modal
 shell so it is never duplicated by the editor content.
 
 Each section uses `SettingsSection` and its own save/discard bar. Saving a section
-updates only that section's values; `GeneralSettingsProvider` sends a merged
-settings snapshot so the rest of the row is preserved even before the API
-supports partial merges.
+updates only that section's values. How the request is built depends on what the
+API supports (see **Partial updates** below).
 
 `GeneralSettingsProvider` loads `GET /api/v1/settings` on startup, caches the
 result in `fintera_general_settings`, and exposes `useGeneralSettings()`.
@@ -72,13 +71,35 @@ and `America/Tegucigalpa`. Empty contact/legal values fall back to the current
 hardcoded details: `support@omegatech.dev`, `+50431848112`, “Omegatech S. de
 R.L.” and `https://omegatech.dev/`.
 
+### Partial updates
+
+The API advertises whether it can merge per-field updates with the
+`supports_partial_updates` flag in the settings response. FinteraUI never
+infers it from the response shape: the extended columns only prove that the
+migration landed, not that the handler merges, and a partial request sent to a
+replace-style handler erases every other section.
+
+- Flag present and `true`: `PUT /api/v1/settings` receives only the fields of the
+  saved section, so a save never rewrites the other sections.
+- Flag absent or `false`: the request carries the full settings snapshot, which
+  keeps every section intact against an API that replaces the row.
+
+The flag describes the API, not the deployment, so it is stripped before
+normalization: it is never part of the settings snapshot, never cached in
+`fintera_general_settings`, and never sent back to the API.
+
+The API must only report `true` when `PUT /api/v1/settings` really merges the
+provided fields. The flag and the merge behavior ship together; a `true` flag
+with replace semantics would delete the other sections.
+
 ### External dependency
 
 The extended settings require an additive FinteraAPI migration that adds these
 columns and makes `PUT /api/v1/settings` merge provided fields. FinteraUI falls
-back to defaults if the API does not return the new fields. FinteraWeb is the
-follow-up consumer for the reservation minimum, currency/locale formatting, and
-dynamic hold copy.
+back to defaults if the API does not return the new fields, and keeps sending the
+full snapshot until the API advertises `supports_partial_updates`. FinteraWeb is
+the follow-up consumer for the reservation minimum, currency/locale formatting,
+and dynamic hold copy.
 
 ## Brand identity
 
@@ -135,6 +156,8 @@ New strings use `settings.admin.*`, `branding.general.*`,
 - `src/contexts/GeneralSettingsContext.test.jsx`
 - `src/shared/utils/formatters.test.js`
 - `src/features/projects/pages/reserve/reserveRules.test.js`
+- `src/features/projects/pages/reserve/ReserveWizard.test.jsx`
+- `src/features/projects/pages/paymentInstructions/PaymentInstructionsPage.test.jsx`
 - `src/shared/modals/LoginTermsModal.test.jsx`
 - `src/contexts/__tests__/LocaleContext.test.jsx`
 - `src/shared/sidebar/Sidebar.test.jsx`

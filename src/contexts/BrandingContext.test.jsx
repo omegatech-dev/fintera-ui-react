@@ -1,4 +1,4 @@
-import { render, screen, waitFor, cleanup } from "@testing-library/react";
+import { render, screen, waitFor, cleanup, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 
@@ -18,9 +18,11 @@ vi.mock("../features/branding/api", () => ({
   },
 }));
 
+let latest;
 function Probe() {
-  const { branding } = useBranding();
-  return <div data-testid="app-name">{branding.app_name}</div>;
+  const context = useBranding();
+  latest = context;
+  return <div data-testid="app-name">{context.branding.app_name}</div>;
 }
 
 beforeEach(() => {
@@ -110,5 +112,88 @@ describe("BrandingProvider", () => {
     await waitFor(() => {
       expect(document.title).toContain("Acme");
     });
+  });
+
+  it("applies a write response and persists it", async () => {
+    brandingApi.get.mockResolvedValueOnce({
+      branding: { app_name: "Fintera", logo_url: null, logo_dark_url: null },
+    });
+
+    render(
+      <BrandingProvider>
+        <Probe />
+      </BrandingProvider>
+    );
+
+    // Wait for the mount fetch to land before overriding the state.
+    await waitFor(() => {
+      expect(screen.getByTestId("app-name")).toHaveTextContent("Fintera");
+    });
+
+    await act(async () => {
+      latest.applyBranding({
+        app_name: "Acme",
+        logo_url: "/uploads/branding/nuevo.webp",
+        logo_dark_url: null,
+      });
+    });
+
+    expect(screen.getByTestId("app-name")).toHaveTextContent("Acme");
+    expect(
+      JSON.parse(window.localStorage.getItem("fintera_branding"))
+    ).toMatchObject({
+      app_name: "Acme",
+      logo_url: "/uploads/branding/nuevo.webp",
+    });
+  });
+
+  it("keeps the application name when a write only returns a logo", async () => {
+    brandingApi.get.mockResolvedValueOnce({
+      branding: { app_name: "Fintera", logo_url: null, logo_dark_url: null },
+    });
+
+    render(
+      <BrandingProvider>
+        <Probe />
+      </BrandingProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("app-name")).toHaveTextContent("Fintera");
+    });
+
+    await act(async () => {
+      latest.applyBranding({ logo_url: "/uploads/branding/nuevo.webp" });
+    });
+
+    expect(screen.getByTestId("app-name")).toHaveTextContent("Fintera");
+    expect(
+      JSON.parse(window.localStorage.getItem("fintera_branding")).logo_url
+    ).toBe("/uploads/branding/nuevo.webp");
+  });
+
+  it("keeps the current branding when the GET returns an empty payload", async () => {
+    brandingApi.get.mockResolvedValueOnce({
+      branding: { app_name: "Fintera", logo_url: "/uploads/branding/a.png" },
+    });
+
+    render(
+      <BrandingProvider>
+        <Probe />
+      </BrandingProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("app-name")).toHaveTextContent("Fintera");
+    });
+
+    await act(async () => {
+      latest.applyBranding({});
+    });
+
+    expect(screen.getByTestId("app-name")).toHaveTextContent("Fintera");
+    expect(
+      JSON.parse(window.localStorage.getItem("fintera_branding")).logo_url
+    ).toBe("/uploads/branding/a.png");
   });
 });

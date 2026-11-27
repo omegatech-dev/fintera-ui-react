@@ -15,7 +15,7 @@ import BrandSaveBar from "./BrandSaveBar";
 
 function BrandIdentityForm() {
   const { t } = useLocale();
-  const { branding, refresh } = useBranding();
+  const { branding, refresh, applyBranding } = useBranding();
   const { showToast } = useToast();
 
   const [lightFile, setLightFile] = useState(null);
@@ -120,12 +120,19 @@ function BrandIdentityForm() {
 
     setSaving(true);
     try {
-      if (removeLight) await brandingApi.deleteLogo("light");
-      if (removeDark) await brandingApi.deleteLogo("dark");
-      if (lightFile) await brandingApi.uploadLogo(lightFile, "light");
-      if (darkFile) await brandingApi.uploadLogo(darkFile, "dark");
+      const responses = [];
+      if (removeLight) responses.push(await brandingApi.deleteLogo("light"));
+      if (removeDark) responses.push(await brandingApi.deleteLogo("dark"));
+      if (lightFile) responses.push(await brandingApi.uploadLogo(lightFile, "light"));
+      if (darkFile) responses.push(await brandingApi.uploadLogo(darkFile, "dark"));
 
+      // Reconcile first, then let the write responses win: a stale GET must
+      // not resurrect the previous (or bundled) logo in the previews and
+      // sidebar. `applyBranding` merges over the current state, so applying
+      // each response in order preserves fields the API may omit.
       await refresh();
+      responses.forEach((response) => applyBranding(response));
+
       resetForm();
       showToast(t("branding.success"), "success");
     } catch (error) {

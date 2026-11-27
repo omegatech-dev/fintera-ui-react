@@ -3,13 +3,12 @@ import { useLocale } from "../../../contexts/LocaleContext";
 import { useBranding } from "../../../contexts/branding";
 import { useToast } from "../../../contexts/ToastContext";
 import { brandingApi } from "../api";
-import { BrandingLogo } from "../../../shared/branding";
 import SettingsSection from "../../settings/components/SettingsSection";
 import BrandSaveBar from "./BrandSaveBar";
 
 function AppNameForm() {
   const { t } = useLocale();
-  const { branding, refresh } = useBranding();
+  const { branding, refresh, applyBranding } = useBranding();
   const { showToast } = useToast();
 
   const [name, setName] = useState(branding.app_name);
@@ -42,8 +41,12 @@ function AppNameForm() {
 
     setSaving(true);
     try {
-      await brandingApi.update(trimmedName);
+      const response = await brandingApi.update(trimmedName);
+
+      // Reconcile first, then let the write response win: a stale GET must
+      // not keep the previous name in the save bar or the tab title.
       await refresh();
+      applyBranding(response);
       showToast(t("branding.success"), "success");
     } catch (requestError) {
       showToast(requestError?.message || t("branding.error"), "error");
@@ -128,10 +131,10 @@ function AppNameForm() {
             </div>
             <div className="flex items-end gap-1 px-3 pt-2">
               <div className="flex max-w-[260px] items-center gap-2 rounded-t-lg bg-white px-3 py-2">
-                <BrandingLogo
-                  variant="light"
-                  className="h-4 w-4 object-contain"
+                <img
+                  src="/pwa-64x64.png"
                   alt=""
+                  className="h-4 w-4 rounded-[3px]"
                 />
                 <span className="truncate text-micro font-semibold text-[#0F172A]">
                   {previewName}

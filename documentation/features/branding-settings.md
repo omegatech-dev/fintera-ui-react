@@ -23,7 +23,9 @@ navigation shows the forbidden page. The personal profile link is labeled
 nested cards:
 
 - **Application name** — `src/features/branding/components/AppNameForm.jsx`
-  updates `app_name` through `brandingApi.update()` and previews the browser tab.
+  updates `app_name` through `brandingApi.update()` and previews the browser
+  tab. The preview shows the bundled favicon (`/pwa-64x64.png`): the browser
+  icon is not derived from the 4:1 wordmark.
 - **Support and reservations** — support WhatsApp/email, hold hours, minimum
   reservation amount, and reservation/down-payment due windows.
 - **Legal and contact** — legal name, tax ID, address, website, terms
@@ -94,10 +96,10 @@ The section includes:
   limit, PNG/JPEG/WebP, transparent background, horizontal wordmark guidance.
 - `LogoUploadCard` — drag-and-drop, click, keyboard upload, preview, file
   metadata, remove/undo, and inline validation.
-- `BrandPreview` — light/dark toggle with sidebar, sign-in, and browser-tab
-  previews.
-- `SettingsSaveBar` (`src/shared/ui/SettingsSaveBar.jsx`) — appears when there
-  are unsaved changes and offers Discard.
+- `BrandPreview` — one combined sign-in-style preview (logo + name) with a
+  light/dark toggle.
+- `BrandSaveBar` (`src/features/branding/components/BrandSaveBar.jsx`) —
+  appears when there are unsaved changes and offers Discard.
 
 `src/features/branding/logoRules.js` owns the validation rules. File type and
 the 2 MB limit are hard errors. Images below the recommended size or far from a
@@ -106,6 +108,17 @@ admins can still save.
 
 Logos that are not configured fall back to the bundled assets. A missing dark
 logo falls back to the configured light logo, and the preview notes this.
+
+Admin writes (`update`, `uploadLogo`, `deleteLogo`) apply the `branding`
+payload returned by the API immediately through `applyBranding` in
+`BrandingContext`, and `GET /api/v1/branding` is fetched with
+`cache: "no-cache"`. This prevents the 60 s public cache from restoring the
+previous logo in the sidebar, the live preview, or the save bar after an
+upload, and it keeps the save bar honest after a rename.
+
+The browser favicon stays on the bundled `/favicon.ico` and `/pwa-64x64.png`
+(`index.html`). A brand icon would need a separate square upload; a 4:1
+wordmark is not usable at 16 px.
 
 ## Motion and accessibility
 
@@ -125,8 +138,11 @@ New strings use `settings.admin.*`, `branding.general.*`,
 ## Tests
 
 - `src/features/branding/logoRules.test.js`
+- `src/features/branding/api.test.js`
 - `src/features/branding/components/AppNameForm.test.jsx`
 - `src/features/branding/components/BrandIdentityForm.test.jsx`
+- `src/features/branding/components/BrandIdentityForm.integration.test.jsx`
+- `src/contexts/BrandingContext.test.jsx`
 - `src/features/settings/components/GeneralSettingsForm.test.jsx`
 - `src/shared/editor/RichTextEditor.test.jsx`
 - `src/shared/editor/termsTemplate.test.js`

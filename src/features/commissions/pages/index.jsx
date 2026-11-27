@@ -61,6 +61,9 @@ const formatRate = (rate) =>
     ? "—"
     : `${Number(rate).toFixed(1)}%`;
 
+const hasCreditAdjustment = (row) =>
+  Number(row?.credit_applied || 0) > 0 && Boolean(row?.commission_paid_at);
+
 const formatDate = (value) => {
   if (!value) return "—";
   const date = new Date(value);
@@ -127,6 +130,7 @@ function Commissions() {
     searchParams.get("tab") === "historical" ? "historical" : "commissions";
   const [pendingHistorical, setPendingHistorical] = useState(0);
   const [paying, setPaying] = useState(null);
+  const [previewing, setPreviewing] = useState(null);
   const [startDate, setStartDate] = useState(monthStart);
   const [endDate, setEndDate] = useState(monthEnd);
   const [items, setItems] = useState([]);
@@ -135,16 +139,16 @@ function Commissions() {
   const [page, setPage] = useState(1);
   const [sellers, setSellers] = useState([]);
   const [credits, setCredits] = useState([]);
-  const [pendingCredits, setPendingCredits] = useState(0);
+  const [sellerBalance, setSellerBalance] = useState(0);
   const [creditsPagination, setCreditsPagination] = useState(EMPTY_PAGINATION);
   const [creditsPage, setCreditsPage] = useState(1);
-  const [applyingCredit, setApplyingCredit] = useState(null);
   const [sellerId, setSellerId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [exportingFormat, setExportingFormat] = useState(null);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [viewing, setViewing] = useState(null);
+  const [payoutResult, setPayoutResult] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -163,7 +167,7 @@ function Commissions() {
       setSellers(data?.sellers || []);
       setCredits(readCommissionCredits(data));
       setCreditsPagination(data?.credits_pagination || EMPTY_PAGINATION);
-      setPendingCredits(Number(data?.pending_credits || 0));
+      setSellerBalance(Number(data?.seller_balance ?? data?.pending_credits ?? 0));
     } catch {
       setError(t("commissions.loadError"));
     } finally {
@@ -239,55 +243,84 @@ function Commissions() {
   const handlePay = useCallback(
     async (row) => {
       if (!row?.contract_guid) return;
-      const confirmed = await confirmDialog({
-        title: t("commissions.payoutTitle"),
-        description: t("commissions.payoutDescription", {
-          amount: money(row.commission),
+
+      let preview;
+      setPreviewing(row.contract_guid);
+      try {
+        preview = await commissionsApi.previewPayout(row.contract_guid);
+      } catch (err) {
+        showToast(
+          err?.message || t("commissions.payoutPreviewError"),
+          "error"
+        );
+        return;
+      } finally {
+        setPreviewing(null);
+      }
+
+      if (typeof preview?.enabled !== "boolean") {
+        showToast(t("commissions.payoutPreviewError"), "error");
+        return;
+      }
+
+      const description = preview.enabled ? (
+        <div className="space-y-2">
+          <p>
+            {t("commissions.payoutPreviewDescription", {
+              seller:
+                row.seller && row.seller !== "Unknown"
+                  ? row.seller
+                  : t("commissions.unassigned"),
+            })}
+          </p>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-control bg-surface-2 p-3 text-body">
+            <dt className="text-ink-3">{t("commissions.payoutGross")}</dt>
+            <dd className="text-right font-semibold">
+              {money(preview.commission)}
+            </dd>
+            <dt className="text-ink-3">{t("commissions.payoutCredit")}</dt>
+            <dd className="text-right font-semibold">
+              {money(preview.applicable)}
+            </dd>
+            <dt className="text-ink-3">{t("commissions.payoutCash")}</dt>
+            <dd className="text-right font-semibold">
+              {money(preview.net_cash)}
+            </dd>
+            <dt className="text-ink-3">
+              {t("commissions.payoutRemainingCredit")}
+            </dt>
+            <dd className="text-right font-semibold">
+              {money(preview.remaining_credit)}
+            </dd>
+          </dl>
+        </div>
+      ) : (
+        t("commissions.payoutDescription", {
+          amount: money(preview.commission ?? row.commission),
           seller:
             row.seller && row.seller !== "Unknown"
               ? row.seller
               : t("commissions.unassigned"),
-        }),
+        })
+      );
+
+      const confirmed = await confirmDialog({
+        title: t("commissions.payoutTitle"),
+        description,
         confirmLabel: t("commissions.payoutConfirm"),
       });
       if (!confirmed) return;
 
       setPaying(row.contract_guid);
       try {
-        await commissionsApi.markPaid(row.contract_guid);
+        const result = await commissionsApi.markPaid(row.contract_guid);
+        if (result?.payout) setPayoutResult(result.payout);
         showToast(t("commissions.payoutSuccess"));
         await load();
       } catch (err) {
         showToast(err?.message || t("commissions.payoutError"), "error");
       } finally {
         setPaying(null);
-      }
-    },
-    [load, showToast, t]
-  );
-
-  const handleApplyCredit = useCallback(
-    async (credit) => {
-      if (!credit?.id) return;
-      const confirmed = await confirmDialog({
-        title: t("commissions.creditApplyTitle"),
-        description: t("commissions.creditApplyDescription", {
-          amount: money(credit.amount),
-          seller: credit.seller || t("commissions.sellerFallback"),
-        }),
-        confirmLabel: t("commissions.creditApplyConfirm"),
-      });
-      if (!confirmed) return;
-
-      setApplyingCredit(credit.id);
-      try {
-        await commissionsApi.applyCredit(credit.id);
-        showToast(t("commissions.creditApplySuccess"));
-        await load();
-      } catch (err) {
-        showToast(err?.message || t("commissions.creditApplyError"), "error");
-      } finally {
-        setApplyingCredit(null);
       }
     },
     [load, showToast, t]
@@ -394,7 +427,20 @@ function Commissions() {
         header: t("common.status"),
         render: (row) =>
           row.commission_paid_at ? (
-            <Chip tone="success">{t("commissions.paid")}</Chip>
+            <div>
+              <Chip tone="success">{t("commissions.paid")}</Chip>
+              {hasCreditAdjustment(row) && (
+                <p className="mt-1 text-micro text-ink-3">
+                  {t("commissions.creditAdjustment", {
+                    applied: money(row.credit_applied),
+                    cash: money(
+                      Number(row.commission || 0) -
+                        Number(row.credit_applied || 0)
+                    ),
+                  })}
+                </p>
+              )}
+            </div>
           ) : (
             <Chip tone="warning">{t("commissions.pending")}</Chip>
           ),
@@ -427,7 +473,10 @@ function Commissions() {
                   <Button
                     size="sm"
                     variant="secondary"
-                    loading={paying === row.contract_guid}
+                    loading={
+                      paying === row.contract_guid ||
+                      previewing === row.contract_guid
+                    }
                     disabled={!row.contract_guid}
                     onClick={() => handlePay(row)}
                   >
@@ -438,7 +487,7 @@ function Commissions() {
           ]
         : []),
     ],
-    [handlePay, isAdmin, paying, t]
+    [handlePay, isAdmin, paying, previewing, t]
   );
 
   return (
@@ -572,12 +621,9 @@ function Commissions() {
 
         <CommissionCreditsCard
           credits={credits}
-          pendingCredits={pendingCredits}
-          pendingCommissions={totals.pending}
+          sellerBalance={sellerBalance}
           showSeller
           isAdmin={isAdmin}
-          applying={applyingCredit}
-          onApply={handleApplyCredit}
           loading={loading}
           creditsPagination={creditsPagination}
           onCreditsPageChange={setCreditsPage}
@@ -638,11 +684,28 @@ function Commissions() {
                         </p>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-2">
-                        {row.commission_paid_at ? (
-                          <Chip tone="success">{t("commissions.paid")}</Chip>
-                        ) : (
-                          <Chip tone="warning">{t("commissions.pending")}</Chip>
-                        )}
+                        <div>
+                          {row.commission_paid_at ? (
+                            <Chip tone="success">
+                              {t("commissions.paid")}
+                            </Chip>
+                          ) : (
+                            <Chip tone="warning">
+                              {t("commissions.pending")}
+                            </Chip>
+                          )}
+                          {hasCreditAdjustment(row) && (
+                            <p className="mt-1 text-micro text-ink-3">
+                              {t("commissions.creditAdjustment", {
+                                applied: money(row.credit_applied),
+                                cash: money(
+                                  Number(row.commission || 0) -
+                                    Number(row.credit_applied || 0)
+                                ),
+                              })}
+                            </p>
+                          )}
+                        </div>
                         {isAdmin &&
                           (row.commission_paid_at ? (
                             <Button
@@ -656,7 +719,10 @@ function Commissions() {
                             <Button
                               size="sm"
                               variant="secondary"
-                              loading={paying === row.contract_guid}
+                              loading={
+                                paying === row.contract_guid ||
+                                previewing === row.contract_guid
+                              }
                               disabled={!row.contract_guid}
                               onClick={() => handlePay(row)}
                             >
@@ -692,6 +758,81 @@ function Commissions() {
         onClose={() => setRulesOpen(false)}
         onSaved={handleRulesSaved}
       />
+
+      <Dialog
+        open={Boolean(payoutResult)}
+        onClose={() => setPayoutResult(null)}
+        title={t("commissions.payoutResultTitle")}
+        size="sm"
+        footer={
+          <Button
+            variant="secondary"
+            onClick={() => setPayoutResult(null)}
+          >
+            {t("common.close")}
+          </Button>
+        }
+      >
+        {payoutResult && (
+          <div className="space-y-4">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-body">
+              <dt className="text-ink-3">{t("commissions.payoutGross")}</dt>
+              <dd className="text-right font-semibold">
+                {money(payoutResult.commission)}
+              </dd>
+              <dt className="text-ink-3">{t("commissions.payoutCredit")}</dt>
+              <dd className="text-right font-semibold">
+                {money(payoutResult.applied_total)}
+              </dd>
+              <dt className="text-ink-3">{t("commissions.payoutCash")}</dt>
+              <dd className="text-right font-semibold">
+                {money(payoutResult.net_cash)}
+              </dd>
+              <dt className="text-ink-3">
+                {t("commissions.payoutRemainingCredit")}
+              </dt>
+              <dd className="text-right font-semibold">
+                {money(payoutResult.remaining_credit)}
+              </dd>
+            </dl>
+            {payoutResult.applications?.length > 0 && (
+              <div className="border-t border-line pt-3">
+                <p className="mb-2 text-micro font-bold uppercase tracking-wide text-ink-3">
+                  {t("commissions.payoutApplications")}
+                </p>
+                <ul className="space-y-2 text-body">
+                  {payoutResult.applications.map((application) => (
+                    <li
+                      key={application.id}
+                      className="flex items-center justify-between gap-3"
+                    >
+                      <span className="text-ink-2">
+                        {application.applied_contract_guid ? (
+                          <Link
+                            to={`/contracts/${application.applied_contract_guid}`}
+                            className="font-semibold hover:text-brand-strong hover:underline"
+                          >
+                            #{application.applied_contract_id}
+                          </Link>
+                        ) : (
+                          `#${application.applied_contract_id || "—"}`
+                        )}
+                        <span className="ml-2 text-micro text-ink-3">
+                          ({t("commissions.creditTitle")} #
+                          {application.credit_id})
+                        </span>
+                      </span>
+                      <span className="font-semibold tabular-nums text-ink">
+                        {money(application.amount)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </Dialog>
 
       <Dialog
         open={Boolean(viewing)}
@@ -754,6 +895,17 @@ function Commissions() {
                   </Chip>
                 ) : (
                   <Chip tone="warning">{t("commissions.pending")}</Chip>
+                )}
+                {hasCreditAdjustment(viewing) && (
+                  <p className="mt-1 text-micro text-ink-3">
+                    {t("commissions.creditAdjustment", {
+                      applied: money(viewing.credit_applied),
+                      cash: money(
+                        Number(viewing.commission || 0) -
+                          Number(viewing.credit_applied || 0)
+                      ),
+                    })}
+                  </p>
                 )}
               </dd>
             </div>

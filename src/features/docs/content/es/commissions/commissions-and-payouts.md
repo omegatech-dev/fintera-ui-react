@@ -23,7 +23,7 @@ Abre **Comisiones** desde el menú del administrador. La página tiene:
 - Una tabla de detalle con contrato, vendedor, cliente, monto de venta, comisión y tasa, estado, fecha y una acción.
 - **Exportar** para descargar el periodo en CSV.
 
-Para una comisión pendiente, **Pagar** pide confirmación y marca la comisión como pagada. Escribe una entrada de auditoría y **no** cambia el saldo del contrato. Las comisiones pagadas muestran **Ver**, que abre un diálogo de detalle en solo lectura.
+Para una comisión pendiente, **Pagar** primero muestra una vista previa de la comisión bruta, el crédito disponible que se aplicará, el efectivo neto por pagar y el saldo restante. Después de confirmar, el servidor aplica los créditos elegibles del mismo vendedor como parte del pago y devuelve el desglose final. La comisión se registra por su monto bruto; el efectivo neto es lo que realmente se desembolsa. La acción escribe una entrada de auditoría y **no** cambia el saldo del contrato. Si no se puede cargar la vista previa, no se puede confirmar el pago. Cuando la compensación está desactivada en el backend, la vista previa indica claramente que no se aplicará crédito. Las comisiones pagadas muestran **Ver**, que abre un diálogo de detalle en solo lectura.
 
 ## Históricos por validar
 
@@ -48,9 +48,11 @@ Los vendedores ven **Comisiones** en su espacio de trabajo, en solo lectura:
 
 Los vendedores no pueden marcar una comisión como pagada ni cambiar tasas.
 
-## Crédito de comisión por cancelación
+## Saldo y aplicaciones de créditos de comisión
 
-Si cancelas un contrato cuya comisión ya se pagó, se genera un **crédito de comisión** a favor de Fintera para ese vendedor. Aparece en Comisiones como un crédito pendiente. El administrador puede **aplicarlo** (marcarlo como saldado) cuando corresponda. Si la comisión no se pagó, no se crea ningún crédito: la comisión simplemente deja de aparecer.
+Cuando se revierte una comisión que ya se pagó, el **crédito de comisión** resultante aparece en el saldo del vendedor. Los créditos se arrastran entre periodos y el servidor los aplica a comisiones futuras del mismo vendedor. La lista muestra el monto original, el aplicado y el restante, su origen y las comisiones a las que se aplicó. Las vistas del administrador y del vendedor son de solo lectura para los créditos; no hay una acción manual que los marque como saldados sin registrar cómo se recuperaron.
+
+Si después se cancela o reasigna un contrato al que se aplicó un crédito, el backend revierte la aplicación correspondiente y actualiza el saldo del vendedor. El saldo del cliente en el contrato se mantiene separado de los créditos de comisión.
 
 ## Relacionado
 

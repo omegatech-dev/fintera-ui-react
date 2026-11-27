@@ -34,6 +34,22 @@ const contractGuidOf = (credit) =>
 const creditIdOf = (credit) =>
   firstDefined(credit?.id, credit?.credit_id, credit?.credit?.id);
 
+const applicationsOf = (credit) =>
+  (Array.isArray(credit?.applications) ? credit.applications : []).map(
+    (application) => ({
+      ...application,
+      amount: Number(application?.amount || 0),
+      applied_contract_id: firstDefined(
+        application?.applied_contract_id,
+        application?.contract_id
+      ),
+      applied_contract_guid: firstDefined(
+        application?.applied_contract_guid,
+        application?.contract_guid
+      ),
+    })
+  );
+
 const statusOf = (credit) => {
   const status = String(
     firstDefined(credit?.status, credit?.state) ?? ""
@@ -44,17 +60,36 @@ const statusOf = (credit) => {
   return credit?.settled_at ? "settled" : "pending";
 };
 
-export const normalizeCredit = (credit = {}) => ({
-  ...credit,
-  id: creditIdOf(credit),
-  amount: amountOf(credit),
-  seller: sellerOf(credit),
-  contract_id: contractOf(credit),
-  contract_guid: contractGuidOf(credit),
-  status: statusOf(credit),
-  created_at: firstDefined(credit?.created_at, credit?.date) || null,
-  settled_at: credit?.settled_at || null,
-});
+export const normalizeCredit = (credit = {}) => {
+  const amount = amountOf(credit);
+  const status = statusOf(credit);
+  const appliedAmount = Number(
+    firstDefined(credit?.applied_amount, status === "settled" ? amount : 0)
+  );
+  const remainingAmount = Number(
+    firstDefined(credit?.remaining_amount, amount - appliedAmount)
+  );
+  const applications = applicationsOf(credit);
+
+  return {
+    ...credit,
+    id: creditIdOf(credit),
+    amount,
+    applied_amount: appliedAmount,
+    remaining_amount: remainingAmount,
+    source: firstDefined(credit?.source, "legacy"),
+    applications_total: Number(
+      firstDefined(credit?.applications_total, applications.length)
+    ),
+    applications,
+    seller: sellerOf(credit),
+    contract_id: contractOf(credit),
+    contract_guid: contractGuidOf(credit),
+    status,
+    created_at: firstDefined(credit?.created_at, credit?.date) || null,
+    settled_at: credit?.settled_at || null,
+  };
+};
 
 export const readCommissionCredits = (data) => {
   const raw = firstDefined(
@@ -102,14 +137,15 @@ export const summarizeCredits = (credits = []) =>
       acc.total += amount;
       acc.count += 1;
       if (isPendingCredit(credit)) {
-        acc.pending += amount;
+        acc.pending += Number(
+          firstDefined(credit?.remaining_amount, amount)
+        );
       } else {
-        acc.settled += amount;
+        acc.settled += Number(
+          firstDefined(credit?.applied_amount, amount)
+        );
       }
       return acc;
     },
     { total: 0, pending: 0, settled: 0, count: 0 }
   );
-
-export const netPayable = (pendingCommissions, pendingCredits) =>
-  Number(pendingCommissions || 0) - Number(pendingCredits || 0);

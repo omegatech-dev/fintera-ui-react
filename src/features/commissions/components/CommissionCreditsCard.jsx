@@ -1,11 +1,8 @@
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 import { useLocale } from "@/contexts/LocaleContext";
-import { Button, Card, Chip, Pagination, Table } from "@/shared/ui";
-import {
-  isPendingCredit,
-  netPayable,
-  summarizeCredits,
-} from "../utils/credits";
+import { Card, Chip, Pagination, Table } from "@/shared/ui";
+import { isPendingCredit, summarizeCredits } from "../utils/credits";
 
 const money = (value) =>
   `L ${Number(value || 0).toLocaleString("es-HN", { maximumFractionDigits: 0 })}`;
@@ -49,12 +46,8 @@ function SummaryTile({ label, value, caption, tone = "default", loading }) {
 
 function CommissionCreditsCard({
   credits = [],
-  pendingCredits = null,
-  pendingCommissions = 0,
+  sellerBalance = null,
   showSeller = false,
-  isAdmin = false,
-  applying = null,
-  onApply,
   loading = false,
   creditsPagination = null,
   onCreditsPageChange,
@@ -62,8 +55,39 @@ function CommissionCreditsCard({
 }) {
   const { t } = useLocale();
   const summary = summarizeCredits(credits);
-  const pendingTotal = pendingCredits ?? summary.pending;
-  const net = netPayable(pendingCommissions, pendingTotal);
+  const balance = sellerBalance ?? summary.pending;
+
+  const applicationList = (row) =>
+    row.applications?.length ? (
+      <ul className="space-y-1">
+        {row.applications.map((application) => (
+          <li key={application.id} className="text-micro text-ink-2">
+            {application.applied_contract_guid ? (
+              <Link
+                to={`/contracts/${application.applied_contract_guid}`}
+                className="font-semibold hover:text-brand-strong hover:underline"
+              >
+                #{application.applied_contract_id}
+              </Link>
+            ) : (
+              <span className="font-semibold">
+                #{application.applied_contract_id || "—"}
+              </span>
+            )}{" "}
+            · {money(application.amount)}
+          </li>
+        ))}
+        {row.applications_total > row.applications.length && (
+          <li className="text-micro text-ink-3">
+            {t("commissions.creditMoreApplications", {
+              count: row.applications_total - row.applications.length,
+            })}
+          </li>
+        )}
+      </ul>
+    ) : (
+      <span className="text-ink-3">—</span>
+    );
 
   const columns = [
     ...(showSeller
@@ -98,6 +122,40 @@ function CommissionCreditsCard({
       ),
     },
     {
+      key: "applied_amount",
+      header: t("commissions.creditApplied"),
+      align: "right",
+      render: (row) => (
+        <span className="tabular-nums text-ink-2">
+          {money(row.applied_amount)}
+        </span>
+      ),
+    },
+    {
+      key: "remaining_amount",
+      header: t("commissions.creditRemaining"),
+      align: "right",
+      render: (row) => (
+        <span className="font-semibold tabular-nums text-ink">
+          {money(row.remaining_amount)}
+        </span>
+      ),
+    },
+    {
+      key: "source",
+      header: t("commissions.creditSource"),
+      render: (row) => (
+        <span className="text-ink-2">
+          {t(`commissions.creditSources.${row.source}`)}
+        </span>
+      ),
+    },
+    {
+      key: "applications",
+      header: t("commissions.creditApplications"),
+      render: applicationList,
+    },
+    {
       key: "status",
       header: t("common.status"),
       render: (row) =>
@@ -114,28 +172,6 @@ function CommissionCreditsCard({
         <span className="text-ink-2">{formatDate(row.created_at)}</span>
       ),
     },
-    ...(isAdmin
-      ? [
-          {
-            key: "actions",
-            header: "",
-            align: "right",
-            render: (row) =>
-              isPendingCredit(row) && row.id ? (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  loading={applying === row.id}
-                  onClick={() => onApply?.(row)}
-                >
-                  {t("commissions.creditApply")}
-                </Button>
-              ) : (
-                <span className="text-micro text-ink-3">—</span>
-              ),
-          },
-        ]
-      : []),
   ];
 
   return (
@@ -146,16 +182,10 @@ function CommissionCreditsCard({
     >
       <div className="grid gap-4 px-5 py-4 sm:grid-cols-2">
         <SummaryTile
-          label={t("commissions.creditPending")}
-          value={money(pendingTotal)}
-          caption={t("commissions.creditPendingCaption")}
+          label={t("commissions.sellerCreditBalance")}
+          value={money(balance)}
+          caption={t("commissions.sellerCreditBalanceCaption")}
           tone="warning"
-          loading={loading}
-        />
-        <SummaryTile
-          label={t("commissions.netPayable")}
-          value={money(net)}
-          caption={t("commissions.netPayableCaption")}
           loading={loading}
         />
       </div>
@@ -197,17 +227,23 @@ function CommissionCreditsCard({
                   ) : (
                     <Chip tone="success">{t("commissions.creditSettled")}</Chip>
                   )}
-                  {isAdmin && isPendingCredit(row) && row.id ? (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      loading={applying === row.id}
-                      onClick={() => onApply?.(row)}
-                    >
-                      {t("commissions.creditApply")}
-                    </Button>
-                  ) : null}
                 </div>
+                <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-micro">
+                  <dt className="text-ink-3">{t("commissions.creditApplied")}</dt>
+                  <dd className="text-right font-semibold">{money(row.applied_amount)}</dd>
+                  <dt className="text-ink-3">{t("commissions.creditRemaining")}</dt>
+                  <dd className="text-right font-semibold">{money(row.remaining_amount)}</dd>
+                  <dt className="text-ink-3">{t("commissions.creditSource")}</dt>
+                  <dd className="text-right">{t(`commissions.creditSources.${row.source}`)}</dd>
+                </dl>
+                {row.applications?.length > 0 && (
+                  <div className="mt-3 border-t border-line pt-3">
+                    <p className="mb-1 text-micro font-bold uppercase tracking-wide text-ink-3">
+                      {t("commissions.creditApplications")}
+                    </p>
+                    {applicationList(row)}
+                  </div>
+                )}
               </div>
             )}
           />
@@ -238,12 +274,8 @@ SummaryTile.propTypes = {
 
 CommissionCreditsCard.propTypes = {
   credits: PropTypes.arrayOf(PropTypes.object),
-  pendingCredits: PropTypes.number,
-  pendingCommissions: PropTypes.number,
+  sellerBalance: PropTypes.number,
   showSeller: PropTypes.bool,
-  isAdmin: PropTypes.bool,
-  applying: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  onApply: PropTypes.func,
   loading: PropTypes.bool,
   creditsPagination: PropTypes.shape({
     page: PropTypes.number,

@@ -310,4 +310,44 @@ describe("BrandingProvider", () => {
     expect(icons).toHaveLength(1);
     expect(icons[0].outerHTML).toBe(before);
   });
+
+  it("falls back to the bundled favicon when the canvas throws", async () => {
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.href = "/favicon.ico";
+    document.head.appendChild(link);
+    const before = link.outerHTML;
+
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => {
+      throw new Error("canvas boom");
+    });
+
+    brandingApi.get.mockResolvedValueOnce({
+      branding: {
+        app_name: "Acme",
+        logo_url: "/uploads/branding/a.webp",
+        logo_dark_url: null,
+      },
+    });
+
+    try {
+      render(
+        <BrandingProvider>
+          <Probe />
+        </BrandingProvider>
+      );
+
+      // A favicon failure must not crash the app (no error boundary)
+      await waitFor(() => {
+        expect(screen.getByTestId("app-name")).toHaveTextContent("Acme");
+      });
+
+      const icons = document.querySelectorAll('link[rel="icon"]');
+      expect(icons).toHaveLength(1);
+      expect(icons[0].outerHTML).toBe(before);
+    } finally {
+      HTMLCanvasElement.prototype.getContext = originalGetContext;
+    }
+  });
 });

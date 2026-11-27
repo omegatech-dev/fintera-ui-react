@@ -90,11 +90,18 @@ export const BrandingProvider = ({ children }) => {
     branding.app_name !== DEFAULT_BRANDING.app_name;
 
   useEffect(() => {
-    if (!isCustomBranding) {
+    // The favicon is cosmetic; an unexpected canvas failure must never take
+    // the app down, so any error falls back to the bundled icons.
+    try {
+      if (!isCustomBranding) {
+        restoreBundledFavicon();
+        return;
+      }
+      setMonogramFavicon(brandInitial(branding.app_name));
+    } catch (error) {
+      console.warn("Favicon update failed, keeping bundled icons:", error?.message || error);
       restoreBundledFavicon();
-      return;
     }
-    setMonogramFavicon(brandInitial(branding.app_name));
   }, [isCustomBranding, branding.app_name]);
 
   const value = useMemo(

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useLocale } from "@/contexts/LocaleContext";
+import { getDefaultCurrency } from "@/shared/utils/formatSettings";
 import { Button, Dialog, Field, Input, Select, Toggle } from "@/shared/ui";
 
 const LIMITS = {
@@ -12,7 +13,7 @@ const LIMITS = {
 const EMPTY_FORM = {
   bank_name: "",
   account_type: "savings",
-  currency: "HNL",
+  currency: "",
   account_number: "",
   beneficiary_name: "",
   is_default: false,
@@ -22,14 +23,14 @@ function toForm(account, defaultCurrency, isDefault) {
   if (!account) {
     return {
       ...EMPTY_FORM,
-      currency: defaultCurrency || EMPTY_FORM.currency,
+      currency: defaultCurrency || getDefaultCurrency(),
       is_default: isDefault,
     };
   }
   return {
     bank_name: account.bank_name || "",
     account_type: account.account_type || "savings",
-    currency: account.currency || defaultCurrency || EMPTY_FORM.currency,
+    currency: account.currency || defaultCurrency || getDefaultCurrency(),
     account_number: account.account_number || "",
     beneficiary_name: account.beneficiary_name || "",
     is_default: isDefault,
@@ -40,7 +41,7 @@ export default function BankAccountSheet({
   open = false,
   account = null,
   isDefault = false,
-  defaultCurrency = "HNL",
+  defaultCurrency = "",
   defaultWhenNew = false,
   onClose,
   onSubmit,

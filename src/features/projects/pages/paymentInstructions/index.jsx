@@ -13,7 +13,11 @@ import {
 import { projectsApi } from "../../api";
 import { useLocale } from "../../../../contexts/LocaleContext";
 import { useToast } from "../../../../contexts/ToastContext";
-import { useGeneralSettings } from "@/contexts/generalSettings";
+import {
+  DEFAULT_GENERAL_SETTINGS,
+  resolveSettingsNumber,
+  useGeneralSettings,
+} from "@/contexts/generalSettings";
 import { getDefaultCurrency } from "@/shared/utils/formatSettings";
 import { confirmDialog } from "@/shared/ui/ConfirmProvider";
 import {
@@ -75,7 +79,10 @@ export default function PaymentInstructionsPage() {
 
   const defaultCurrency =
     generalSettings.default_currency || getDefaultCurrency();
-  const reservationAmount = Number(generalSettings.reservation_min_amount) || 0;
+  const reservationAmount = resolveSettingsNumber(
+    generalSettings.reservation_min_amount,
+    DEFAULT_GENERAL_SETTINGS.reservation_min_amount
+  );
 
   const load = useCallback(async () => {
     setLoading(true);

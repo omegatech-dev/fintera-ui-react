@@ -5,11 +5,11 @@ const SETTINGS_ENDPOINT = "/api/v1/settings";
 /**
  * API wrapper for the deployment-wide customer settings.
  *
- * The provider sends a merged settings snapshot so saving one General section
- * does not overwrite the rest, even before the API supports partial merges.
+ * `update` accepts the fields of a single settings section and the provider
+ * sends only those fields: `PUT /api/v1/settings` merges them into the
+ * singleton row, so a save never rewrites the other sections.
  */
 export const settingsApi = {
   get: () => apiClient.get(SETTINGS_ENDPOINT),
-  update: (settings) =>
-    apiClient.put(SETTINGS_ENDPOINT, { settings }),
+  update: (settings) => apiClient.put(SETTINGS_ENDPOINT, { settings }),
 };

@@ -222,4 +222,19 @@ describe("ReserveWizard seller question", () => {
     expect(screen.getAllByText("HISTORICAL").length).toBeGreaterThan(0);
     expect(screen.getByText("No email")).toBeInTheDocument();
   });
+
+  it("shows the deployment currency in the amount labels", async () => {
+    render(<ReserveWizard lot={lot} currency="USD" onSubmit={vi.fn()} />);
+
+    expect(await screen.findByText("Omoa · 12 sales")).toBeInTheDocument();
+    fillClient();
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(
+      await screen.findByLabelText(/Reservation Amount \(USD\)/)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/Down Payment Amount \(USD\)/)
+    ).toBeInTheDocument();
+  });
 });

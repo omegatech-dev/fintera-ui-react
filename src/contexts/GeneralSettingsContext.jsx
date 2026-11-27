@@ -67,11 +67,12 @@ export const GeneralSettingsProvider = ({ children }) => {
 
   const update = useCallback(
     async (partial) => {
-      const snapshot = { ...settingsRef.current, ...partial };
-      const data = await settingsApi.update(snapshot);
+      // The API merges provided fields, so only the saved section travels.
+      const data = await settingsApi.update(partial);
       const serverSettings = data?.settings || data || {};
       const next = normalizeGeneralSettings({
-        ...snapshot,
+        ...settingsRef.current,
+        ...partial,
         ...serverSettings,
       });
       return applySettings(next);

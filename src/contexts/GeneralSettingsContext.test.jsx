@@ -7,6 +7,7 @@ import {
   DEFAULT_GENERAL_SETTINGS,
   STORAGE_KEY,
   normalizeGeneralSettings,
+  resolveSettingsNumber,
   useGeneralSettings,
 } from "./generalSettings";
 import { settingsApi } from "../features/settings/api";
@@ -27,6 +28,7 @@ function Probe() {
     <div>
       <div data-testid="currency">{settings.default_currency}</div>
       <div data-testid="hold">{settings.reservation_hold_hours}</div>
+      <div data-testid="email">{settings.support_email}</div>
       <button type="button" onClick={() => update({ default_currency: "USD" })}>
         update
       </button>
@@ -124,15 +126,96 @@ describe("GeneralSettingsProvider", () => {
     fireEvent.click(screen.getByRole("button", { name: "update" }));
 
     await waitFor(() => {
-      expect(settingsApi.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          default_currency: "USD",
-          reservation_hold_hours: 48,
-        })
-      );
+      expect(settingsApi.update).toHaveBeenCalledWith({
+        default_currency: "USD",
+      });
       expect(screen.getByTestId("currency")).toHaveTextContent("USD");
     });
     expect(screen.getByTestId("hold")).toHaveTextContent("48");
+  });
+
+  it("sends only the saved section's fields", async () => {
+    settingsApi.get.mockResolvedValueOnce({
+      settings: {
+        support_email: "help@acme.test",
+        reservation_hold_hours: 72,
+        default_currency: "HNL",
+      },
+    });
+    settingsApi.update.mockResolvedValueOnce({
+      settings: {
+        support_email: "help@acme.test",
+        reservation_hold_hours: 72,
+        default_currency: "USD",
+      },
+    });
+
+    render(
+      <GeneralSettingsProvider>
+        <Probe />
+      </GeneralSettingsProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("email")).toHaveTextContent("help@acme.test");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "update" }));
+
+    await waitFor(() => {
+      expect(settingsApi.update).toHaveBeenCalledTimes(1);
+    });
+
+    expect(settingsApi.update).toHaveBeenCalledWith({ default_currency: "USD" });
+  });
+
+  it("never stores or sends back the capability flag", async () => {
+    settingsApi.get.mockResolvedValueOnce({
+      settings: {
+        support_email: "help@acme.test",
+        supports_partial_updates: true,
+      },
+    });
+    settingsApi.update.mockResolvedValueOnce({
+      settings: {
+        support_email: "help@acme.test",
+        supports_partial_updates: true,
+      },
+    });
+
+    render(
+      <GeneralSettingsProvider>
+        <Probe />
+      </GeneralSettingsProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("email")).toHaveTextContent("help@acme.test");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "update" }));
+
+    await waitFor(() => {
+      expect(settingsApi.update).toHaveBeenCalledTimes(1);
+    });
+
+    expect(settingsApi.update.mock.calls[0][0]).not.toHaveProperty(
+      "supports_partial_updates"
+    );
+    const cached = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
+    expect(cached).not.toHaveProperty("supports_partial_updates");
+  });
+});
+
+describe("resolveSettingsNumber", () => {
+  it("keeps an explicit zero and falls back for missing values", () => {
+    expect(resolveSettingsNumber(25000, 5000)).toBe(25000);
+    expect(resolveSettingsNumber("7500", 5000)).toBe(7500);
+    expect(resolveSettingsNumber(0, 5000)).toBe(0);
+    expect(resolveSettingsNumber(undefined, 5000)).toBe(5000);
+    expect(resolveSettingsNumber(null, 5000)).toBe(5000);
+    expect(resolveSettingsNumber("", 5000)).toBe(5000);
+    expect(resolveSettingsNumber("not-a-number", 5000)).toBe(5000);
   });
 });
 
@@ -151,6 +234,16 @@ describe("normalizeGeneralSettings", () => {
     expect(normalized.email_notifications_enabled).toBe(false);
     expect(normalized.overdue_reminders_enabled).toBe(false);
     expect(normalized.default_currency).toBe("USD");
+  });
+
+  it("strips the capability flag from the settings", () => {
+    const normalized = normalizeGeneralSettings({
+      support_email: "help@acme.test",
+      supports_partial_updates: true,
+    });
+
+    expect(normalized).not.toHaveProperty("supports_partial_updates");
+    expect(normalized.support_email).toBe("help@acme.test");
   });
 
   it("autofills empty contact and legal values with the current data", () => {

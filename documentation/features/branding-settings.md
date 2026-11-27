@@ -44,9 +44,8 @@ still render as paragraphs, and the contact block is rendered by the page/modal
 shell so it is never duplicated by the editor content.
 
 Each section uses `SettingsSection` and its own save/discard bar. Saving a section
-updates only that section's values; `GeneralSettingsProvider` sends a merged
-settings snapshot so the rest of the row is preserved even before the API
-supports partial merges.
+updates only that section's values. How the request is built depends on what the
+API supports (see **Partial updates** below).
 
 `GeneralSettingsProvider` loads `GET /api/v1/settings` on startup, caches the
 result in `fintera_general_settings`, and exposes `useGeneralSettings()`.
@@ -71,6 +70,19 @@ Defaults preserve the previous behavior: 48 hold hours, 5,000 minimum reserve,
 and `America/Tegucigalpa`. Empty contact/legal values fall back to the current
 hardcoded details: `support@omegatech.dev`, `+50431848112`, “Omegatech S. de
 R.L.” and `https://omegatech.dev/`.
+
+### Partial updates
+
+The General settings page sends only the fields of the section being saved:
+`PUT /api/v1/settings` merges the provided fields into the singleton row, so a
+save never rewrites the other sections. The API must really merge the provided
+fields; a replace-style handler would erase every other section. Fintera is
+not in production, so there is no fallback for APIs without merge support.
+
+The API still publishes the `supports_partial_updates` capability flag, but
+FinteraUI does not branch on it. The flag is stripped before normalization: it
+is never part of the settings snapshot, never cached in
+`fintera_general_settings`, and never sent back to the API.
 
 ### External dependency
 
@@ -135,6 +147,8 @@ New strings use `settings.admin.*`, `branding.general.*`,
 - `src/contexts/GeneralSettingsContext.test.jsx`
 - `src/shared/utils/formatters.test.js`
 - `src/features/projects/pages/reserve/reserveRules.test.js`
+- `src/features/projects/pages/reserve/ReserveWizard.test.jsx`
+- `src/features/projects/pages/paymentInstructions/PaymentInstructionsPage.test.jsx`
 - `src/shared/modals/LoginTermsModal.test.jsx`
 - `src/contexts/__tests__/LocaleContext.test.jsx`
 - `src/shared/sidebar/Sidebar.test.jsx`

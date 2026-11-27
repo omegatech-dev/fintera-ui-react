@@ -115,9 +115,9 @@ name for the browser tab title and the login footer copyright.
 
 ### Requirement: Fallback branding
 
-When the API is unreachable, returns an error, or has no custom branding, the
-application SHALL use the bundled name "Fintera" and the bundled logo assets,
-and SHALL keep working normally.
+The application SHALL use the bundled name "Fintera" and the bundled logo
+assets when the API is unreachable, returns an error, or has no custom
+branding, and SHALL keep working normally.
 
 #### Scenario: API unavailable at startup
 

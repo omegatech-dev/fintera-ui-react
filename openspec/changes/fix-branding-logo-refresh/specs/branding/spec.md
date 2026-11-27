@@ -77,3 +77,29 @@ configured 4:1 logo, because the browser icon is not derived from the wordmark.
 - **WHEN** an admin opens `/settings/general` with a custom logo configured
 - **THEN** the tab preview shows the bundled `/pwa-64x64.png` icon next to the
   name
+
+### Requirement: Monogram favicon under custom branding
+
+The admin SHALL keep the bundled favicon by default and SHALL swap it for a
+generated monogram of the configured application name when custom branding is
+active. The configured logo URL SHALL NOT be used as the favicon.
+
+#### Scenario: No custom branding
+
+- **WHEN** no custom logo and no custom application name are configured
+- **THEN** the document keeps the bundled `/favicon.ico` and `/pwa-64x64.png`
+  links
+
+#### Scenario: Custom branding configured
+
+- **WHEN** the branding is customized with a custom logo or a custom
+  `app_name`
+- **THEN** the favicon is a monogram generated on a canvas (first letter of
+  `app_name` on the brand green `#16A34A`), rendered at 64×64 and served as a
+  data URL
+- **AND** the favicon href does not contain the configured `logo_url`
+
+#### Scenario: Canvas unavailable
+
+- **WHEN** the browser cannot provide a 2D canvas context
+- **THEN** the bundled favicon stays in place

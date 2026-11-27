@@ -8,6 +8,13 @@ import { brandingApi } from "../features/branding/api";
 
 expect.extend(matchers);
 afterEach(cleanup);
+afterEach(() => {
+  // The provider swaps icon links under custom branding; clear them so other
+  // test files start from a clean head.
+  document
+    .querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]')
+    .forEach((link) => link.remove());
+});
 
 vi.mock("../features/branding/api", () => ({
   brandingApi: {
@@ -195,5 +202,112 @@ describe("BrandingProvider", () => {
     expect(
       JSON.parse(window.localStorage.getItem("fintera_branding")).logo_url
     ).toBe("/uploads/branding/a.png");
+  });
+
+  it("keeps the bundled favicon when branding is default", async () => {
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.href = "/favicon.ico";
+    document.head.appendChild(link);
+    const before = link.outerHTML;
+
+    brandingApi.get.mockResolvedValueOnce({
+      branding: { app_name: "Fintera", logo_url: null, logo_dark_url: null },
+    });
+
+    render(
+      <BrandingProvider>
+        <Probe />
+      </BrandingProvider>
+    );
+
+    await waitFor(() => {
+      expect(document.title).toContain("Fintera");
+    });
+
+    const icons = document.querySelectorAll('link[rel="icon"]');
+    expect(icons).toHaveLength(1);
+    expect(icons[0].outerHTML).toBe(before);
+  });
+
+  it("swaps the favicon for a monogram when branding is customized", async () => {
+    const contextStub = {
+      beginPath: vi.fn(),
+      roundRect: vi.fn(),
+      fillRect: vi.fn(),
+      fill: vi.fn(),
+      fillText: vi.fn(),
+    };
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => contextStub);
+    HTMLCanvasElement.prototype.toDataURL = vi.fn(
+      () => "data:image/png;base64,monogram"
+    );
+
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.href = "/favicon.ico";
+    document.head.appendChild(link);
+
+    brandingApi.get.mockResolvedValueOnce({
+      branding: {
+        app_name: "Acme",
+        logo_url: "/uploads/branding/a.webp",
+        logo_dark_url: null,
+      },
+    });
+
+    try {
+      render(
+        <BrandingProvider>
+          <Probe />
+        </BrandingProvider>
+      );
+
+      await waitFor(() => {
+        const icon = document.querySelector('link[rel="icon"]');
+        expect(icon?.href).toBe("data:image/png;base64,monogram");
+      });
+
+      const icons = document.querySelectorAll('link[rel="icon"]');
+      expect(icons).toHaveLength(1);
+      expect(icons[0].dataset.monogram).toBe("true");
+      // The client's wordmark URL must never become the favicon.
+      expect(icons[0].href).not.toContain("/uploads/branding/a.webp");
+    } finally {
+      HTMLCanvasElement.prototype.getContext = originalGetContext;
+      HTMLCanvasElement.prototype.toDataURL = originalToDataURL;
+    }
+  });
+
+  it("keeps the bundled favicon when the canvas is unavailable", async () => {
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.href = "/favicon.ico";
+    document.head.appendChild(link);
+    const before = link.outerHTML;
+
+    brandingApi.get.mockResolvedValueOnce({
+      branding: {
+        app_name: "Acme",
+        logo_url: "/uploads/branding/a.webp",
+        logo_dark_url: null,
+      },
+    });
+
+    render(
+      <BrandingProvider>
+        <Probe />
+      </BrandingProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("app-name")).toHaveTextContent("Acme");
+    });
+
+    const icons = document.querySelectorAll('link[rel="icon"]');
+    expect(icons).toHaveLength(1);
+    expect(icons[0].outerHTML).toBe(before);
   });
 });

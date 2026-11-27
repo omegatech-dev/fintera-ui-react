@@ -117,8 +117,11 @@ previous logo in the sidebar, the live preview, or the save bar after an
 upload, and it keeps the save bar honest after a rename.
 
 The browser favicon stays on the bundled `/favicon.ico` and `/pwa-64x64.png`
-(`index.html`). A brand icon would need a separate square upload; a 4:1
-wordmark is not usable at 16 px.
+(`index.html`) while branding is default. When custom branding is active
+(custom `app_name` or logo), `BrandingProvider` swaps it for a canvas-drawn
+monogram of the application name on the brand green (`#16A34A`) served as a
+data URL — the 4:1 wordmark is never used as a favicon, and a real brand icon
+would need a separate square upload.
 
 ## Motion and accessibility
 

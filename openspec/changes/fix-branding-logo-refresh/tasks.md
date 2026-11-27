@@ -29,7 +29,13 @@
 
 - [x] 5.1 `documentation/features/branding-settings.md` — document the immediate-apply behavior and `cache: "no-cache"`, correct the preview description (one combined preview, not three), and note the bundled favicon in the tab preview.
 
-## 6. Verification
+## 6. Monogram favicon
 
-- [x] 6.1 `npx openspec validate --changes` passes.
-- [x] 6.2 `npm run verify` (lint + test:run + build) passes.
+- [x] 6.1 Add `src/features/branding/utils/brandInitial.js` and `src/features/branding/utils/favicon.js` (`setMonogramFavicon`/`restoreBundledFavicon`) with canvas tests.
+- [x] 6.2 `src/contexts/BrandingContext.jsx` — swap the favicon for the monogram when branding is customized and restore the bundled icons when it reverts.
+- [x] 6.3 Update `documentation/features/branding-settings.md` and the spec delta with the monogram favicon behavior.
+
+## 7. Verification
+
+- [x] 7.1 `npx openspec validate --changes` passes.
+- [x] 7.2 `npm run verify` (lint + test:run + build) passes.

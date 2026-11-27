@@ -1,5 +1,10 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { brandingApi } from "../features/branding/api";
+import { brandInitial } from "../features/branding/utils/brandInitial";
+import {
+  restoreBundledFavicon,
+  setMonogramFavicon,
+} from "../features/branding/utils/favicon";
 import BrandingContext, { STORAGE_KEY, DEFAULT_BRANDING } from "./branding";
 
 const readCachedBranding = () => {
@@ -75,6 +80,22 @@ export const BrandingProvider = ({ children }) => {
   useEffect(() => {
     document.title = `${branding.app_name} - Dashboard`;
   }, [branding.app_name]);
+
+  // Browser tab favicon: bundled icons by default, a generated monogram when
+  // custom branding is active. The configured logo is a horizontal wordmark
+  // (4:1) and must never become the favicon — see OpenSpec
+  // `fix-branding-logo-refresh`.
+  const isCustomBranding =
+    Boolean(branding.logo_url || branding.logo_dark_url) ||
+    branding.app_name !== DEFAULT_BRANDING.app_name;
+
+  useEffect(() => {
+    if (!isCustomBranding) {
+      restoreBundledFavicon();
+      return;
+    }
+    setMonogramFavicon(brandInitial(branding.app_name));
+  }, [isCustomBranding, branding.app_name]);
 
   const value = useMemo(
     () => ({ branding, loading, refresh, applyBranding }),

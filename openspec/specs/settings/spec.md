@@ -182,18 +182,13 @@ display formatting when a record does not specify its own value.
 ### Requirement: Partial section updates
 
 The General settings page SHALL send only the fields of the section being
-saved when the API advertises support for partial updates, and SHALL fall back
-to sending the full settings snapshot when it does not.
+saved. `PUT /api/v1/settings` merges the provided fields into the singleton
+row, so a save never rewrites the other sections.
 
-#### Scenario: Partial update with API support
+#### Scenario: Partial update
 
-- **WHEN** an admin saves the Notifications section and the API advertises `supports_partial_updates`
+- **WHEN** an admin saves the Notifications section
 - **THEN** the request contains only the notification fields and the other sections keep their stored values
-
-#### Scenario: Legacy API fallback
-
-- **WHEN** an admin saves any section and the API does not advertise `supports_partial_updates`
-- **THEN** the request contains the full settings snapshot so no other section loses its stored values
 
 #### Scenario: Capability flag is not a setting
 

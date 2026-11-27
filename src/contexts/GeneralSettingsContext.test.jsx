@@ -126,24 +126,20 @@ describe("GeneralSettingsProvider", () => {
     fireEvent.click(screen.getByRole("button", { name: "update" }));
 
     await waitFor(() => {
-      expect(settingsApi.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          default_currency: "USD",
-          reservation_hold_hours: 48,
-        })
-      );
+      expect(settingsApi.update).toHaveBeenCalledWith({
+        default_currency: "USD",
+      });
       expect(screen.getByTestId("currency")).toHaveTextContent("USD");
     });
     expect(screen.getByTestId("hold")).toHaveTextContent("48");
   });
 
-  it("sends only the saved section when the API advertises partial updates", async () => {
+  it("sends only the saved section's fields", async () => {
     settingsApi.get.mockResolvedValueOnce({
       settings: {
         support_email: "help@acme.test",
         reservation_hold_hours: 72,
         default_currency: "HNL",
-        supports_partial_updates: true,
       },
     });
     settingsApi.update.mockResolvedValueOnce({
@@ -151,7 +147,6 @@ describe("GeneralSettingsProvider", () => {
         support_email: "help@acme.test",
         reservation_hold_hours: 72,
         default_currency: "USD",
-        supports_partial_updates: true,
       },
     });
 
@@ -172,48 +167,6 @@ describe("GeneralSettingsProvider", () => {
     });
 
     expect(settingsApi.update).toHaveBeenCalledWith({ default_currency: "USD" });
-  });
-
-  it("sends the full snapshot when the API does not advertise partial updates", async () => {
-    settingsApi.get.mockResolvedValueOnce({
-      settings: {
-        support_email: "help@acme.test",
-        reservation_hold_hours: 72,
-        default_currency: "HNL",
-      },
-    });
-    settingsApi.update.mockResolvedValueOnce({
-      settings: {
-        support_email: "help@acme.test",
-        reservation_hold_hours: 72,
-        default_currency: "USD",
-      },
-    });
-
-    render(
-      <GeneralSettingsProvider>
-        <Probe />
-      </GeneralSettingsProvider>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByTestId("email")).toHaveTextContent("help@acme.test");
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "update" }));
-
-    await waitFor(() => {
-      expect(settingsApi.update).toHaveBeenCalledTimes(1);
-    });
-
-    const payload = settingsApi.update.mock.calls[0][0];
-    expect(payload.default_currency).toBe("USD");
-    // The other sections travel in the snapshot so no value is lost.
-    expect(payload.support_email).toBe("help@acme.test");
-    expect(payload.reservation_hold_hours).toBe(72);
-    expect(payload.reservation_min_amount).toBe(
-      DEFAULT_GENERAL_SETTINGS.reservation_min_amount
-    );
   });
 
   it("never stores or sends back the capability flag", async () => {

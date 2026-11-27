@@ -2,14 +2,9 @@ import { createContext, useContext } from "react";
 
 export const STORAGE_KEY = "fintera_general_settings";
 
-// Capability published by the API. It is not a setting: it is stripped before
-// normalization so it never reaches the snapshot, the cache or the request.
+// Capability flag published by the API. It is not a setting: it is stripped
+// before normalization so it never reaches the snapshot, the cache or a request.
 export const PARTIAL_UPDATES_FLAG = "supports_partial_updates";
-
-// The API may expose the flag at the root of the payload or inside `settings`.
-export const readPartialUpdateSupport = (raw = {}) =>
-  raw?.[PARTIAL_UPDATES_FLAG] === true ||
-  raw?.settings?.[PARTIAL_UPDATES_FLAG] === true;
 
 // Safe defaults preserve current hardcoded contact/legal data until an admin
 // saves a replacement. They also keep the app usable when the API is offline.

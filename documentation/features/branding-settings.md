@@ -73,33 +73,24 @@ R.L.” and `https://omegatech.dev/`.
 
 ### Partial updates
 
-The API advertises whether it can merge per-field updates with the
-`supports_partial_updates` flag in the settings response. FinteraUI never
-infers it from the response shape: the extended columns only prove that the
-migration landed, not that the handler merges, and a partial request sent to a
-replace-style handler erases every other section.
+The General settings page sends only the fields of the section being saved:
+`PUT /api/v1/settings` merges the provided fields into the singleton row, so a
+save never rewrites the other sections. The API must really merge the provided
+fields; a replace-style handler would erase every other section. Fintera is
+not in production, so there is no fallback for APIs without merge support.
 
-- Flag present and `true`: `PUT /api/v1/settings` receives only the fields of the
-  saved section, so a save never rewrites the other sections.
-- Flag absent or `false`: the request carries the full settings snapshot, which
-  keeps every section intact against an API that replaces the row.
-
-The flag describes the API, not the deployment, so it is stripped before
-normalization: it is never part of the settings snapshot, never cached in
+The API still publishes the `supports_partial_updates` capability flag, but
+FinteraUI does not branch on it. The flag is stripped before normalization: it
+is never part of the settings snapshot, never cached in
 `fintera_general_settings`, and never sent back to the API.
-
-The API must only report `true` when `PUT /api/v1/settings` really merges the
-provided fields. The flag and the merge behavior ship together; a `true` flag
-with replace semantics would delete the other sections.
 
 ### External dependency
 
 The extended settings require an additive FinteraAPI migration that adds these
 columns and makes `PUT /api/v1/settings` merge provided fields. FinteraUI falls
-back to defaults if the API does not return the new fields, and keeps sending the
-full snapshot until the API advertises `supports_partial_updates`. FinteraWeb is
-the follow-up consumer for the reservation minimum, currency/locale formatting,
-and dynamic hold copy.
+back to defaults if the API does not return the new fields. FinteraWeb is the
+follow-up consumer for the reservation minimum, currency/locale formatting, and
+dynamic hold copy.
 
 ## Brand identity
 

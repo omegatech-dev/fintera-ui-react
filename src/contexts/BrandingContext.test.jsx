@@ -1,4 +1,4 @@
-import { render, screen, waitFor, cleanup } from "@testing-library/react";
+import { render, screen, waitFor, cleanup, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 
@@ -8,6 +8,13 @@ import { brandingApi } from "../features/branding/api";
 
 expect.extend(matchers);
 afterEach(cleanup);
+afterEach(() => {
+  // The provider swaps icon links under custom branding; clear them so other
+  // test files start from a clean head.
+  document
+    .querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]')
+    .forEach((link) => link.remove());
+});
 
 vi.mock("../features/branding/api", () => ({
   brandingApi: {
@@ -18,9 +25,11 @@ vi.mock("../features/branding/api", () => ({
   },
 }));
 
+let latest;
 function Probe() {
-  const { branding } = useBranding();
-  return <div data-testid="app-name">{branding.app_name}</div>;
+  const context = useBranding();
+  latest = context;
+  return <div data-testid="app-name">{context.branding.app_name}</div>;
 }
 
 beforeEach(() => {
@@ -110,5 +119,235 @@ describe("BrandingProvider", () => {
     await waitFor(() => {
       expect(document.title).toContain("Acme");
     });
+  });
+
+  it("applies a write response and persists it", async () => {
+    brandingApi.get.mockResolvedValueOnce({
+      branding: { app_name: "Fintera", logo_url: null, logo_dark_url: null },
+    });
+
+    render(
+      <BrandingProvider>
+        <Probe />
+      </BrandingProvider>
+    );
+
+    // Wait for the mount fetch to land before overriding the state.
+    await waitFor(() => {
+      expect(screen.getByTestId("app-name")).toHaveTextContent("Fintera");
+    });
+
+    await act(async () => {
+      latest.applyBranding({
+        app_name: "Acme",
+        logo_url: "/uploads/branding/nuevo.webp",
+        logo_dark_url: null,
+      });
+    });
+
+    expect(screen.getByTestId("app-name")).toHaveTextContent("Acme");
+    expect(
+      JSON.parse(window.localStorage.getItem("fintera_branding"))
+    ).toMatchObject({
+      app_name: "Acme",
+      logo_url: "/uploads/branding/nuevo.webp",
+    });
+  });
+
+  it("keeps the application name when a write only returns a logo", async () => {
+    brandingApi.get.mockResolvedValueOnce({
+      branding: { app_name: "Fintera", logo_url: null, logo_dark_url: null },
+    });
+
+    render(
+      <BrandingProvider>
+        <Probe />
+      </BrandingProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("app-name")).toHaveTextContent("Fintera");
+    });
+
+    await act(async () => {
+      latest.applyBranding({ logo_url: "/uploads/branding/nuevo.webp" });
+    });
+
+    expect(screen.getByTestId("app-name")).toHaveTextContent("Fintera");
+    expect(
+      JSON.parse(window.localStorage.getItem("fintera_branding")).logo_url
+    ).toBe("/uploads/branding/nuevo.webp");
+  });
+
+  it("keeps the current branding when the GET returns an empty payload", async () => {
+    brandingApi.get.mockResolvedValueOnce({
+      branding: { app_name: "Fintera", logo_url: "/uploads/branding/a.png" },
+    });
+
+    render(
+      <BrandingProvider>
+        <Probe />
+      </BrandingProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("app-name")).toHaveTextContent("Fintera");
+    });
+
+    await act(async () => {
+      latest.applyBranding({});
+    });
+
+    expect(screen.getByTestId("app-name")).toHaveTextContent("Fintera");
+    expect(
+      JSON.parse(window.localStorage.getItem("fintera_branding")).logo_url
+    ).toBe("/uploads/branding/a.png");
+  });
+
+  it("keeps the bundled favicon when branding is default", async () => {
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.href = "/favicon.ico";
+    document.head.appendChild(link);
+    const before = link.outerHTML;
+
+    brandingApi.get.mockResolvedValueOnce({
+      branding: { app_name: "Fintera", logo_url: null, logo_dark_url: null },
+    });
+
+    render(
+      <BrandingProvider>
+        <Probe />
+      </BrandingProvider>
+    );
+
+    await waitFor(() => {
+      expect(document.title).toContain("Fintera");
+    });
+
+    const icons = document.querySelectorAll('link[rel="icon"]');
+    expect(icons).toHaveLength(1);
+    expect(icons[0].outerHTML).toBe(before);
+  });
+
+  it("swaps the favicon for a monogram when branding is customized", async () => {
+    const contextStub = {
+      beginPath: vi.fn(),
+      roundRect: vi.fn(),
+      fillRect: vi.fn(),
+      fill: vi.fn(),
+      fillText: vi.fn(),
+    };
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => contextStub);
+    HTMLCanvasElement.prototype.toDataURL = vi.fn(
+      () => "data:image/png;base64,monogram"
+    );
+
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.href = "/favicon.ico";
+    document.head.appendChild(link);
+
+    brandingApi.get.mockResolvedValueOnce({
+      branding: {
+        app_name: "Acme",
+        logo_url: "/uploads/branding/a.webp",
+        logo_dark_url: null,
+      },
+    });
+
+    try {
+      render(
+        <BrandingProvider>
+          <Probe />
+        </BrandingProvider>
+      );
+
+      await waitFor(() => {
+        const icon = document.querySelector('link[rel="icon"]');
+        expect(icon?.href).toBe("data:image/png;base64,monogram");
+      });
+
+      const icons = document.querySelectorAll('link[rel="icon"]');
+      expect(icons).toHaveLength(1);
+      expect(icons[0].dataset.monogram).toBe("true");
+      // The client's wordmark URL must never become the favicon.
+      expect(icons[0].href).not.toContain("/uploads/branding/a.webp");
+    } finally {
+      HTMLCanvasElement.prototype.getContext = originalGetContext;
+      HTMLCanvasElement.prototype.toDataURL = originalToDataURL;
+    }
+  });
+
+  it("keeps the bundled favicon when the canvas is unavailable", async () => {
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.href = "/favicon.ico";
+    document.head.appendChild(link);
+    const before = link.outerHTML;
+
+    brandingApi.get.mockResolvedValueOnce({
+      branding: {
+        app_name: "Acme",
+        logo_url: "/uploads/branding/a.webp",
+        logo_dark_url: null,
+      },
+    });
+
+    render(
+      <BrandingProvider>
+        <Probe />
+      </BrandingProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("app-name")).toHaveTextContent("Acme");
+    });
+
+    const icons = document.querySelectorAll('link[rel="icon"]');
+    expect(icons).toHaveLength(1);
+    expect(icons[0].outerHTML).toBe(before);
+  });
+
+  it("falls back to the bundled favicon when the canvas throws", async () => {
+    const link = document.createElement("link");
+    link.rel = "icon";
+    link.href = "/favicon.ico";
+    document.head.appendChild(link);
+    const before = link.outerHTML;
+
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => {
+      throw new Error("canvas boom");
+    });
+
+    brandingApi.get.mockResolvedValueOnce({
+      branding: {
+        app_name: "Acme",
+        logo_url: "/uploads/branding/a.webp",
+        logo_dark_url: null,
+      },
+    });
+
+    try {
+      render(
+        <BrandingProvider>
+          <Probe />
+        </BrandingProvider>
+      );
+
+      // A favicon failure must not crash the app (no error boundary)
+      await waitFor(() => {
+        expect(screen.getByTestId("app-name")).toHaveTextContent("Acme");
+      });
+
+      const icons = document.querySelectorAll('link[rel="icon"]');
+      expect(icons).toHaveLength(1);
+      expect(icons[0].outerHTML).toBe(before);
+    } finally {
+      HTMLCanvasElement.prototype.getContext = originalGetContext;
+    }
   });
 });

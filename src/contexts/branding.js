@@ -16,7 +16,12 @@ export const useBranding = () => {
   const context = useContext(BrandingContext);
   if (!context) {
     // Outside the provider (e.g. during HMR), fall back to defaults.
-    return { branding: DEFAULT_BRANDING, loading: false, refresh: async () => DEFAULT_BRANDING };
+    return {
+      branding: DEFAULT_BRANDING,
+      loading: false,
+      refresh: async () => DEFAULT_BRANDING,
+      applyBranding: () => DEFAULT_BRANDING,
+    };
   }
   return context;
 };

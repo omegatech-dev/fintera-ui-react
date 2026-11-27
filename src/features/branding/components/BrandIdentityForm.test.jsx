@@ -34,6 +34,7 @@ const pngFile = new File(["fake-png"], "logo.png", { type: "image/png" });
 const darkPngFile = new File(["fake-dark-png"], "logo-dark.png", { type: "image/png" });
 
 const refresh = vi.fn();
+const applyBranding = vi.fn();
 const showToast = vi.fn();
 
 const mockBranding = (branding = {}) => {
@@ -46,6 +47,7 @@ const mockBranding = (branding = {}) => {
     },
     loading: false,
     refresh,
+    applyBranding,
   });
 };
 
@@ -175,5 +177,76 @@ describe("BrandIdentityForm", () => {
       expect(showToast).toHaveBeenCalledWith("boom", "error");
     });
     expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("keeps the uploaded logo when the refresh response is stale", async () => {
+    brandingApi.uploadLogo.mockResolvedValueOnce({
+      branding: {
+        app_name: "Fintera",
+        logo_url: "/uploads/branding/nuevo.webp",
+        logo_dark_url: null,
+      },
+    });
+    // `refresh` resolves without changing branding: simulates the cached GET.
+    const { container } = render(<BrandIdentityForm />);
+
+    fireEvent.change(getFileInputs(container)[0], {
+      target: { files: [pngFile] },
+    });
+    fireEvent.submit(container.querySelector("form"));
+
+    await waitFor(() => {
+      expect(applyBranding).toHaveBeenCalledWith({
+        branding: {
+          app_name: "Fintera",
+          logo_url: "/uploads/branding/nuevo.webp",
+          logo_dark_url: null,
+        },
+      });
+    });
+
+    // The write response is applied after the reconciliation, so a stale GET
+    // can never be the last writer.
+    expect(applyBranding.mock.invocationCallOrder[0]).toBeGreaterThan(
+      refresh.mock.invocationCallOrder[0]
+    );
+  });
+
+  it("applies each write response when both variants change", async () => {
+    brandingApi.deleteLogo.mockResolvedValueOnce({
+      branding: { app_name: "Fintera", logo_url: null, logo_dark_url: null },
+    });
+    brandingApi.uploadLogo.mockResolvedValueOnce({
+      branding: {
+        app_name: "Fintera",
+        logo_url: "/uploads/branding/a.png",
+        logo_dark_url: "/uploads/branding/dark.webp",
+      },
+    });
+    mockBranding({ logo_url: "/uploads/branding/a.png" });
+    const { container } = render(<BrandIdentityForm />);
+
+    // Removing the light logo and uploading a dark logo are independent
+    // pending changes, so both writes fire on submit.
+    const [removeLight] = screen.getAllByText("branding.remove");
+    fireEvent.click(removeLight);
+    fireEvent.change(getFileInputs(container)[1], {
+      target: { files: [darkPngFile] },
+    });
+    fireEvent.submit(container.querySelector("form"));
+
+    await waitFor(() => {
+      expect(applyBranding).toHaveBeenCalledTimes(2);
+    });
+    expect(applyBranding).toHaveBeenNthCalledWith(1, {
+      branding: { app_name: "Fintera", logo_url: null, logo_dark_url: null },
+    });
+    expect(applyBranding).toHaveBeenNthCalledWith(2, {
+      branding: {
+        app_name: "Fintera",
+        logo_url: "/uploads/branding/a.png",
+        logo_dark_url: "/uploads/branding/dark.webp",
+      },
+    });
   });
 });

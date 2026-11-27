@@ -1,6 +1,6 @@
 import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 
 import Sidebar from "./Sidebar";
@@ -15,6 +15,27 @@ vi.mock("../../contexts/LocaleContext", () => ({
 vi.mock("../branding", () => ({
   BrandingLogo: () => <span data-testid="branding-logo" />,
 }));
+
+const brandingState = vi.hoisted(() => ({
+  current: { app_name: "Fintera", logo_url: null, logo_dark_url: null },
+}));
+
+vi.mock("../../contexts/branding", () => ({
+  useBranding: () => ({
+    branding: brandingState.current,
+    loading: false,
+    refresh: vi.fn(),
+    applyBranding: vi.fn(),
+  }),
+}));
+
+beforeEach(() => {
+  brandingState.current = {
+    app_name: "Fintera",
+    logo_url: null,
+    logo_dark_url: null,
+  };
+});
 
 const renderSidebar = (
   Component,
@@ -172,6 +193,25 @@ describe("shell chrome", () => {
     expect(screen.getByText("Fintera · header.administrator")).toBeInTheDocument();
     expect(screen.getByText("Test User")).toBeInTheDocument();
     expect(screen.getAllByText("header.administrator").length).toBeGreaterThan(0);
+  });
+
+  it("renders the configured logo instead of the monogram", () => {
+    brandingState.current = {
+      app_name: "Acme",
+      logo_url: "/uploads/branding/acme.webp",
+      logo_dark_url: null,
+    };
+    renderSidebar(Sidebar, "admin");
+
+    expect(screen.getAllByTestId("branding-logo")).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Acme" })).toBeInTheDocument();
+  });
+
+  it("falls back to the monogram when no logo is configured", () => {
+    renderSidebar(Sidebar, "admin");
+
+    expect(screen.queryByTestId("branding-logo")).not.toBeInTheDocument();
+    expect(screen.getByText("Fintera")).toBeInTheDocument();
   });
 
   it("keeps the collapse and logout actions wired", () => {
